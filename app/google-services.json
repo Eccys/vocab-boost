@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "399691916210",
+    "project_id": "vocabulary-boost",
+    "storage_bucket": "vocabulary-boost.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:399691916210:android:3772621ec42cd9b6bfbaab",
+        "android_client_info": {
+          "package_name": "xyz.ecys.vocab"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAxfuOo8DaQCR9kVBkFfjl6gr7NgH_ygaQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
