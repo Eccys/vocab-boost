@@ -234,7 +234,17 @@ class StatsActivity : ComponentActivity() {
                         bestStreak = bestStreak,
                         currentStreak = currentStreak,
                         showingCurrentStreak = showingCurrentStreak,
-                        onStreakClick = { showingCurrentStreak = !showingCurrentStreak },
+                        onStreakClick = { 
+                            showingCurrentStreak = !showingCurrentStreak
+                            android.util.Log.d("StreakDebug", "Streak button clicked. Showing current streak: $showingCurrentStreak")
+                            if (showingCurrentStreak) {
+                                android.util.Log.d("StreakDebug", "Refreshing current streak...")
+                                coroutineScope.launch {
+                                    currentStreak = appUsageManager.getCurrentStreak()
+                                    android.util.Log.d("StreakDebug", "Current streak refreshed to: $currentStreak")
+                                }
+                            }
+                        },
                         masteredWords = masteredWords,
                         toReviewWords = toReviewWords,
                         wordsToday = wordsToday,

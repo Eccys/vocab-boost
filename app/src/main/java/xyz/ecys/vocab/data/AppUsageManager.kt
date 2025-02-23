@@ -92,43 +92,56 @@ class AppUsageManager private constructor(
 
     suspend fun getCurrentStreak(): Int = withContext(Dispatchers.IO) {
         try {
+            android.util.Log.d("StreakDebug", "Starting getCurrentStreak calculation...")
             val today = getStartOfDayTimestamp()
             val yesterday = today - (24 * 60 * 60 * 1000)
             
+            android.util.Log.d("StreakDebug", "Today's timestamp: $today")
+            android.util.Log.d("StreakDebug", "Yesterday's timestamp: $yesterday")
+            
+            // Get answers for today and yesterday
             val todayAnswers = correctAnswerTracker.getCorrectAnswersForDate(today)
             val yesterdayAnswers = correctAnswerTracker.getCorrectAnswersForDate(yesterday)
             
-            android.util.Log.d("StreakDebug", "Today's timestamp: $today, answers: $todayAnswers")
-            android.util.Log.d("StreakDebug", "Yesterday's timestamp: $yesterday, answers: $yesterdayAnswers")
-
-            var streak = 0
+            android.util.Log.d("StreakDebug", "Today's answers: $todayAnswers")
+            android.util.Log.d("StreakDebug", "Yesterday's answers: $yesterdayAnswers")
             
-            // First check if both yesterday and today are active
-            if (yesterdayAnswers > 0 && todayAnswers > 0) {
-                streak = 2
-                android.util.Log.d("StreakDebug", "Both days active, starting streak at 2")
-                var checkDay = yesterday - (24 * 60 * 60 * 1000) // Start checking from 2 days ago
-                while (true) {
-                    val answers = correctAnswerTracker.getCorrectAnswersForDate(checkDay)
-                    android.util.Log.d("StreakDebug", "Checking day: $checkDay, answers: $answers")
-                    if (answers > 0) {
-                        streak++
-                        checkDay -= 24 * 60 * 60 * 1000
-                    } else {
-                        break
-                    }
+            // If no activity in the last two days, no streak
+            if (todayAnswers == 0 && yesterdayAnswers == 0) {
+                android.util.Log.d("StreakDebug", "No activity in last two days, returning 0")
+                return@withContext 0
+            }
+            
+            var streak = 0
+            var checkDay = if (todayAnswers > 0) {
+                android.util.Log.d("StreakDebug", "Starting streak check from today")
+                today
+            } else {
+                android.util.Log.d("StreakDebug", "Starting streak check from yesterday")
+                yesterday
+            }
+            
+            // Count consecutive days with activity
+            while (true) {
+                val answers = correctAnswerTracker.getCorrectAnswersForDate(checkDay)
+                android.util.Log.d("StreakDebug", "Checking day: ${checkDay}, answers: $answers")
+                
+                if (answers > 0) {
+                    streak++
+                    android.util.Log.d("StreakDebug", "Found active day, streak now: $streak")
+                    checkDay -= 24 * 60 * 60 * 1000
+                } else {
+                    android.util.Log.d("StreakDebug", "Found inactive day, breaking loop")
+                    break
                 }
             }
-            // Then check if either today or yesterday is active
-            else if (todayAnswers > 0 || yesterdayAnswers > 0) {
-                streak = 1
-                android.util.Log.d("StreakDebug", "One day active, streak is 1")
-            }
-
-            android.util.Log.d("StreakDebug", "Final streak: $streak")
+            
+            android.util.Log.d("StreakDebug", "Final streak count: $streak")
             return@withContext streak
+            
         } catch (e: Exception) {
             android.util.Log.e("StreakDebug", "Error calculating streak", e)
+            android.util.Log.e("StreakDebug", "Stack trace: ${e.stackTraceToString()}")
             return@withContext 0
         }
     }

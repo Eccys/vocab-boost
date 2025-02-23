@@ -180,14 +180,12 @@ class DebugActivity : ComponentActivity() {
                                             modifier = Modifier.size(32.dp)
                                         ) {
                                             Icon(
-                                                painter = if (word.isBookmarked) AppIcons.bookmarkSolid() else AppIcons.bookmarkOutline(),
-                                                contentDescription = if (word.isBookmarked) "Remove bookmark" else "Add bookmark",
-                                                tint = if (word.isBookmarked) MaterialTheme.colorScheme.tertiary else Color(0xFFFCFCFC),
-                                                modifier = Modifier.size(16.dp)
+                                            painter = if (word.isBookmarked) AppIcons.bookmarkSolid() else AppIcons.bookmarkOutline(),
+                                            contentDescription = if (word.isBookmarked) "Remove bookmark" else "Add bookmark",
+                                            tint = if (word.isBookmarked) MaterialTheme.colorScheme.tertiary else Color(0xFFFCFCFC)
                                             )
                                         }
                                     }
-                                    
                                     // Performance Stats
                                     Text(
                                         "Performance",

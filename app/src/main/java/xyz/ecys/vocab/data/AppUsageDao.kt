@@ -27,7 +27,7 @@ interface AppUsageDao {
     suspend fun getTotalCorrectAnswers(): Int
 
     @Query("SELECT COALESCE(correctAnswers, 0) FROM app_usage WHERE date = :date")
-    suspend fun getCorrectAnswersForDate(date: Long): Int
+    suspend fun getCorrectAnswersForDate(date: Long): Int?
 
     @Query("SELECT * FROM app_usage WHERE date BETWEEN :startDate AND :endDate")
     fun getUsageBetweenDates(startDate: Long, endDate: Long): Flow<List<AppUsage>>

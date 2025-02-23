@@ -6,7 +6,7 @@ import kotlin.math.roundToInt
 
 class SpacedRepetitionManager {
     companion object {
-        private const val MIN_EASE_FACTOR = 1.3f
+    private const val MIN_EASE_FACTOR = 1.3f
         private const val DEFAULT_EASE_FACTOR = 2.5f
         private const val MILLISECONDS_IN_DAY = 86400000L // 24 * 60 * 60 * 1000
 

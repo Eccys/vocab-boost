@@ -236,13 +236,25 @@ class MainActivity : ComponentActivity() { // Calendar Card
                     topBar = {
                         CenterAlignedTopAppBar(
                             title = { 
-                                Text(
-                                    text = "Vocabulary Booster",
-                                    style = MaterialTheme.typography.titleLarge.copy(
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color(0xFFFCFCFC)
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.Center
+                                ) {
+                                    Text(
+                                        text = "Vocabulary Booster",
+                                        style = MaterialTheme.typography.titleLarge.copy(
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color(0xFFFCFCFC)
+                                        )
                                     )
-                                ) 
+                                    Text(
+                                        text = "Powered by AI",
+                                        style = MaterialTheme.typography.bodySmall.copy(
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color(0xFFFCFCFC).copy(alpha = 0.6f)
+                                        )
+                                    )
+                                }
                             },
                             navigationIcon = {
                                 val interactionSource = remember { MutableInteractionSource() }
@@ -298,12 +310,10 @@ class MainActivity : ComponentActivity() { // Calendar Card
                         modifier = Modifier
                             .fillMaxSize()
                             .padding(innerPadding)
-                            .padding(horizontal = 16.dp),
+                            .padding(horizontal = 16.dp, vertical = 16.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(24.dp)
                     ) {
-                        Spacer(modifier = Modifier.weight(0.5f))
-
                         // Activity Calendar
                         Box(
                             modifier = Modifier
@@ -566,6 +576,7 @@ class MainActivity : ComponentActivity() { // Calendar Card
                             }
                         }
 
+                        // Bookmarks Button
                         Button(
                             onClick = {
                                 startActivity(Intent(this@MainActivity, BookmarksActivity::class.java))
@@ -617,6 +628,7 @@ class MainActivity : ComponentActivity() { // Calendar Card
                             }
                         }
 
+                        // Add remaining space at the bottom
                         Spacer(modifier = Modifier.weight(1f))
                     }
                 }

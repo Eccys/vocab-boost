@@ -37,7 +37,7 @@ class CorrectAnswerTracker private constructor(private val appUsageDao: AppUsage
 
     suspend fun getCorrectAnswersToday(): Int = withContext(Dispatchers.IO) {
         val today = getStartOfDayTimestamp()
-        appUsageDao.getCorrectAnswersForDate(today)
+        appUsageDao.getCorrectAnswersForDate(today) ?: 0
     }
 
     suspend fun getTotalCorrectAnswers(): Int = withContext(Dispatchers.IO) {
@@ -45,6 +45,6 @@ class CorrectAnswerTracker private constructor(private val appUsageDao: AppUsage
     }
 
     suspend fun getCorrectAnswersForDate(date: Long): Int = withContext(Dispatchers.IO) {
-        appUsageDao.getCorrectAnswersForDate(date)
+        appUsageDao.getCorrectAnswersForDate(date) ?: 0
     }
 } 
