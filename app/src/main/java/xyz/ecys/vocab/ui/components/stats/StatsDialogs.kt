@@ -253,8 +253,8 @@ fun WordListDialog(
                     }
                 } else {
                     LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(0.dp),
-                        contentPadding = PaddingValues(vertical = 0.dp)
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        contentPadding = PaddingValues(0.dp)
                     ) {
                         items(filteredWords) { word ->
                             CompactWordCard(
