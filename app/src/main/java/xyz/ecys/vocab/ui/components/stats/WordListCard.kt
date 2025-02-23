@@ -25,18 +25,12 @@ fun WordListCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val interactionSource = remember { MutableInteractionSource() }
-    
-    Surface(
-        modifier = modifier
-            .height(100.dp)
-            .clickable(
-                interactionSource = interactionSource,
-                indication = null,
-                onClick = onClick
-            ),
-        color = Color(0xFF18191E),
-        shape = MaterialTheme.shapes.medium
+    Card(
+        onClick = onClick,
+        modifier = modifier.height(100.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFF18191E)
+        )
     ) {
         Column(
             modifier = Modifier

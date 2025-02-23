@@ -24,6 +24,53 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import java.util.*
 import android.view.HapticFeedbackConstants
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.graphics.painter.Painter
+
+@Composable
+private fun StatBoxWithIcon(
+    icon: Painter,
+    value: String,
+    label: String,
+    modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null
+) {
+    Card(
+        modifier = modifier
+            .height(100.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFF18191E)
+        ),
+        onClick = onClick ?: {},
+        enabled = onClick != null
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Icon(
+                painter = icon,
+                contentDescription = null,
+                modifier = Modifier.size(24.dp),
+                tint = Color(0xFFFCFCFC)
+            )
+            Text(
+                text = value,
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+                textAlign = TextAlign.Center
+            )
+            Text(
+                text = label,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                textAlign = TextAlign.Center
+            )
+        }
+    }
+}
 
 @Composable
 fun StatisticsContent(
@@ -110,9 +157,8 @@ fun StatisticsContent(
                     icon = AppIcons.boltSolid(),
                     value = formatNumber(totalReviewed),
                     label = "Words Studied",
-                    modifier = Modifier
-                        .weight(1f)
-                        .clickable(onClick = onStudiedClick)
+                    modifier = Modifier.weight(1f),
+                    onClick = onStudiedClick
                 )
                 StatBoxWithIcon(
                     icon = AppIcons.stopwatchSolid(),
@@ -124,9 +170,8 @@ fun StatisticsContent(
                     icon = AppIcons.medalSolid(),
                     value = if (showingCurrentStreak) formatStreak(currentStreak) else formatStreak(bestStreak),
                     label = if (showingCurrentStreak) "Current Streak" else "Best Streak",
-                    modifier = Modifier
-                        .weight(1f)
-                        .clickable(onClick = onStreakClick)
+                    modifier = Modifier.weight(1f),
+                    onClick = onStreakClick
                 )
             }
         }
