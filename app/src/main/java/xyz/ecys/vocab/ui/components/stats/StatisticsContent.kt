@@ -25,6 +25,9 @@ import java.util.*
 import android.view.HapticFeedbackConstants
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.interaction.PressInteraction
+import androidx.compose.ui.graphics.graphicsLayer
 
 @Composable
 private fun StatBoxWithIcon(
@@ -34,14 +37,39 @@ private fun StatBoxWithIcon(
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null
 ) {
+    var isPressed by remember { mutableStateOf(false) }
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.97f else 1f,
+        animationSpec = androidx.compose.animation.core.spring(
+            dampingRatio = 0.75f,    // More bounce
+            stiffness = 400f         // Slower, more natural movement
+        )
+    )
+
     Card(
         modifier = modifier
-            .height(100.dp),
+            .height(100.dp)
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            },
         colors = CardDefaults.cardColors(
             containerColor = Color(0xFF18191E)
         ),
         onClick = onClick ?: {},
-        enabled = onClick != null
+        enabled = onClick != null,
+        interactionSource = remember { MutableInteractionSource() }
+            .also { interactionSource ->
+                LaunchedEffect(interactionSource) {
+                    interactionSource.interactions.collect { interaction ->
+                        when (interaction) {
+                            is PressInteraction.Press -> isPressed = true
+                            is PressInteraction.Release -> isPressed = false
+                            is PressInteraction.Cancel -> isPressed = false
+                        }
+                    }
+                }
+            }
     ) {
         Column(
             modifier = Modifier

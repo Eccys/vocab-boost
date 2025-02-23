@@ -58,6 +58,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.foundation.interaction.PressInteraction
+import androidx.compose.material.ripple.rememberRipple
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.animateFloatAsState
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.collect
 import java.time.LocalDate
@@ -75,6 +83,9 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.foundation.clickable
 
 data class CalendarDay(
     val date: LocalDate,
@@ -84,7 +95,7 @@ data class CalendarDay(
     val dayName: String = date.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.getDefault()).take(2).uppercase()
 }
 
-class MainActivity : ComponentActivity() {
+class MainActivity : ComponentActivity() { // Calendar Card
     private lateinit var wordDatabase: WordDatabase
     private lateinit var appUsageManager: AppUsageManager
 
@@ -188,6 +199,37 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
+                // Play Card
+                var isPlayCardPressed by remember { mutableStateOf(false) }
+                val playCardScale by animateFloatAsState(
+                    targetValue = if (isPlayCardPressed) 0.97f else 1f,
+                    animationSpec = androidx.compose.animation.core.spring(
+                        dampingRatio = 0.75f,    // More bounce
+                        stiffness = 300f         // Slower, more natural movement
+                    )
+                )
+
+                // Add these state variables alongside the playCardPressed state
+                var isKeepGoingPressed by remember { mutableStateOf(false) }
+                var isBookmarksPressed by remember { mutableStateOf(false) }
+
+                // Add these animations alongside the playCardScale animation
+                val keepGoingScale by animateFloatAsState(
+                    targetValue = if (isKeepGoingPressed) 0.97f else 1f,
+                    animationSpec = androidx.compose.animation.core.spring(
+                        dampingRatio = 0.75f,
+                        stiffness = 300f
+                    )
+                )
+
+                val bookmarksScale by animateFloatAsState(
+                    targetValue = if (isBookmarksPressed) 0.97f else 1f,
+                    animationSpec = androidx.compose.animation.core.spring(
+                        dampingRatio = 0.75f,
+                        stiffness = 300f
+                    )
+                )
+
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     containerColor = MaterialTheme.colorScheme.background,
@@ -203,24 +245,46 @@ class MainActivity : ComponentActivity() {
                                 ) 
                             },
                             navigationIcon = {
-                                IconButton(onClick = {
-                                    startActivity(Intent(this@MainActivity, StatsActivity::class.java))
-                                }) {
+                                val interactionSource = remember { MutableInteractionSource() }
+                                val isPressed by interactionSource.collectIsPressedAsState()
+                                val iconTint by animateColorAsState(
+                                    targetValue = if (isPressed) Color(0xFF9A9A9A) else Color(0xFFFCFCFC),
+                                    animationSpec = tween(durationMillis = 300),
+                                    label = "iconTint"
+                                )
+                                IconButton(
+                                    onClick = {
+                                        startActivity(Intent(this@MainActivity, StatsActivity::class.java))
+                                    },
+                                    modifier = Modifier.size(48.dp),
+                                    interactionSource = interactionSource
+                                ) {
                                     Icon(
                                         painter = AppIcons.chartSimpleSolid(),
                                         contentDescription = "Statistics",
-                                        tint = Color(0xFFFCFCFC)
+                                        tint = iconTint
                                     )
                                 }
                             },
                             actions = {
-                                IconButton(onClick = {
-                                    startActivity(Intent(this@MainActivity, SettingsActivity::class.java))
-                                }) {
+                                val interactionSource = remember { MutableInteractionSource() }
+                                val isPressed by interactionSource.collectIsPressedAsState()
+                                val iconTint by animateColorAsState(
+                                    targetValue = if (isPressed) Color(0xFF9A9A9A) else Color(0xFFFCFCFC),
+                                    animationSpec = tween(durationMillis = 300),
+                                    label = "iconTint"
+                                )
+                                IconButton(
+                                    onClick = {
+                                        startActivity(Intent(this@MainActivity, SettingsActivity::class.java))
+                                    },
+                                    modifier = Modifier.size(48.dp),
+                                    interactionSource = interactionSource
+                                ) {
                                     Icon(
                                         painter = AppIcons.cogSolid(),
                                         contentDescription = "Settings",
-                                        tint = Color(0xFFFCFCFC)
+                                        tint = iconTint
                                     )
                                 }
                             },
@@ -278,6 +342,25 @@ class MainActivity : ComponentActivity() {
                                                 .height(104.dp)
                                                 .padding(vertical = 10.dp)
                                         ) {
+                                            // Draw connection to next day if both are active
+                                            val currentIndex = activityDays.value.indexOf(day)
+                                            val nextDay = if (currentIndex < activityDays.value.size - 1) {
+                                                activityDays.value[currentIndex + 1]
+                                            } else null
+                                            
+                                            if (day.isActive && nextDay?.isActive == true) {
+                                                Box(
+                                                    modifier = Modifier
+                                                        .align(Alignment.Center)
+                                                        .offset(x = (itemWidth/2), y = 15.dp)  // Moved down a bit more
+                                                        .width(itemWidth + 4.dp)  // Extended to fully connect circles
+                                                        .height(3.dp)
+                                                        .background(
+                                                            color = Color(0xFFFCFCFC)
+                                                        )
+                                                )
+                                            }
+
                                             Column(
                                                 modifier = Modifier
                                                     .fillMaxSize()
@@ -328,15 +411,35 @@ class MainActivity : ComponentActivity() {
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .graphicsLayer {
+                                    scaleX = playCardScale
+                                    scaleY = playCardScale
+                                }
                                 .background(
                                     color = Color(0xFFFCFCFC),
                                     shape = RoundedCornerShape(20.dp)
                                 )
-                                .padding(16.dp)  // Consistent padding all around
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() }
+                                        .also { interactionSource ->
+                                            LaunchedEffect(interactionSource) {
+                                                interactionSource.interactions.collect { interaction ->
+                                                    when (interaction) {
+                                                        is PressInteraction.Press -> isPlayCardPressed = true
+                                                        is PressInteraction.Release -> isPlayCardPressed = false
+                                                        is PressInteraction.Cancel -> isPlayCardPressed = false
+                                                    }
+                                                }
+                                            }
+                                        },
+                                    indication = null,  // Remove default ripple
+                                    onClick = { }  // Empty click handler - just for the animation
+                                )
+                                .padding(16.dp)
                         ) {
                             Column(
                                 modifier = Modifier.fillMaxWidth(),
-                                verticalArrangement = Arrangement.spacedBy(16.dp)  // Space between rows
+                                verticalArrangement = Arrangement.spacedBy(16.dp)
                             ) {
                                 // Row #1: Content
                                 Row(
@@ -418,14 +521,18 @@ class MainActivity : ComponentActivity() {
                                     }
                                 }
                                 
-                                // Row #2: Button
+                                // Row #2: Button - This is where the quiz should start
                                 Button(
                                     onClick = {
                                         startActivity(Intent(this@MainActivity, QuizActivity::class.java))
                                     },
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .height(50.dp),
+                                        .height(50.dp)
+                                        .graphicsLayer {
+                                            scaleX = keepGoingScale
+                                            scaleY = keepGoingScale
+                                        },
                                     shape = RoundedCornerShape(12.dp),
                                     colors = ButtonDefaults.buttonColors(
                                         containerColor = Color(0xFF1A1A1A)
@@ -433,7 +540,19 @@ class MainActivity : ComponentActivity() {
                                     elevation = ButtonDefaults.buttonElevation(
                                         defaultElevation = 4.dp,
                                         pressedElevation = 8.dp
-                                    )
+                                    ),
+                                    interactionSource = remember { MutableInteractionSource() }
+                                        .also { interactionSource ->
+                                            LaunchedEffect(interactionSource) {
+                                                interactionSource.interactions.collect { interaction ->
+                                                    when (interaction) {
+                                                        is PressInteraction.Press -> isKeepGoingPressed = true
+                                                        is PressInteraction.Release -> isKeepGoingPressed = false
+                                                        is PressInteraction.Cancel -> isKeepGoingPressed = false
+                                                    }
+                                                }
+                                            }
+                                        }
                                 ) {
                                     Text(
                                         text = when {
@@ -454,11 +573,48 @@ class MainActivity : ComponentActivity() {
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(56.dp)
+                                .graphicsLayer {
+                                    scaleX = bookmarksScale
+                                    scaleY = bookmarksScale
+                                },
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFF18191E)
+                            ),
+                            elevation = ButtonDefaults.buttonElevation(
+                                defaultElevation = 0.dp,
+                                pressedElevation = 0.dp
+                            ),
+                            interactionSource = remember { MutableInteractionSource() }
+                                .also { interactionSource ->
+                                    LaunchedEffect(interactionSource) {
+                                        interactionSource.interactions.collect { interaction ->
+                                            when (interaction) {
+                                                is PressInteraction.Press -> isBookmarksPressed = true
+                                                is PressInteraction.Release -> isBookmarksPressed = false
+                                                is PressInteraction.Cancel -> isBookmarksPressed = false
+                                            }
+                                        }
+                                    }
+                                }
                         ) {
-                            Text(
-                                text = "Bookmarks",
-                                style = MaterialTheme.typography.titleLarge
-                            )
+                            Row(
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    painter = AppIcons.bookmarkSolid(),
+                                    contentDescription = null,
+                                    modifier = Modifier.size(20.dp),
+                                    tint = Color(0xFFFCFCFC)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = "Bookmarks",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = Color(0xFFFCFCFC)
+                                )
+                            }
                         }
 
                         Spacer(modifier = Modifier.weight(1f))

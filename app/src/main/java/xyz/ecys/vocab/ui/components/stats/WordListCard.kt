@@ -15,6 +15,8 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.foundation.clickable
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.ui.graphics.graphicsLayer
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -25,12 +27,38 @@ fun WordListCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var isPressed by remember { mutableStateOf(false) }
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.95f else 1f,
+        animationSpec = androidx.compose.animation.core.spring(
+            dampingRatio = 0.75f,    // More bounce
+            stiffness = 400f         // Slower, more natural movement
+        )
+    )
+
     Card(
         onClick = onClick,
-        modifier = modifier.height(100.dp),
+        modifier = modifier
+            .height(100.dp)
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            },
         colors = CardDefaults.cardColors(
             containerColor = Color(0xFF18191E)
-        )
+        ),
+        interactionSource = remember { MutableInteractionSource() }
+            .also { interactionSource ->
+                LaunchedEffect(interactionSource) {
+                    interactionSource.interactions.collect { interaction ->
+                        when (interaction) {
+                            is PressInteraction.Press -> isPressed = true
+                            is PressInteraction.Release -> isPressed = false
+                            is PressInteraction.Cancel -> isPressed = false
+                        }
+                    }
+                }
+            }
     ) {
         Column(
             modifier = Modifier
