@@ -21,8 +21,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import xyz.ecys.vocab.data.WordRepository
+import xyz.ecys.vocab.debug.DebugActivity
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
+import android.content.Intent
 
 @OptIn(ExperimentalMaterial3Api::class)
 class SettingsActivity : ComponentActivity() {
@@ -134,7 +136,20 @@ class SettingsActivity : ComponentActivity() {
                                 containerColor = MaterialTheme.colorScheme.background
                             )
                         )
-                    }
+                    },
+                    floatingActionButton = {
+                        FloatingActionButton(
+                            onClick = {
+                                startActivity(Intent(context, DebugActivity::class.java))
+                            }
+                        ) {
+                            Icon(
+                                painter = AppIcons.sparklesSolid(),
+                                contentDescription = "Debug"
+                            )
+                        }
+                    },
+                    floatingActionButtonPosition = FabPosition.End
                 ) { innerPadding ->
                     Column(
                         modifier = Modifier

@@ -5,11 +5,15 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface WordDao {
-    @Query("SELECT * FROM words")
-    suspend fun getAllWords(): List<Word>
+    @Query("SELECT * FROM words") suspend fun getAllWords(): List<Word>
 
-    @Query("SELECT * FROM words")
-    fun getAllWordsFlow(): Flow<List<Word>>
+    @Query("DELETE FROM words")
+    suspend fun deleteAllWords()
+
+    @Query("DELETE FROM sqlite_sequence WHERE name='words'")
+    suspend fun resetWordsSequence()
+
+    @Query("SELECT * FROM words") fun getAllWordsFlow(): Flow<List<Word>>
 
     @Query("""
         SELECT * FROM words 
@@ -48,19 +52,19 @@ interface WordDao {
     @Query("UPDATE words SET isBookmarked = :isBookmarked WHERE id = :wordId")
     suspend fun updateBookmark(wordId: Int, isBookmarked: Boolean)
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertWord(word: Word)
+    @Insert(onConflict = OnConflictStrategy.REPLACE) suspend fun insertWord(word: Word)
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertWords(words: List<Word>)
+    @Insert(onConflict = OnConflictStrategy.REPLACE) suspend fun insertWords(words: List<Word>)
 
-    @Update
-    suspend fun updateWord(word: Word)
+    @Update suspend fun updateWord(word: Word)
 
     @Query("""
-        SELECT * FROM words 
-        WHERE nextReviewDate <= :currentTime 
-        ORDER BY easeFactor ASC, lastReviewed ASC
+    SELECT * FROM words 
+    WHERE nextReviewDate <= :currentTime 
+    ORDER BY 
+      ((:currentTime - nextReviewDate) * 1.0 / ((CASE WHEN interval = 0 THEN 1 ELSE interval END) * 86400000)) DESC,
+      easeFactor ASC, 
+      lastReviewed ASC
     """)
     suspend fun getOverdueWords(currentTime: Long): List<Word>
 
@@ -73,52 +77,29 @@ interface WordDao {
 
     @Query("""
         UPDATE words 
-        SET timesReviewed = CASE 
-                WHEN :wasCorrect = 0 THEN 0 
-                ELSE timesReviewed + 1 
-            END,
+        SET timesReviewed = timesReviewed + 1,
             timesCorrect = timesCorrect + :wasCorrect,
             lastReviewed = :timestamp,
-            easeFactor = CASE
-                WHEN :wasCorrect = 1 THEN 
-                    MAX(1.3, easeFactor + (0.1 - (5 - :quality) * (0.08 + (5 - :quality) * 0.02)))
-                ELSE easeFactor
-                END,
-            interval = CASE
-                WHEN :wasCorrect = 0 THEN 1
-                WHEN timesReviewed = 0 THEN 1
-                WHEN timesReviewed = 1 THEN 2
-                ELSE CAST(interval * CASE
-                        WHEN :wasCorrect = 1 THEN easeFactor
-                        ELSE 1
-                        END AS INTEGER)
-                END,
-            nextReviewDate = :timestamp + (
-                CASE
-                    WHEN :wasCorrect = 0 THEN 86400000  -- 1 day in milliseconds
-                    WHEN timesReviewed = 0 THEN 86400000
-                    WHEN timesReviewed = 1 THEN 172800000  -- 2 days in milliseconds
-                    ELSE CAST(interval * CASE
-                            WHEN :wasCorrect = 1 THEN easeFactor
-                            ELSE 1
-                            END * 86400000 AS INTEGER)
-                    END
-            ),
-            quality = CASE
-                WHEN :wasCorrect = 0 THEN 0
-                WHEN :responseTime < 3000 THEN 5  -- Fast: < 3 seconds
-                WHEN :responseTime < 5000 THEN 4  -- Medium: 3-5 seconds
-                ELSE 3                            -- Slow: > 5 seconds
-            END
+            easeFactor = :easeFactor,
+            interval = :interval,
+            repetitionCount = :repetitionCount,
+            nextReviewDate = :nextReviewDate,
+            quality = :quality
         WHERE id = :wordId
     """)
     suspend fun updateWordStats(
         wordId: Int,
         wasCorrect: Int,
         timestamp: Long,
-        responseTime: Long,
-        quality: Int
+        quality: Int,
+        easeFactor: Float,
+        interval: Int,
+        repetitionCount: Int,
+        nextReviewDate: Long
     )
+
+    @Query("SELECT * FROM words WHERE id = :wordId LIMIT 1")
+    suspend fun getWordById(wordId: Int): Word?
 
     @Query("""
         UPDATE words 
@@ -164,4 +145,4 @@ data class CategoryStats(
     val total: Int,
     val studied: Int,
     val accuracy: Float
-) 
+)

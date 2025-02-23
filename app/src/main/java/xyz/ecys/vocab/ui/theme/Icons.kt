@@ -86,4 +86,14 @@ object AppIcons {
     fun xSolid(): Painter {
         return painterResource(id = R.drawable.x_solid)
     }
+
+    @Composable
+    fun bugSolid(): Painter {
+        return painterResource(id = R.drawable.bug_solid)
+    }
+
+    @Composable
+    fun sparklesSolid(): Painter {
+        return painterResource(id = R.drawable.sparkles_solid)
+    }
 } 

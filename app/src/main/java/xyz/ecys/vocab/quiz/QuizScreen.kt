@@ -96,6 +96,9 @@ fun QuizScreen(
             
             val now = System.currentTimeMillis()
             val responseTime = now - questionStartTime
+            android.util.Log.d("QuizTimer", "Question start time: $questionStartTime")
+            android.util.Log.d("QuizTimer", "Answer time: $now")
+            android.util.Log.d("QuizTimer", "Response time: $responseTime")
             
             if (isCorrect) {
                 coroutineScope.launch {
@@ -223,6 +226,7 @@ fun QuizScreen(
             currentSynonymSet = newSynonymSet
             loadNextBatch()
             questionStartTime = System.currentTimeMillis()
+            android.util.Log.d("QuizTimer", "Setting initial question start time: $questionStartTime")
         }
     }
 

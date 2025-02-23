@@ -42,6 +42,10 @@
             android:name=".SettingsActivity"
             android:exported="false"
             android:theme="@style/Theme.VocabularyBooster" />
+        <activity
+            android:name=".debug.DebugActivity"
+            android:exported="false"
+            android:theme="@style/Theme.VocabularyBooster" />
     </application>
 
 </manifest>
