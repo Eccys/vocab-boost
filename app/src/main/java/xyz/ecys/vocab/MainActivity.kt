@@ -65,7 +65,6 @@ import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.core.animateFloatAsState
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.collect
 import java.time.LocalDate
@@ -83,6 +82,9 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.animateColorAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.foundation.clickable
@@ -248,7 +250,7 @@ class MainActivity : ComponentActivity() { // Calendar Card
                                 val interactionSource = remember { MutableInteractionSource() }
                                 val isPressed by interactionSource.collectIsPressedAsState()
                                 val iconTint by animateColorAsState(
-                                    targetValue = if (isPressed) Color(0xFF9A9A9A) else Color(0xFFFCFCFC),
+                                    targetValue = if (isPressed) Color(0xFF6A6A6A) else Color(0xFFFCFCFC),
                                     animationSpec = tween(durationMillis = 300),
                                     label = "iconTint"
                                 )
@@ -270,7 +272,7 @@ class MainActivity : ComponentActivity() { // Calendar Card
                                 val interactionSource = remember { MutableInteractionSource() }
                                 val isPressed by interactionSource.collectIsPressedAsState()
                                 val iconTint by animateColorAsState(
-                                    targetValue = if (isPressed) Color(0xFF9A9A9A) else Color(0xFFFCFCFC),
+                                    targetValue = if (isPressed) Color(0xFF6A6A6A) else Color(0xFFFCFCFC),
                                     animationSpec = tween(durationMillis = 300),
                                     label = "iconTint"
                                 )
