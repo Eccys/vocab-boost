@@ -9,7 +9,10 @@ import java.time.ZoneId
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 
-class AppUsageManager private constructor(private val appUsageDao: AppUsageDao) {
+class AppUsageManager private constructor(
+    private val appUsageDao: AppUsageDao,
+    private val correctAnswerTracker: CorrectAnswerTracker
+) {
     private var sessionStartTime: Long = 0
     private var isQuizSession: Boolean = false
 
@@ -20,7 +23,10 @@ class AppUsageManager private constructor(private val appUsageDao: AppUsageDao) 
         fun getInstance(context: Context): AppUsageManager {
             return INSTANCE ?: synchronized(this) {
                 val database = WordDatabase.getDatabase(context)
-                AppUsageManager(database.appUsageDao()).also {
+                AppUsageManager(
+                    database.appUsageDao(),
+                    CorrectAnswerTracker.getInstance(context)
+                ).also {
                     INSTANCE = it
                 }
             }
@@ -45,11 +51,7 @@ class AppUsageManager private constructor(private val appUsageDao: AppUsageDao) 
         sessionStartTime = System.currentTimeMillis()
     }
 
-    suspend fun recordCorrectAnswer() = withContext(Dispatchers.IO) {
-        val today = getStartOfDayTimestamp()
-        appUsageDao.recordUsage(AppUsage(date = today))
-        appUsageDao.incrementCorrectAnswers(today)
-    }
+    suspend fun recordCorrectAnswer() = correctAnswerTracker.recordCorrectAnswer()
 
     suspend fun endSession() = withContext(Dispatchers.IO) {
         if (sessionStartTime == 0L) return@withContext
@@ -80,14 +82,9 @@ class AppUsageManager private constructor(private val appUsageDao: AppUsageDao) 
         appUsageDao.getTimeSpentSince(today)
     }
 
-    suspend fun getTotalCorrectAnswers(): Int = withContext(Dispatchers.IO) {
-        appUsageDao.getTotalCorrectAnswers()
-    }
+    suspend fun getTotalCorrectAnswers() = correctAnswerTracker.getTotalCorrectAnswers()
 
-    suspend fun getCorrectAnswersToday(): Int = withContext(Dispatchers.IO) {
-        val today = getStartOfDayTimestamp()
-        appUsageDao.getCorrectAnswersForDate(today)
-    }
+    suspend fun getCorrectAnswersToday() = correctAnswerTracker.getCorrectAnswersToday()
 
     fun getUsageBetweenDates(startDate: Long, endDate: Long): Flow<List<AppUsage>> {
         return appUsageDao.getUsageBetweenDates(startDate, endDate)
@@ -98,18 +95,9 @@ class AppUsageManager private constructor(private val appUsageDao: AppUsageDao) 
             val today = getStartOfDayTimestamp()
             val yesterday = today - (24 * 60 * 60 * 1000)
             
-            val todayAnswers = try {
-                appUsageDao.getCorrectAnswersForDate(today)
-            } catch (e: Exception) {
-                0
-            }
+            val todayAnswers = correctAnswerTracker.getCorrectAnswersForDate(today)
+            val yesterdayAnswers = correctAnswerTracker.getCorrectAnswersForDate(yesterday)
             
-            val yesterdayAnswers = try {
-                appUsageDao.getCorrectAnswersForDate(yesterday)
-            } catch (e: Exception) {
-                0
-            }
-
             android.util.Log.d("StreakDebug", "Today's timestamp: $today, answers: $todayAnswers")
             android.util.Log.d("StreakDebug", "Yesterday's timestamp: $yesterday, answers: $yesterdayAnswers")
 
@@ -121,11 +109,7 @@ class AppUsageManager private constructor(private val appUsageDao: AppUsageDao) 
                 android.util.Log.d("StreakDebug", "Both days active, starting streak at 2")
                 var checkDay = yesterday - (24 * 60 * 60 * 1000) // Start checking from 2 days ago
                 while (true) {
-                    val answers = try {
-                        appUsageDao.getCorrectAnswersForDate(checkDay)
-                    } catch (e: Exception) {
-                        0
-                    }
+                    val answers = correctAnswerTracker.getCorrectAnswersForDate(checkDay)
                     android.util.Log.d("StreakDebug", "Checking day: $checkDay, answers: $answers")
                     if (answers > 0) {
                         streak++

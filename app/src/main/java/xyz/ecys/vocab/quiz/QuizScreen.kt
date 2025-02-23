@@ -1,19 +1,17 @@
-@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
-
-package xyz.ecys.vocab
+package xyz.ecys.vocab.quiz
 
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
-import android.os.Bundle
 import android.view.HapticFeedbackConstants
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -26,196 +24,15 @@ import androidx.compose.ui.text.capitalize
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
-import xyz.ecys.vocab.data.Word
-import xyz.ecys.vocab.data.WordRepository
-import xyz.ecys.vocab.data.AppUsageManager
-import xyz.ecys.vocab.data.CorrectAnswerTracker
-import xyz.ecys.vocab.ui.theme.VocabularyBoosterTheme
-import xyz.ecys.vocab.ui.theme.AppIcons
-import androidx.lifecycle.lifecycleScope
-import androidx.compose.animation.core.*
-import androidx.compose.animation.*
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.layout.defaultMinSize
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.shrinkVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.animation.animateContentSize
-import xyz.ecys.vocab.ui.theme.AppAnimations
-import androidx.compose.foundation.BorderStroke
-import xyz.ecys.vocab.ui.theme.Primary80
-import xyz.ecys.vocab.ui.theme.Background
-import xyz.ecys.vocab.ui.theme.Surface
-import xyz.ecys.vocab.ui.theme.White
-import xyz.ecys.vocab.ui.theme.Success
-import xyz.ecys.vocab.ui.theme.Error
-import xyz.ecys.vocab.data.QuizResult
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.launch
+import xyz.ecys.vocab.QuizResultsActivity
+import xyz.ecys.vocab.data.*
+import xyz.ecys.vocab.ui.theme.*
 
-class QuizActivity : ComponentActivity() {
-    private lateinit var wordRepository: WordRepository
-    private lateinit var appUsageManager: AppUsageManager
-    private lateinit var correctAnswerTracker: CorrectAnswerTracker
-    private var isBookmarkMode = false
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        wordRepository = WordRepository.getInstance(this)
-        appUsageManager = AppUsageManager.getInstance(this)
-        correctAnswerTracker = CorrectAnswerTracker.getInstance(this)
-        isBookmarkMode = intent.getStringExtra("mode") == "bookmarks"
-
-        // Start tracking quiz session
-        appUsageManager.startQuizSession()
-
-        // Initialize database with sample words if empty
-        lifecycleScope.launch {
-            if (wordRepository.getAllWords().isEmpty()) {
-                wordRepository.insertInitialWords()
-            }
-        }
-
-        setContent {
-            VocabularyBoosterTheme {
-                val currentWord = remember { mutableStateOf<Word?>(null) }
-                val coroutineScope = rememberCoroutineScope()
-                val lives = remember { mutableStateOf(3) }
-                
-                // Add these state variables
-                var selectedAnswer by remember { mutableStateOf<String?>(null) }
-                var showNextButton by remember { mutableStateOf(false) }
-                var expandedExamples by remember { mutableStateOf(setOf<String>()) }
-                
-                Scaffold(
-                    modifier = Modifier.fillMaxSize(),
-                    topBar = {
-                        QuizTopBar(
-                            onBackClick = { 
-                                lifecycleScope.launch {
-                                    appUsageManager.endSession()
-                                }
-                                finish() 
-                            },
-                            currentWord = currentWord.value,
-                            onBookmarkClick = { word ->
-                                coroutineScope.launch {
-                                    wordRepository.updateBookmark(word.id, !word.isBookmarked)
-                                    currentWord.value = word.copy(isBookmarked = !word.isBookmarked)
-                                }
-                            },
-                            lives = lives.value
-                        )
-                    }
-                ) { innerPadding ->
-                    QuizScreen(
-                        modifier = Modifier.padding(innerPadding),
-                        wordRepository = wordRepository,
-                        appUsageManager = appUsageManager,
-                        isBookmarkMode = isBookmarkMode,
-                        currentWord = currentWord,
-                        lives = lives,
-                        onGameOver = {
-                            lifecycleScope.launch {
-                                appUsageManager.endSession()
-                            }
-                        }
-                    )
-                }
-            }
-        }
-    }
-
-    override fun onPause() {
-        super.onPause()
-        lifecycleScope.launch {
-            appUsageManager.endSession()
-        }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        appUsageManager.startQuizSession()
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun QuizTopBar(
-    onBackClick: () -> Unit,
-    currentWord: Word?,
-    onBookmarkClick: (Word) -> Unit,
-    lives: Int
-) {
-    TopAppBar(
-        title = { 
-            Text(
-                text = "Synonyms",
-                style = MaterialTheme.typography.titleLarge.copy(
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFFFCFCFC)
-                )
-            ) 
-        },
-        navigationIcon = {
-            IconButton(onClick = onBackClick) {
-                Icon(
-                    painter = AppIcons.arrowLeft(),
-                    contentDescription = "Back"
-                )
-            }
-        },
-        actions = {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                repeat(3) { index ->
-                    Icon(
-                        painter = if (index < lives) AppIcons.heartSolid() else AppIcons.heartCrackSolid(),
-                        contentDescription = null,
-                        modifier = Modifier.size(24.dp),
-                        tint = Color(0xFFED333B)
-                    )
-                }
-                if (currentWord != null) {
-                    IconButton(
-                        onClick = { onBookmarkClick(currentWord) }
-                    ) {
-                        Icon(
-                            painter = if (currentWord.isBookmarked) AppIcons.bookmarkSolid() else AppIcons.bookmarkOutline(),
-                            contentDescription = if (currentWord.isBookmarked) "Remove bookmark" else "Add bookmark",
-                            tint = if (currentWord.isBookmarked) MaterialTheme.colorScheme.tertiary else Color(0xFFFCFCFC)
-                        )
-                    }
-                }
-            }
-        },
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.background
-        )
-    )
-}
-
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun QuizScreen(
     modifier: Modifier = Modifier,
@@ -300,25 +117,32 @@ fun QuizScreen(
                 )
             }
             
-            quizResults = quizResults + QuizResult(
+            val newResult = QuizResult(
                 word = currentWord.value!!.word,
                 definition = currentWord.value!!.definition,
                 userChoice = selectedSynonym,
                 correctChoice = correctSynonym,
                 isCorrect = isCorrect
             )
+            quizResults = quizResults + newResult
 
             showNextButton = true
 
             if (lives.value <= 0) {
                 // Game over, show results
-                onGameOver()
-                val intent = Intent(context, QuizResultsActivity::class.java).apply {
-                    putParcelableArrayListExtra("results", ArrayList(quizResults))
-                }
-                context.startActivity(intent)
-                if (context is ComponentActivity) {
-                    context.finish()
+                coroutineScope.launch {
+                    // End the session before transitioning
+                    appUsageManager.endSession()
+                    
+                    // Create intent with results
+                    val intent = Intent(context, QuizResultsActivity::class.java).apply {
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        putParcelableArrayListExtra("results", ArrayList(quizResults))
+                    }
+                    
+                    // Start the activity and notify game over
+                    context.startActivity(intent)
+                    onGameOver()
                 }
             }
         }
@@ -486,10 +310,7 @@ fun QuizScreen(
                         defaultElevation = 2.dp,
                         pressedElevation = 4.dp,
                         disabledElevation = 0.dp
-                    ),
-                    border = if (selectedAnswer == null) {
-                        BorderStroke(1.dp, White.copy(alpha = 0.12f))
-                    } else null
+                    )
                 ) {
                     Text(
                         text = optionSynonym.lowercase(),
@@ -578,34 +399,4 @@ fun QuizScreen(
             }
         }
     }
-}
-
-private fun generateOptions(words: List<Word>, currentWord: Word): Pair<List<String>, Int> {
-    // Choose which synonym (1-3) to use for the correct answer
-    val correctSynonymNumber = (1..3).random()
-    
-    // Get the correct answer based on the chosen synonym number
-    val correctAnswer = when (correctSynonymNumber) {
-        1 -> currentWord.synonym1
-        2 -> currentWord.synonym2
-        else -> currentWord.synonym3
-    }
-    
-    // Create list of wrong answers by getting random synonyms from other words
-    val wrongAnswers = words
-        .filter { it.id != currentWord.id } // Exclude the current word
-        .map { word ->
-            // For each word, randomly select one of its synonyms
-            val randomSynonymNumber = (1..3).random()
-            when (randomSynonymNumber) {
-                1 -> word.synonym1
-                2 -> word.synonym2
-                else -> word.synonym3
-            }
-        }
-    
-    // Combine all answers and shuffle
-    val allOptions = (wrongAnswers + correctAnswer).shuffled()
-    
-    return Pair(allOptions, correctSynonymNumber)
-}
+} 

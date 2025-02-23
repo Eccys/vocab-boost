@@ -99,6 +99,10 @@ class MainActivity : ComponentActivity() { // Calendar Card
     private lateinit var wordDatabase: WordDatabase
     private lateinit var appUsageManager: AppUsageManager
 
+    // Add state variables at class level
+    private var wordsToday = mutableStateOf(0)
+    private var dailyGoal = mutableStateOf(20)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         wordDatabase = WordDatabase.getDatabase(this)
@@ -171,11 +175,11 @@ class MainActivity : ComponentActivity() { // Calendar Card
 
                 // Get daily goal from preferences
                 val prefs = getSharedPreferences("vocab_settings", Context.MODE_PRIVATE)
-                var dailyGoal by remember { 
-                    mutableStateOf(prefs.getInt("daily_goal", 10))
+                dailyGoal = remember { 
+                    mutableStateOf(prefs.getInt("daily_goal", 20))
                 }
-                var wordsToday by remember { mutableStateOf(0) }
-                var goalInput by remember { mutableStateOf(dailyGoal.toString()) }
+                wordsToday = remember { mutableStateOf(0) }
+                var goalInput by remember { mutableStateOf(dailyGoal.value.toString()) }
                 var totalReviewed by remember { mutableStateOf(0) }
                 var timeSpentToday by remember { mutableStateOf(0L) }
                 var totalTimeSpent by remember { mutableStateOf(0L) }
@@ -184,14 +188,10 @@ class MainActivity : ComponentActivity() { // Calendar Card
                 // Load statistics
                 LaunchedEffect(Unit) {
                     try {
-                        wordsToday = appUsageManager.getCorrectAnswersToday()
-                        totalReviewed = wordDatabase.wordDao().countWordsWithReviews()
-                        timeSpentToday = appUsageManager.getTimeSpentToday()
-                        totalTimeSpent = appUsageManager.getTotalTimeSpent()
-                        bestStreak = appUsageManager.getBestStreak()
+                        updateStatistics()
                     } catch (e: Exception) {
                         println("Error loading statistics: ${e.message}")
-                        wordsToday = 0
+                        wordsToday.value = 0
                         totalReviewed = 0
                         timeSpentToday = 0
                         totalTimeSpent = 0
@@ -459,17 +459,17 @@ class MainActivity : ComponentActivity() { // Calendar Card
                                         )
                                         
                                         Text(
-                                            text = "$wordsToday/$dailyGoal",
+                                            text = "${wordsToday.value}/${dailyGoal.value}",
                                             style = MaterialTheme.typography.headlineLarge,
                                             color = Color(0xFF1A1A1A),
                                             fontWeight = FontWeight.Bold
                                         )
                                         
                                         Text(
-                                            text = if (wordsToday >= dailyGoal) {
+                                            text = if (wordsToday.value >= dailyGoal.value) {
                                                 "Daily target achieved"
                                             } else {
-                                                val remainingWords = dailyGoal - wordsToday
+                                                val remainingWords = dailyGoal.value - wordsToday.value
                                                 val timeToComplete = remainingWords * 5L * 1000
                                                 "${formatTime(timeToComplete)} to complete"
                                             },
@@ -486,7 +486,7 @@ class MainActivity : ComponentActivity() { // Calendar Card
                                     ) {
                                         Canvas(modifier = Modifier.fillMaxSize()) {
                                             val strokeWidth = 11.dp.toPx()
-                                            val progress = (wordsToday.toFloat() / dailyGoal).coerceIn(0f, 1f)
+                                            val progress = (wordsToday.value.toFloat() / dailyGoal.value).coerceIn(0f, 1f)
                                             
                                             val arcSize = size.width - strokeWidth
                                             val topLeft = strokeWidth / 2
@@ -513,7 +513,7 @@ class MainActivity : ComponentActivity() { // Calendar Card
                                         }
                                         
                                         Text(
-                                            text = "${(wordsToday.toFloat() / dailyGoal * 100).toInt()}%",
+                                            text = "${((wordsToday.value.toFloat() / dailyGoal.value) * 100).toInt()}%",
                                             style = MaterialTheme.typography.titleMedium,
                                             color = Color(0xFF1A1A1A),
                                             fontWeight = FontWeight.ExtraBold
@@ -556,7 +556,7 @@ class MainActivity : ComponentActivity() { // Calendar Card
                                 ) {
                                     Text(
                                         text = when {
-                                            wordsToday == 0 -> "Play"
+                                            wordsToday.value == 0 -> "Play"
                                             else -> "Keep going"
                                         },
                                         style = MaterialTheme.typography.titleMedium,
@@ -634,6 +634,17 @@ class MainActivity : ComponentActivity() { // Calendar Card
     override fun onResume() {
         super.onResume()
         appUsageManager.startSession()
+        
+        // Update statistics when returning to the activity
+        lifecycleScope.launch {
+            updateStatistics()
+        }
+    }
+
+    private suspend fun updateStatistics() {
+        wordsToday.value = wordDatabase.wordDao().countWordsReviewedToday()
+        val prefs = getSharedPreferences("vocab_settings", Context.MODE_PRIVATE)
+        dailyGoal.value = prefs.getInt("daily_goal", 20)
     }
 }
 

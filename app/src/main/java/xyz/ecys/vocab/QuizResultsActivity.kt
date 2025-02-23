@@ -30,15 +30,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.input.pointer.pointerInput
-
-@Parcelize
-data class QuizResult(
-    val word: String,
-    val definition: String,
-    val userChoice: String,
-    val correctChoice: String,
-    val isCorrect: Boolean
-) : Parcelable
+import xyz.ecys.vocab.data.QuizResult
 
 @OptIn(ExperimentalMaterial3Api::class)
 class QuizResultsActivity : ComponentActivity() {
@@ -47,7 +39,12 @@ class QuizResultsActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         wordRepository = WordRepository.getInstance(this)
-        val results = intent.getParcelableArrayListExtra<QuizResult>("results") ?: emptyList()
+        val results = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            intent.getParcelableArrayListExtra("results", QuizResult::class.java) ?: emptyList()
+        } else {
+            @Suppress("DEPRECATION")
+            intent.getParcelableArrayListExtra<QuizResult>("results") ?: emptyList()
+        }
 
         setContent {
             VocabularyBoosterTheme {

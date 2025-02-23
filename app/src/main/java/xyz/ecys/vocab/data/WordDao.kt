@@ -135,6 +135,14 @@ interface WordDao {
     @Query("SELECT COUNT(*) FROM words WHERE timesReviewed > 0")
     suspend fun countWordsWithReviews(): Int
 
+    @Query("""
+        SELECT COUNT(DISTINCT id) FROM words 
+        WHERE lastReviewed >= (
+            strftime('%s', date('now', 'localtime', 'start of day')) * 1000
+        )
+    """)
+    suspend fun countWordsReviewedToday(): Int
+
     @Query("SELECT * FROM words WHERE nextReviewDate <= :now AND nextReviewDate > 0 ORDER BY easeFactor ASC")
     fun getOverdueWordsFlow(now: Long = System.currentTimeMillis()): Flow<List<Word>>
 

@@ -53,7 +53,7 @@ fun GoalDialog(
             confirmButton = {
                 TextButton(
                     onClick = {
-                        onSave(goalInput.toIntOrNull() ?: 10)
+                        onSave(goalInput.toIntOrNull() ?: 20)
                         onDismiss()
                     }
                 ) {
