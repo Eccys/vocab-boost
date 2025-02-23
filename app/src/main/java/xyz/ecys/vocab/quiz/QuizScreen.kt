@@ -78,13 +78,6 @@ fun QuizScreen(
         if (selectedAnswer == null) {
             selectedAnswer = selectedSynonym
             
-            // Find which word this synonym belongs to
-            val selectedWord = currentBatch.first { word ->
-                selectedSynonym == word.synonym1 ||
-                selectedSynonym == word.synonym2 ||
-                selectedSynonym == word.synonym3
-            }
-            
             // Use the tracked currentSynonymSet to determine the correct answer
             val correctSynonym = when (currentSynonymSet) {
                 1 -> currentWord.value!!.synonym1

@@ -55,11 +55,10 @@ class AppUsageManager private constructor(
 
     suspend fun endSession() = withContext(Dispatchers.IO) {
         if (sessionStartTime == 0L) return@withContext
-
         val now = System.currentTimeMillis()
         val duration = now - sessionStartTime
         val today = getStartOfDayTimestamp()
-
+        
         // Record usage for today
         appUsageDao.recordUsage(AppUsage(date = today))
         // Update duration
@@ -91,6 +90,8 @@ class AppUsageManager private constructor(
     }
 
     suspend fun getCurrentStreak(): Int = withContext(Dispatchers.IO) {
+        // Checks consecutive days with activity
+        // Returns the current streak count
         try {
             android.util.Log.d("StreakDebug", "Starting getCurrentStreak calculation...")
             val today = getStartOfDayTimestamp()
@@ -147,6 +148,8 @@ class AppUsageManager private constructor(
     }
 
     suspend fun getBestStreak(): Int = withContext(Dispatchers.IO) {
+        // Gets all usage data and calculates the best streak
+        // Returns the highest streak achieved
         try {
             // Get all usage data
             val usages = appUsageDao.getUsageBetweenDates(0, System.currentTimeMillis()).first()

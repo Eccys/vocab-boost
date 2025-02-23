@@ -41,7 +41,7 @@ data class Word(
 
 @Entity(tableName = "app_usage")
 data class AppUsage(
-        @PrimaryKey val date: Long, // Store date as timestamp for easier SQLite storage
+        @PrimaryKey val date: Long, // Store date as timestamp
         val duration: Long = 0, // Store duration in milliseconds
         val sessionCount: Int = 0, // Number of quiz sessions on this date
         val correctAnswers: Int = 0 // Number of correct answers on this date
