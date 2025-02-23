@@ -74,7 +74,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.ui.unit.offset
+import androidx.compose.ui.platform.LocalDensity
 
 data class CalendarDay(
     val date: LocalDate,
@@ -324,118 +324,108 @@ class MainActivity : ComponentActivity() {
                             }
                         }
 
-                        // Play Button
+                        // Play Card
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(180.dp)
                                 .background(
                                     color = Color(0xFFFCFCFC),
                                     shape = RoundedCornerShape(20.dp)
                                 )
-                                .padding(horizontal = 16.dp)
+                                .padding(16.dp)  // Consistent padding all around
                         ) {
                             Column(
-                                modifier = Modifier.fillMaxSize(),
-                                horizontalAlignment = Alignment.Start,
-                                verticalArrangement = Arrangement.spacedBy(0.dp)
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalArrangement = Arrangement.spacedBy(16.dp)  // Space between rows
                             ) {
-                                Spacer(modifier = Modifier.height(16.dp))
-                                
-                                Column(
-                                    verticalArrangement = Arrangement.spacedBy(2.dp),
-                                    modifier = Modifier.weight(1f)
+                                // Row #1: Content
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Text(
-                                        text = "Today",
-                                        style = MaterialTheme.typography.titleSmall,
-                                        fontWeight = FontWeight.ExtraBold,
-                                        color = Color.Gray
-                                    )
-                                    
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .weight(1f)
-                                            .padding(vertical = 8.dp)
+                                    // Left Column: Text content
+                                    Column(
+                                        verticalArrangement = Arrangement.spacedBy(2.dp)
                                     ) {
-                                        Row(
-                                            modifier = Modifier.fillMaxSize(),
-                                            horizontalArrangement = Arrangement.SpaceBetween,
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            Column(
-                                                horizontalAlignment = Alignment.Start,
-                                                verticalArrangement = Arrangement.spacedBy(4.dp)
-                                            ) {
-                                                Text(
-                                                    text = "$wordsToday/$dailyGoal",
-                                                    style = MaterialTheme.typography.headlineLarge,
-                                                    color = Color(0xFF1A1A1A),
-                                                    fontWeight = FontWeight.Bold
-                                                )
-                                                
-                                                if (wordsToday < dailyGoal) {
-                                                    val remainingWords = dailyGoal - wordsToday
-                                                    val timeToComplete = remainingWords * 5L * 1000
-                                                    Text(
-                                                        text = "${formatTime(timeToComplete)} to complete",
-                                                        style = MaterialTheme.typography.titleSmall,
-                                                        fontWeight = FontWeight.ExtraBold,
-                                                        color = Color.Gray
-                                                    )
-                                                }
-                                            }
+                                        Text(
+                                            text = "Today",
+                                            style = MaterialTheme.typography.titleSmall,
+                                            fontWeight = FontWeight.ExtraBold,
+                                            color = Color.Gray
+                                        )
+                                        
+                                        Text(
+                                            text = "$wordsToday/$dailyGoal",
+                                            style = MaterialTheme.typography.headlineLarge,
+                                            color = Color(0xFF1A1A1A),
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                        
+                                        Text(
+                                            text = if (wordsToday >= dailyGoal) {
+                                                "Daily target achieved"
+                                            } else {
+                                                val remainingWords = dailyGoal - wordsToday
+                                                val timeToComplete = remainingWords * 5L * 1000
+                                                "${formatTime(timeToComplete)} to complete"
+                                            },
+                                            style = MaterialTheme.typography.titleSmall,
+                                            fontWeight = FontWeight.ExtraBold,
+                                            color = Color.Gray
+                                        )
+                                    }
+                                    
+                                    // Right Column: Progress Circle
+                                    Box(
+                                        modifier = Modifier.size(90.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Canvas(modifier = Modifier.fillMaxSize()) {
+                                            val strokeWidth = 11.dp.toPx()
+                                            val progress = (wordsToday.toFloat() / dailyGoal).coerceIn(0f, 1f)
                                             
-                                            Box(
-                                                modifier = Modifier.size(64.dp),
-                                                contentAlignment = Alignment.Center
-                                            ) {
-                                                Canvas(modifier = Modifier.fillMaxSize()) {
-                                                    val strokeWidth = 10.dp.toPx()
-                                                    val progress = (wordsToday.toFloat() / dailyGoal).coerceIn(0f, 1f)
-                                                    
-                                                    drawArc(
-                                                        color = Color(0xFFE8E8E8),
-                                                        startAngle = -90f,
-                                                        sweepAngle = 360f,
-                                                        useCenter = false,
-                                                        style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
-                                                    )
-                                                    
-                                                    drawArc(
-                                                        color = Color(0xFF1A1A1A),
-                                                        startAngle = -90f,
-                                                        sweepAngle = 360f * progress,
-                                                        useCenter = false,
-                                                        style = Stroke(width = strokeWidth, cap = StrokeCap.Round)
-                                                    )
-                                                }
-                                                
-                                                Box(
-                                                    contentAlignment = Alignment.Center
-                                                ) {
-                                                    Text(
-                                                        text = "${(wordsToday.toFloat() / dailyGoal * 100).toInt()}%",
-                                                        style = MaterialTheme.typography.titleSmall,
-                                                        color = Color(0xFF1A1A1A),
-                                                        fontWeight = FontWeight.ExtraBold
-                                                    )
-                                                }
-                                            }
+                                            val arcSize = size.width - strokeWidth
+                                            val topLeft = strokeWidth / 2
+                                            
+                                            drawArc(
+                                                color = Color(0xFFE8E8E8),
+                                                startAngle = -90f,
+                                                sweepAngle = 360f,
+                                                useCenter = false,
+                                                style = Stroke(width = strokeWidth, cap = StrokeCap.Round),
+                                                size = androidx.compose.ui.geometry.Size(arcSize, arcSize),
+                                                topLeft = androidx.compose.ui.geometry.Offset(topLeft, topLeft)
+                                            )
+                                            
+                                            drawArc(
+                                                color = Color(0xFF1A1A1A),
+                                                startAngle = -90f,
+                                                sweepAngle = 360f * progress,
+                                                useCenter = false,
+                                                style = Stroke(width = strokeWidth, cap = StrokeCap.Round),
+                                                size = androidx.compose.ui.geometry.Size(arcSize, arcSize),
+                                                topLeft = androidx.compose.ui.geometry.Offset(topLeft, topLeft)
+                                            )
                                         }
+                                        
+                                        Text(
+                                            text = "${(wordsToday.toFloat() / dailyGoal * 100).toInt()}%",
+                                            style = MaterialTheme.typography.titleMedium,
+                                            color = Color(0xFF1A1A1A),
+                                            fontWeight = FontWeight.ExtraBold
+                                        )
                                     }
                                 }
                                 
-                                Spacer(modifier = Modifier.height(16.dp))
-                                
+                                // Row #2: Button
                                 Button(
                                     onClick = {
                                         startActivity(Intent(this@MainActivity, QuizActivity::class.java))
                                     },
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .height(48.dp),
+                                        .height(50.dp),
                                     shape = RoundedCornerShape(12.dp),
                                     colors = ButtonDefaults.buttonColors(
                                         containerColor = Color(0xFF1A1A1A)
@@ -448,7 +438,6 @@ class MainActivity : ComponentActivity() {
                                     Text(
                                         text = when {
                                             wordsToday == 0 -> "Play"
-                                            wordsToday >= dailyGoal -> "Daily target achieved"
                                             else -> "Keep going"
                                         },
                                         style = MaterialTheme.typography.titleMedium,
