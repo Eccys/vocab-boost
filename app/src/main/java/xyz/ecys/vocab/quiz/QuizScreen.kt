@@ -31,6 +31,26 @@ import kotlinx.coroutines.launch
 import xyz.ecys.vocab.QuizResultsActivity
 import xyz.ecys.vocab.data.*
 import xyz.ecys.vocab.ui.theme.*
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -55,9 +75,35 @@ fun QuizScreen(
     var showNextButton by remember { mutableStateOf(false) }
     var expandedExamples by remember { mutableStateOf(setOf<String>()) }
     var currentBatch by remember { mutableStateOf<List<Word>>(emptyList()) }
-    var nextBatch by remember { mutableStateOf<List<Word>>(emptyList()) }
     var options by remember { mutableStateOf<List<String>>(emptyList()) }
     var totalBookmarkedWords by remember { mutableStateOf(0) }
+
+    // Debug state
+    var showDebugInfo by remember { mutableStateOf(true) }
+    var allWords by remember { mutableStateOf<List<Word>>(emptyList()) }
+    var overdueWords by remember { mutableStateOf<List<Word>>(emptyList()) }
+    var unseenWords by remember { mutableStateOf<List<Word>>(emptyList()) }
+    var recentlyReviewedWords by remember { mutableStateOf<List<Word>>(emptyList()) }
+    
+    // Load all words for debugging
+    LaunchedEffect(Unit) {
+        allWords = wordRepository.getAllWords()
+        val currentTime = System.currentTimeMillis()
+        overdueWords = wordRepository.getWordsForLearning(100).filter { it.nextReviewDate <= currentTime && it.nextReviewDate > 0 }
+        unseenWords = wordRepository.getAllWords().filter { it.timesReviewed == 0 }
+        recentlyReviewedWords = wordRepository.getRecentlyReviewedWords(5)
+    }
+    
+    // Update debug info when current word changes
+    LaunchedEffect(currentWord.value) {
+        if (currentWord.value != null) {
+            val currentTime = System.currentTimeMillis()
+            allWords = wordRepository.getAllWords()
+            overdueWords = wordRepository.getWordsForLearning(100).filter { it.nextReviewDate <= currentTime && it.nextReviewDate > 0 }
+            unseenWords = allWords.filter { it.timesReviewed == 0 }
+            recentlyReviewedWords = wordRepository.getRecentlyReviewedWords(5)
+        }
+    }
 
     // Add the lookupWord function
     fun lookupWord(word: String) {
@@ -151,73 +197,83 @@ fun QuizScreen(
         }
     }
 
-    // Function to load the next batch of words
-    fun loadNextBatch() {
-        coroutineScope.launch {
-            val newBatch = if (isBookmarkMode) {
-                if (totalBookmarkedWords > 1) {
-                    wordRepository.getRandomBookmarkedWordsExcluding(4, currentWord.value?.id ?: 0)
-                } else {
-                    wordRepository.getRandomBookmarkedWords(4)
-                }
-            } else {
-                wordRepository.getRandomWordsExcluding(4, currentWord.value)
-            }
-            nextBatch = newBatch
-        }
-    }
-
     // Function to advance to next question
     fun advanceToNextQuestion() {
-        // If we have a preloaded batch, use it
-        if (nextBatch.isNotEmpty()) {
-            currentBatch = nextBatch
-            currentWord.value = currentBatch[0]
-            val (newOptions, newSynonymSet) = generateOptions(currentBatch, currentWord.value!!)
+        coroutineScope.launch {
+            // Get the next word prioritizing overdue words by their overdue ratio
+            val nextWord = if (isBookmarkMode) {
+                // In bookmark mode, get a random bookmarked word
+                if (totalBookmarkedWords > 1) {
+                    val bookmarkedWords = wordRepository.getBookmarkedWordsFlow().first()
+                    val filteredWords = bookmarkedWords.filter { it.id != currentWord.value?.id }
+                    if (filteredWords.isNotEmpty()) filteredWords.random() else bookmarkedWords.random()
+                } else {
+                    wordRepository.getRandomBookmarkedWords(1).firstOrNull() ?: return@launch
+                }
+            } else {
+                // In normal mode, get the next word prioritizing overdue words
+                wordRepository.getNextWord(currentWord.value)
+            }
+
+            // Build a batch with the selected word and 3 other random words
+            val otherWords = if (isBookmarkMode) {
+                wordRepository.getRandomBookmarkedWordsExcluding(3, nextWord.id)
+            } else {
+                wordRepository.getRandomWordsExcluding(3, nextWord)
+            }
+            
+            // Create the new batch with the prioritized word first
+            currentBatch = listOf(nextWord) + otherWords
+            currentWord.value = nextWord
+            
+            // Generate options and synonym set for the quiz
+            val (newOptions, newSynonymSet) = generateOptions(currentBatch, nextWord)
             options = newOptions
             currentSynonymSet = newSynonymSet
-            nextBatch = emptyList()
-            // Start loading the next batch immediately
-            loadNextBatch()
-        } else {
-            // Fallback in case nextBatch isn't ready
-            coroutineScope.launch {
-                val newBatch = if (isBookmarkMode) {
-                    if (totalBookmarkedWords > 1) {
-                        wordRepository.getRandomBookmarkedWordsExcluding(4, currentWord.value?.id ?: 0)
-                    } else {
-                        wordRepository.getRandomBookmarkedWords(4)
-                    }
-                } else {
-                    wordRepository.getRandomWordsExcluding(4, currentWord.value)
-                }
-                currentBatch = newBatch
-                currentWord.value = currentBatch[0]
-                val (newOptions, newSynonymSet) = generateOptions(currentBatch, currentWord.value!!)
-                options = newOptions
-                currentSynonymSet = newSynonymSet
-                loadNextBatch()
-            }
+            
+            // Reset UI state for the new question
+            selectedAnswer = null
+            showNextButton = false
+            expandedExamples = emptySet()
+            questionStartTime = System.currentTimeMillis()
+            
+            // Update debug info
+            val currentTime = System.currentTimeMillis()
+            allWords = wordRepository.getAllWords()
+            overdueWords = wordRepository.getWordsForLearning(100).filter { it.nextReviewDate <= currentTime && it.nextReviewDate > 0 }
+            unseenWords = allWords.filter { it.timesReviewed == 0 }
+            recentlyReviewedWords = wordRepository.getRecentlyReviewedWords(5)
         }
-        selectedAnswer = null
-        showNextButton = false
-        expandedExamples = emptySet()
-        questionStartTime = System.currentTimeMillis()
     }
 
     // Initial load
     LaunchedEffect(Unit) {
-        currentBatch = if (isBookmarkMode) {
-            wordRepository.getRandomBookmarkedWords(4)
+        // Get the initial word prioritizing overdue words by their overdue ratio
+        val initialWord = if (isBookmarkMode) {
+            // In bookmark mode, get a random bookmarked word
+            wordRepository.getRandomBookmarkedWords(1).firstOrNull()
         } else {
-            wordRepository.getRandomWords(4)
+            // In normal mode, get the next word prioritizing overdue words
+            wordRepository.getNextWord(null)
         }
-        if (currentBatch.isNotEmpty()) {
-            currentWord.value = currentBatch[0]
-            val (newOptions, newSynonymSet) = generateOptions(currentBatch, currentWord.value!!)
+        
+        if (initialWord != null) {
+            // Build a batch with the selected word and 3 other random words
+            val otherWords = if (isBookmarkMode) {
+                wordRepository.getRandomBookmarkedWordsExcluding(3, initialWord.id)
+            } else {
+                wordRepository.getRandomWordsExcluding(3, initialWord)
+            }
+            
+            // Create the batch with the prioritized word first
+            currentBatch = listOf(initialWord) + otherWords
+            currentWord.value = initialWord
+            
+            // Generate options and synonym set for the quiz
+            val (newOptions, newSynonymSet) = generateOptions(currentBatch, initialWord)
             options = newOptions
             currentSynonymSet = newSynonymSet
-            loadNextBatch()
+            
             questionStartTime = System.currentTimeMillis()
             android.util.Log.d("QuizTimer", "Setting initial question start time: $questionStartTime")
         }
@@ -241,6 +297,262 @@ fun QuizScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        // Debug panel
+        if (showDebugInfo && currentWord.value != null) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color(0xFF2D2D3A)
+                ),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .padding(12.dp)
+                        .fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            "Debug Info",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = Color.White
+                        )
+                        Switch(
+                            checked = showDebugInfo,
+                            onCheckedChange = { showDebugInfo = it }
+                        )
+                    }
+                    
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    val word = currentWord.value!!
+                    val currentTime = System.currentTimeMillis()
+                    val isOverdue = word.nextReviewDate > 0 && word.nextReviewDate <= currentTime
+                    val isUnseen = word.timesReviewed == 0
+                    
+                    Text(
+                        "Word ID: ${word.id}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.White.copy(alpha = 0.8f)
+                    )
+                    
+                    Text(
+                        "Times Reviewed: ${word.timesReviewed}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.White.copy(alpha = 0.8f)
+                    )
+                    
+                    Text(
+                        "Next Review: ${if (word.nextReviewDate > 0) 
+                            java.text.SimpleDateFormat("yyyy-MM-dd HH:mm", java.util.Locale.getDefault())
+                                .format(java.util.Date(word.nextReviewDate)) 
+                            else "Not scheduled"}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.White.copy(alpha = 0.8f)
+                    )
+                    
+                    Text(
+                        "Status: ${when {
+                            isOverdue -> "OVERDUE"
+                            isUnseen -> "UNSEEN"
+                            else -> "SCHEDULED"
+                        }}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = when {
+                            isOverdue -> Color(0xFFFF9800)
+                            isUnseen -> Color(0xFF2196F3)
+                            else -> Color(0xFF4CAF50)
+                        }
+                    )
+                    
+                    Text(
+                        "Interval: ${word.interval} days",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.White.copy(alpha = 0.8f)
+                    )
+                    
+                    Text(
+                        "Ease Factor: ${String.format("%.2f", word.easeFactor)}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.White.copy(alpha = 0.8f)
+                    )
+                    
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    Text(
+                        "Overdue Words: ${overdueWords.size}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color(0xFFFF9800)
+                    )
+                    
+                    Text(
+                        "Unseen Words: ${unseenWords.size}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color(0xFF2196F3)
+                    )
+                    
+                    if (overdueWords.isNotEmpty()) {
+                        Text(
+                            "Overdue IDs: ${overdueWords.take(5).map { it.id }}${if (overdueWords.size > 5) "..." else ""}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.White.copy(alpha = 0.7f)
+                        )
+                    }
+                    
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    Text(
+                        "Word Selection Logic:",
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White.copy(alpha = 0.9f)
+                    )
+                    
+                    Text(
+                        "1. Overdue words (highest priority)",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (overdueWords.isNotEmpty()) Color(0xFFFF9800) else Color.White.copy(alpha = 0.6f)
+                    )
+                    
+                    Text(
+                        "2. Unseen words (if no overdue words)",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (overdueWords.isEmpty() && unseenWords.isNotEmpty()) Color(0xFF2196F3) else Color.White.copy(alpha = 0.6f)
+                    )
+                    
+                    Text(
+                        "3. Words without future review dates (last resort)",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (overdueWords.isEmpty() && unseenWords.isEmpty()) Color(0xFF4CAF50) else Color.White.copy(alpha = 0.6f)
+                    )
+                    
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    Text(
+                        "Recently Reviewed:",
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White.copy(alpha = 0.9f)
+                    )
+                    
+                    recentlyReviewedWords.forEach { recentWord ->
+                        val reviewTime = java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault())
+                            .format(java.util.Date(recentWord.lastReviewed))
+                        val nextReview = if (recentWord.nextReviewDate > 0) {
+                            java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+                                .format(java.util.Date(recentWord.nextReviewDate))
+                        } else "Not scheduled"
+                        
+                        Text(
+                            "${recentWord.word} (ID: ${recentWord.id}) - Reviewed at $reviewTime, Next: $nextReview",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.White.copy(alpha = 0.7f)
+                        )
+                    }
+                    
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    // Add a button to force refresh the word selection
+                    Button(
+                        onClick = {
+                            coroutineScope.launch {
+                                val nextWord = wordRepository.getNextWord(currentWord.value)
+                                val otherWords = wordRepository.getRandomWordsExcluding(3, nextWord)
+                                currentBatch = listOf(nextWord) + otherWords
+                                currentWord.value = nextWord
+                                val (newOptions, newSynonymSet) = generateOptions(currentBatch, nextWord)
+                                options = newOptions
+                                currentSynonymSet = newSynonymSet
+                                selectedAnswer = null
+                                showNextButton = false
+                                expandedExamples = emptySet()
+                                questionStartTime = System.currentTimeMillis()
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF3F51B5)
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Force Next Word Selection")
+                    }
+                    
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    // Add a section to show all words and their status
+                    var showAllWords by remember { mutableStateOf(false) }
+                    
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            "All Words Status",
+                            style = MaterialTheme.typography.bodySmall,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White.copy(alpha = 0.9f)
+                        )
+                        Switch(
+                            checked = showAllWords,
+                            onCheckedChange = { showAllWords = it }
+                        )
+                    }
+                    
+                    if (showAllWords) {
+                        val currentTime = System.currentTimeMillis()
+                        val sortedWords = allWords.sortedWith(
+                            compareBy<Word> { 
+                                // First sort by status: overdue, unseen, future review
+                                when {
+                                    it.nextReviewDate > 0 && it.nextReviewDate <= currentTime -> 0
+                                    it.timesReviewed == 0 -> 1
+                                    else -> 2
+                                }
+                            }.thenBy { it.word }
+                        )
+                        
+                        sortedWords.forEach { word ->
+                            val isOverdue = word.nextReviewDate > 0 && word.nextReviewDate <= currentTime
+                            val isUnseen = word.timesReviewed == 0
+                            val isFutureReview = word.nextReviewDate > currentTime
+                            
+                            val statusColor = when {
+                                isOverdue -> Color(0xFFFF9800)
+                                isUnseen -> Color(0xFF2196F3)
+                                isFutureReview -> Color(0xFF4CAF50)
+                                else -> Color.White.copy(alpha = 0.7f)
+                            }
+                            
+                            val statusText = when {
+                                isOverdue -> "OVERDUE"
+                                isUnseen -> "UNSEEN"
+                                isFutureReview -> "FUTURE"
+                                else -> "REVIEWED"
+                            }
+                            
+                            val nextReview = if (word.nextReviewDate > 0) {
+                                java.text.SimpleDateFormat("MM-dd", java.util.Locale.getDefault())
+                                    .format(java.util.Date(word.nextReviewDate))
+                            } else "N/A"
+                            
+                            Text(
+                                "${word.word} (ID: ${word.id}) - $statusText - Next: $nextReview",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = statusColor
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
         Text(
             text = currentWord.value!!.word.lowercase(),
             style = MaterialTheme.typography.headlineMedium,

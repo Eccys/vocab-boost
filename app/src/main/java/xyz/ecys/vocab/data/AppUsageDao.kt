@@ -31,4 +31,22 @@ interface AppUsageDao {
 
     @Query("SELECT * FROM app_usage WHERE date BETWEEN :startDate AND :endDate")
     fun getUsageBetweenDates(startDate: Long, endDate: Long): Flow<List<AppUsage>>
+
+    @Query("SELECT * FROM app_usage WHERE date BETWEEN :startDate AND :endDate")
+    suspend fun getUsageBetweenDatesSync(startDate: Long, endDate: Long): List<AppUsage>
+
+    @Query("SELECT * FROM app_usage WHERE date = :date LIMIT 1")
+    suspend fun getUsageForDate(date: Long): AppUsage?
+
+    @Query("""
+        UPDATE app_usage 
+        SET duration = :duration,
+            sessionCount = :sessionCount,
+            correctAnswers = :correctAnswers
+        WHERE date = :date
+    """)
+    suspend fun updateUsage(date: Long, duration: Long, sessionCount: Int, correctAnswers: Int)
+
+    @Query("DELETE FROM app_usage")
+    suspend fun deleteAllUsageData()
 } 

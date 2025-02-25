@@ -1,42 +1,128 @@
 package xyz.ecys.vocab
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import xyz.ecys.vocab.ui.theme.VocabularyBoosterTheme
-import xyz.ecys.vocab.ui.theme.AppIcons
-import android.content.Context
-import androidx.compose.foundation.clickable
-import androidx.compose.material3.AlertDialog
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.launch
+import xyz.ecys.vocab.data.AuthViewModel
 import xyz.ecys.vocab.data.WordRepository
+import xyz.ecys.vocab.data.AppUsageManager
 import xyz.ecys.vocab.debug.DebugActivity
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Refresh
-import android.content.Intent
+import xyz.ecys.vocab.ui.theme.AppIcons
+import xyz.ecys.vocab.ui.theme.VocabularyBoosterTheme
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.material.ripple.rememberRipple
+import xyz.ecys.vocab.ui.components.auth.AuthSheet
+import xyz.ecys.vocab.ui.components.stats.GoalDialog
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.interaction.PressInteraction
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.animation.core.spring
+import androidx.compose.foundation.interaction.Interaction
+import androidx.compose.foundation.interaction.InteractionSource
+import androidx.activity.result.contract.ActivityResultContracts
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.common.api.ApiException
+import androidx.activity.viewModels
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.fadeOut
 
 @OptIn(ExperimentalMaterial3Api::class)
 class SettingsActivity : ComponentActivity() {
+    private val authViewModel: AuthViewModel by viewModels()
+    private val googleSignInLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+        try {
+            val account = task.getResult(ApiException::class.java)
+            account.idToken?.let { token ->
+                lifecycleScope.launch {
+                    authViewModel.handleGoogleSignInResult(token)
+                }
+            }
+        } catch (e: ApiException) {
+            // Handle error
+            authViewModel.showMessage("Google sign in failed: ${e.message}")
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         enableEdgeToEdge()
+
+        // Observe sign-in intent
+        lifecycleScope.launch {
+            authViewModel.signInIntent.collect { intent ->
+                intent?.let {
+                    googleSignInLauncher.launch(intent)
+                    authViewModel.clearSignInIntent()
+                }
+            }
+        }
+
         setContent {
             VocabularyBoosterTheme {
                 val context = LocalContext.current
                 var showNeuralInfo by remember { mutableStateOf(false) }
                 var showRefreshConfirmation by remember { mutableStateOf(false) }
+                var showAuthSheet by remember { mutableStateOf(false) }
+                var showGoalDialog by remember { mutableStateOf(false) }
+                var goalInput by remember { mutableStateOf("20") }
+                
+                // Password dialog state
+                var showPasswordDialog by remember { mutableStateOf(false) }
+                var passwordInput by remember { mutableStateOf("") }
+                
+                // Custom snackbar state
+                var showSnackbar by remember { mutableStateOf(false) }
+                var snackbarMessage by remember { mutableStateOf("") }
+                
+                val authError by authViewModel.authError.collectAsState()
+                val authState by authViewModel.authState.collectAsState()
+                val message by authViewModel.message.collectAsState()
+                val scope = rememberCoroutineScope()
+                
+                // Show snackbar when message changes
+                LaunchedEffect(message) {
+                    message?.let {
+                        if (it.isNotEmpty()) {
+                            snackbarMessage = it
+                            showSnackbar = true
+                            // Auto-dismiss after 3 seconds
+                            scope.launch {
+                                kotlinx.coroutines.delay(3000)
+                                showSnackbar = false
+                                authViewModel.showMessage(null) // Clear the message
+                            }
+                        }
+                    }
+                }
                 
                 // Get current settings
                 val prefs = context.getSharedPreferences("vocab_settings", Context.MODE_PRIVATE)
@@ -84,7 +170,7 @@ class SettingsActivity : ComponentActivity() {
                             Text(
                                 """
                                 This will reset the database to its initial state with the default word set.
-                                All learning progress and custom words will be lost.
+                                All learning progress, custom words, streaks, and time spent data will be lost.
                                 
                                 Are you sure you want to continue?
                                 """.trimIndent()
@@ -94,9 +180,22 @@ class SettingsActivity : ComponentActivity() {
                             TextButton(
                                 onClick = { 
                                     showRefreshConfirmation = false
-                                    lifecycleScope.launch {
-                                        val wordRepository = WordRepository.getInstance(context)
-                                        wordRepository.insertInitialWords()
+                                    
+                                    // Only show password dialog if user is signed in
+                                    if (authViewModel.currentUser != null) {
+                                        showPasswordDialog = true
+                                    } else {
+                                        // If user is not signed in, proceed without password
+                                        lifecycleScope.launch {
+                                            val wordRepository = WordRepository.getInstance(context)
+                                            wordRepository.insertInitialWords()
+                                            
+                                            // Clear app usage data (streaks and time spent)
+                                            val appUsageManager = AppUsageManager.getInstance(context)
+                                            appUsageManager.resetAllUsageData()
+                                            
+                                            authViewModel.showMessage("Database reset successfully")
+                                        }
                                     }
                                 }
                             ) {
@@ -110,6 +209,187 @@ class SettingsActivity : ComponentActivity() {
                         }
                     )
                 }
+                
+                // Password confirmation dialog
+                if (showPasswordDialog) {
+                    AlertDialog(
+                        onDismissRequest = { showPasswordDialog = false },
+                        title = { Text("Confirm Password") },
+                        text = {
+                            Column(
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                // Check if user is signed in with Google
+                                val isGoogleSignIn = authViewModel.currentUser?.providerData?.any { 
+                                    it.providerId == "google.com" 
+                                } ?: false
+                                
+                                // Check if user has a password
+                                val hasPassword = authViewModel.hasPassword()
+                                
+                                if (isGoogleSignIn && !hasPassword) {
+                                    Text(
+                                        "You're signed in with Google. Are you sure you want to reset the database? All learning progress, custom words, streaks, and time spent data will be lost."
+                                    )
+                                } else {
+                                    Text("Please enter your password to confirm database reset")
+                                    OutlinedTextField(
+                                        value = passwordInput,
+                                        onValueChange = { passwordInput = it },
+                                        label = { Text("Password") },
+                                        visualTransformation = PasswordVisualTransformation(),
+                                        singleLine = true,
+                                        colors = OutlinedTextFieldDefaults.colors(
+                                            unfocusedTextColor = Color(0xFFFCFCFC),
+                                            focusedTextColor = Color(0xFFFCFCFC),
+                                            cursorColor = Color(0xFF90CAF9),
+                                            focusedBorderColor = Color(0xFF90CAF9),
+                                            unfocusedBorderColor = Color(0xFF546E7A),
+                                            focusedLabelColor = Color(0xFF90CAF9),
+                                            unfocusedLabelColor = Color(0xFF546E7A)
+                                        )
+                                    )
+                                }
+                                
+                                authError?.let {
+                                    Text(
+                                        text = it,
+                                        color = Color(0xFFED333B),
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
+                                }
+                            }
+                        },
+                        confirmButton = {
+                            TextButton(
+                                onClick = {
+                                    // Check if user is signed in with Google
+                                    val isGoogleSignIn = authViewModel.currentUser?.providerData?.any { 
+                                        it.providerId == "google.com" 
+                                    } ?: false
+                                    
+                                    // Check if user has a password
+                                    val hasPassword = authViewModel.hasPassword()
+                                    
+                                    if ((isGoogleSignIn && !hasPassword) || (hasPassword && passwordInput.isNotBlank())) {
+                                        if (isGoogleSignIn && !hasPassword) {
+                                            // For Google users without a password, proceed without verification
+                                            showPasswordDialog = false
+                                            // Proceed with database reset
+                                            lifecycleScope.launch {
+                                                val wordRepository = WordRepository.getInstance(context)
+                                                wordRepository.insertInitialWords()
+                                                
+                                                // Clear app usage data (streaks and time spent)
+                                                val appUsageManager = AppUsageManager.getInstance(context)
+                                                appUsageManager.resetAllUsageData()
+                                                
+                                                // Sync changes to the cloud
+                                                authViewModel.syncData { syncSuccess ->
+                                                    if (syncSuccess) {
+                                                        authViewModel.showMessage("Database reset and synced to cloud")
+                                                    } else {
+                                                        authViewModel.showMessage("Database reset but sync failed")
+                                                    }
+                                                }
+                                            }
+                                        } else {
+                                            // For users with a password, verify password
+                                            lifecycleScope.launch {
+                                                try {
+                                                    authViewModel.verifyPassword(passwordInput) { success ->
+                                                        if (success) {
+                                                            showPasswordDialog = false
+                                                            passwordInput = ""
+                                                            // Proceed with database reset
+                                                            lifecycleScope.launch {
+                                                                val wordRepository = WordRepository.getInstance(context)
+                                                                wordRepository.insertInitialWords()
+                                                                
+                                                                // Clear app usage data (streaks and time spent)
+                                                                val appUsageManager = AppUsageManager.getInstance(context)
+                                                                appUsageManager.resetAllUsageData()
+                                                                
+                                                                // Sync changes to the cloud
+                                                                authViewModel.syncData { syncSuccess ->
+                                                                    if (syncSuccess) {
+                                                                        authViewModel.showMessage("Database reset and synced to cloud")
+                                                                    } else {
+                                                                        authViewModel.showMessage("Database reset but sync failed")
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                } catch (e: Exception) {
+                                                    authViewModel.showMessage("Error: ${e.message}")
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            ) {
+                                Text("Confirm", color = Color(0xFFED333B))
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { 
+                                showPasswordDialog = false
+                                passwordInput = ""
+                                authViewModel.clearError()
+                            }) {
+                                Text("Cancel")
+                            }
+                        }
+                    )
+                }
+
+                if (showAuthSheet) {
+                    ModalBottomSheet(
+                        onDismissRequest = { 
+                            showAuthSheet = false
+                            authViewModel.clearError()
+                        },
+                        containerColor = Color(0xFF05080D),
+                        dragHandle = { BottomSheetDefaults.DragHandle() },
+                        windowInsets = WindowInsets(0),
+                        sheetState = rememberModalBottomSheetState(
+                            skipPartiallyExpanded = true
+                        ),
+                        shape = RoundedCornerShape(
+                            topStart = 28.dp,
+                            topEnd = 28.dp,
+                            bottomStart = 0.dp,
+                            bottomEnd = 0.dp
+                        )
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .wrapContentHeight()
+                                .navigationBarsPadding()
+                        ) {
+                            AuthSheet(
+                                onDismiss = { 
+                                    showAuthSheet = false
+                                    authViewModel.clearError()
+                                },
+                                authViewModel = authViewModel
+                            )
+                        }
+                    }
+                }
+
+                // Add GoalDialog
+                GoalDialog(
+                    showDialog = showGoalDialog,
+                    goalInput = goalInput,
+                    onGoalInputChange = { goalInput = it },
+                    onDismiss = { showGoalDialog = false },
+                    onSave = { newGoal ->
+                        prefs.edit().putInt("daily_goal", newGoal).apply()
+                    }
+                )
 
                 Scaffold(
                     topBar = {
@@ -151,110 +431,343 @@ class SettingsActivity : ComponentActivity() {
                     },
                     floatingActionButtonPosition = FabPosition.End
                 ) { innerPadding ->
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(innerPadding)
-                            .padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    Box(
+                        modifier = Modifier.fillMaxSize()
                     ) {
-                        // Learning Settings Section
-                        Text(
-                            text = "Learning",
-                            style = MaterialTheme.typography.titleLarge
-                        )
-                        
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(innerPadding)
+                                .padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
-                            Text("Spaced Repetition")
-                            Switch(
-                                checked = spacedRepetition,
-                                onCheckedChange = { 
-                                    spacedRepetition = it
-                                    prefs.edit().putBoolean("spaced_repetition", it).apply()
-                                }
+                            // Authentication Section
+                            Text(
+                                text = "Authentication",
+                                style = MaterialTheme.typography.titleLarge
                             )
-                        }
+                            
+                            var isAccountCardPressed by remember { mutableStateOf(false) }
+                            val accountCardScale by animateFloatAsState(
+                                targetValue = if (isAccountCardPressed) 0.97f else 1f,
+                                animationSpec = spring(
+                                    dampingRatio = 0.75f,
+                                    stiffness = 300f
+                                )
+                            )
 
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                verticalAlignment = Alignment.CenterVertically
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .graphicsLayer {
+                                        scaleX = accountCardScale
+                                        scaleY = accountCardScale
+                                    },
+                                colors = CardDefaults.cardColors(
+                                    containerColor = Color(0xFF18191E)
+                                ),
+                                shape = RoundedCornerShape(12.dp),
+                                onClick = { 
+                                    if (authState != null) {
+                                        val intent = Intent(context, AccountsActivity::class.java)
+                                        context.startActivity(intent)
+                                    } else {
+                                        showAuthSheet = true
+                                    }
+                                },
+                                interactionSource = remember { MutableInteractionSource() }
+                                    .also { interactionSource ->
+                                        LaunchedEffect(interactionSource) {
+                                            interactionSource.interactions.collect { interaction ->
+                                                when (interaction) {
+                                                    is PressInteraction.Press -> isAccountCardPressed = true
+                                                    is PressInteraction.Release -> isAccountCardPressed = false
+                                                    is PressInteraction.Cancel -> isAccountCardPressed = false
+                                                }
+                                            }
+                                        }
+                                    }
                             ) {
-                                Text("Neural Processing")
-                                Icon(
-                                    painter = AppIcons.circleInfoSolid(),
-                                    contentDescription = "Info",
+                                Row(
                                     modifier = Modifier
-                                        .size(16.dp)
-                                        .clickable { showNeuralInfo = true },
-                                    tint = Color(0xFFFCFCFC)
-                                )
+                                        .fillMaxWidth()
+                                        .padding(vertical = 12.dp, horizontal = 16.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Row(
+                                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            painter = AppIcons.circleUserSolid(),
+                                            contentDescription = "Account",
+                                            tint = Color(0xFFFCFCFC),
+                                            modifier = Modifier.size(24.dp)
+                                        )
+                                        Column(
+                                            verticalArrangement = Arrangement.spacedBy(2.dp)
+                                        ) {
+                                            Text("Account")
+                                            Text(
+                                                text = authState?.email ?: "Not signed in",
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                color = Color(0xFFAAAAAA)
+                                            )
+                                        }
+                                    }
+                                    Icon(
+                                        painter = AppIcons.arrowRight(),
+                                        contentDescription = "Open",
+                                        tint = Color(0xFFFCFCFC)
+                                    )
+                                }
                             }
-                            Switch(
-                                checked = neuralProcessing,
-                                onCheckedChange = { 
-                                    neuralProcessing = it
-                                    prefs.edit().putBoolean("neural_processing", it).apply()
-                                }
-                            )
-                        }
 
-                        // UI Settings Section
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = "User Experience",
-                            style = MaterialTheme.typography.titleLarge
-                        )
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text("Reduced Animations")
-                            Switch(
-                                checked = reducedAnimations,
-                                onCheckedChange = { 
-                                    reducedAnimations = it
-                                    prefs.edit().putBoolean("reduced_animations", it).apply()
-                                }
-                            )
-                        }
-
-                        // Database Management Section
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = "Database",
-                            style = MaterialTheme.typography.titleLarge
-                        )
-
-                        Button(
-                            onClick = { showRefreshConfirmation = true },
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFF18191E),
-                                contentColor = Color(0xFFFCFCFC)
-                            )
-                        ) {
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                verticalAlignment = Alignment.CenterVertically,
+                            Divider(
+                                color = Color(0xFF18191E),
+                                thickness = 1.dp,
                                 modifier = Modifier.padding(vertical = 8.dp)
+                            )
+
+                            // Learning Settings Section
+                            Text(
+                                text = "Learning",
+                                style = MaterialTheme.typography.titleLarge
+                            )
+                            
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = Color(0xFF18191E)
+                                ),
+                                shape = RoundedCornerShape(12.dp)
                             ) {
-                                Icon(
-                                    imageVector = Icons.Default.Refresh,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(20.dp)
+                                Column {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(vertical = 8.dp, horizontal = 16.dp),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text("Spaced Repetition")
+                                        Switch(
+                                            checked = spacedRepetition,
+                                            onCheckedChange = { 
+                                                spacedRepetition = it
+                                                prefs.edit().putBoolean("spaced_repetition", it).apply()
+                                            }
+                                        )
+                                    }
+
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(vertical = 8.dp, horizontal = 16.dp),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Row(
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Text("Neural Processing")
+                                            Icon(
+                                                painter = AppIcons.circleInfoSolid(),
+                                                contentDescription = "Info",
+                                                modifier = Modifier
+                                                    .size(16.dp)
+                                                    .clickable { showNeuralInfo = true },
+                                                tint = Color(0xFFFCFCFC)
+                                            )
+                                        }
+                                        Switch(
+                                            checked = neuralProcessing,
+                                            onCheckedChange = { 
+                                                neuralProcessing = it
+                                                prefs.edit().putBoolean("neural_processing", it).apply()
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+
+                            // Daily Goal Setting
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = Color(0xFF18191E)
+                                ),
+                                shape = RoundedCornerShape(12.dp),
+                                onClick = { 
+                                    showGoalDialog = true 
+                                }
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 12.dp, horizontal = 16.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Row(
+                                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            painter = AppIcons.targetSolid(),
+                                            contentDescription = "Daily Goal",
+                                            tint = Color(0xFFFCFCFC),
+                                            modifier = Modifier.size(24.dp)
+                                        )
+                                        Column(
+                                            verticalArrangement = Arrangement.spacedBy(2.dp)
+                                        ) {
+                                            Text("Daily Goal")
+                                            Text(
+                                                text = "${prefs.getInt("daily_goal", 20)} words per day",
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                color = Color(0xFFAAAAAA)
+                                            )
+                                        }
+                                    }
+                                    Icon(
+                                        painter = AppIcons.arrowRight(),
+                                        contentDescription = "Open",
+                                        tint = Color(0xFFFCFCFC)
+                                    )
+                                }
+                            }
+
+                            // UI Settings Section
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                text = "User Experience",
+                                style = MaterialTheme.typography.titleLarge
+                            )
+
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = Color(0xFF18191E)
+                                ),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 8.dp, horizontal = 16.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text("Reduce Animations")
+                                    Switch(
+                                        checked = reducedAnimations,
+                                        onCheckedChange = { 
+                                            reducedAnimations = it
+                                            prefs.edit().putBoolean("reduced_animations", it).apply()
+                                        }
+                                    )
+                                }
+                            }
+
+                            // Database Section
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = Color(0xFF18191E)
+                                ),
+                                shape = RoundedCornerShape(12.dp),
+                                onClick = { showRefreshConfirmation = true }
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 12.dp, horizontal = 16.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Row(
+                                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            painter = AppIcons.triangleExclamationSolid(),
+                                            contentDescription = "Warning",
+                                            tint = Color(0xFFED333B),
+                                            modifier = Modifier.size(24.dp)
+                                        )
+                                        Column(
+                                            verticalArrangement = Arrangement.spacedBy(2.dp)
+                                        ) {
+                                            Text("Reset Database")
+                                            Text(
+                                                text = "Reset to initial word set",
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                color = Color(0xFFAAAAAA)
+                                            )
+                                        }
+                                    }
+                                    Icon(
+                                        painter = AppIcons.arrowRight(),
+                                        contentDescription = "Open",
+                                        tint = Color(0xFFFCFCFC)
+                                    )
+                                }
+                            }
+                        }
+                        
+                        // Custom Snackbar
+                        AnimatedVisibility(
+                            visible = showSnackbar,
+                            enter = slideInVertically(initialOffsetY = { -it }) + fadeIn(),
+                            exit = slideOutVertically(targetOffsetY = { -it }) + fadeOut(),
+                            modifier = Modifier
+                                .align(Alignment.TopCenter)
+                                .padding(top = 80.dp) // Position below the top bar
+                        ) {
+                            Card(
+                                modifier = Modifier
+                                    .padding(horizontal = 16.dp)
+                                    .fillMaxWidth(),
+                                shape = RoundedCornerShape(12.dp),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = Color(0xFF18191E)
+                                ),
+                                elevation = CardDefaults.cardElevation(
+                                    defaultElevation = 6.dp
                                 )
-                                Text("Refresh Database")
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                ) {
+                                    Icon(
+                                        painter = AppIcons.circleInfoSolid(),
+                                        contentDescription = "Info",
+                                        tint = Color(0xFF90CAF9)
+                                    )
+                                    Text(
+                                        text = snackbarMessage,
+                                        color = Color(0xFFFCFCFC),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                    IconButton(
+                                        onClick = { showSnackbar = false },
+                                        modifier = Modifier.size(24.dp)
+                                    ) {
+                                        Icon(
+                                            painter = AppIcons.xSolid(),
+                                            contentDescription = "Dismiss",
+                                            tint = Color(0xFFAAAAAA)
+                                        )
+                                    }
+                                }
                             }
                         }
                     }

@@ -1,3 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Vocabulary Booster</string>
+    <string name="app_name">Vocabulary</string>
+    <string name="web_client_id">399691916210-noncg27kuq2ot13c9anp2rj94h74irou.apps.googleusercontent.com</string>
 </resources>

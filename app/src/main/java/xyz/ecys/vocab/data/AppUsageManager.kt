@@ -189,4 +189,8 @@ class AppUsageManager private constructor(
             return@withContext 0
         }
     }
+    
+    suspend fun resetAllUsageData() = withContext(Dispatchers.IO) {
+        appUsageDao.deleteAllUsageData()
+    }
 } 

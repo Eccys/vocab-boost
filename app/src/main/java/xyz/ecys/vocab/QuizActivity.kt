@@ -334,16 +334,27 @@ fun QuizScreen(
     // Function to load the next batch of words
     fun loadNextBatch() {
         coroutineScope.launch {
-            val newBatch = if (isBookmarkMode) {
+            // Use getNextWord for proper word selection
+            val nextWord = if (isBookmarkMode) {
                 if (totalBookmarkedWords > 1) {
-                    wordRepository.getRandomBookmarkedWordsExcluding(4, currentWord.value?.id ?: 0)
+                    val bookmarkedWords = wordRepository.getBookmarkedWordsFlow().first()
+                    val filteredWords = bookmarkedWords.filter { it.id != currentWord.value?.id }
+                    if (filteredWords.isNotEmpty()) filteredWords.random() else bookmarkedWords.random()
                 } else {
-                    wordRepository.getRandomBookmarkedWords(4)
+                    wordRepository.getRandomBookmarkedWords(1).firstOrNull() ?: return@launch
                 }
             } else {
-                wordRepository.getRandomWordsExcluding(4, currentWord.value)
+                wordRepository.getNextWord(currentWord.value)
             }
-            nextBatch = newBatch
+            
+            // Get other words for options
+            val otherWords = if (isBookmarkMode) {
+                wordRepository.getRandomBookmarkedWordsExcluding(3, nextWord.id)
+            } else {
+                wordRepository.getRandomWordsExcluding(3, nextWord)
+            }
+            
+            nextBatch = listOf(nextWord) + otherWords
         }
     }
 
@@ -362,17 +373,28 @@ fun QuizScreen(
         } else {
             // Fallback in case nextBatch isn't ready
             coroutineScope.launch {
-                val newBatch = if (isBookmarkMode) {
+                // Use getNextWord for proper word selection
+                val nextWord = if (isBookmarkMode) {
                     if (totalBookmarkedWords > 1) {
-                        wordRepository.getRandomBookmarkedWordsExcluding(4, currentWord.value?.id ?: 0)
+                        val bookmarkedWords = wordRepository.getBookmarkedWordsFlow().first()
+                        val filteredWords = bookmarkedWords.filter { it.id != currentWord.value?.id }
+                        if (filteredWords.isNotEmpty()) filteredWords.random() else bookmarkedWords.random()
                     } else {
-                        wordRepository.getRandomBookmarkedWords(4)
+                        wordRepository.getRandomBookmarkedWords(1).firstOrNull() ?: return@launch
                     }
                 } else {
-                    wordRepository.getRandomWordsExcluding(4, currentWord.value)
+                    wordRepository.getNextWord(currentWord.value)
                 }
-                currentBatch = newBatch
-                currentWord.value = currentBatch[0]
+                
+                // Get other words for options
+                val otherWords = if (isBookmarkMode) {
+                    wordRepository.getRandomBookmarkedWordsExcluding(3, nextWord.id)
+                } else {
+                    wordRepository.getRandomWordsExcluding(3, nextWord)
+                }
+                
+                currentBatch = listOf(nextWord) + otherWords
+                currentWord.value = nextWord
                 val (newOptions, newSynonymSet) = generateOptions(currentBatch, currentWord.value!!)
                 options = newOptions
                 currentSynonymSet = newSynonymSet
@@ -390,7 +412,10 @@ fun QuizScreen(
         currentBatch = if (isBookmarkMode) {
             wordRepository.getRandomBookmarkedWords(4)
         } else {
-            wordRepository.getRandomWords(4)
+            // Use getNextWord for the first word to ensure proper word selection
+            val initialWord = wordRepository.getNextWord(null)
+            val otherWords = wordRepository.getRandomWordsExcluding(3, initialWord)
+            listOf(initialWord) + otherWords
         }
         if (currentBatch.isNotEmpty()) {
             currentWord.value = currentBatch[0]
@@ -609,3 +634,4 @@ private fun generateOptions(words: List<Word>, currentWord: Word): Pair<List<Str
     
     return Pair(allOptions, correctSynonymNumber)
 }
+

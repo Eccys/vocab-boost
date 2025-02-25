@@ -23,6 +23,11 @@ object AppIcons {
     }
 
     @Composable
+    fun arrowRight(): Painter {
+        return painterResource(id = R.drawable.arrow_right)
+    }
+
+    @Composable
     fun boltSolid(): Painter {
         return painterResource(id = R.drawable.bolt_solid)
     }
@@ -95,5 +100,50 @@ object AppIcons {
     @Composable
     fun sparklesSolid(): Painter {
         return painterResource(id = R.drawable.sparkles_solid)
+    }
+
+    @Composable
+    fun circleUserSolid(): Painter {
+        return painterResource(id = R.drawable.circle_user_solid)
+    }
+
+    @Composable
+    fun targetSolid(): Painter {
+        return painterResource(id = R.drawable.target_solid)
+    }
+
+    @Composable
+    fun triangleExclamationSolid(): Painter {
+        return painterResource(id = R.drawable.triangle_exclamation_solid)
+    }
+
+    @Composable
+    fun envelopeSolid(): Painter {
+        return painterResource(id = R.drawable.envelope_solid)
+    }
+
+    @Composable
+    fun lockSolid(): Painter {
+        return painterResource(id = R.drawable.lock_solid)
+    }
+
+    @Composable
+    fun cloudSolid(): Painter {
+        return painterResource(id = R.drawable.cloud_solid)
+    }
+
+    @Composable
+    fun googleLogo(): Painter {
+        return painterResource(id = R.drawable.google_logo)
+    }
+
+    @Composable
+    fun cloudArrowUpSolid(): Painter {
+        return painterResource(id = R.drawable.cloud_arrow_up_solid)
+    }
+
+    @Composable
+    fun cloudArrowDownSolid(): Painter {
+        return painterResource(id = R.drawable.cloud_arrow_down_solid)
     }
 } 

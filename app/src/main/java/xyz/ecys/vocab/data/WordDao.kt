@@ -7,6 +7,9 @@ import kotlinx.coroutines.flow.Flow
 interface WordDao {
     @Query("SELECT * FROM words") suspend fun getAllWords(): List<Word>
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertWord(word: Word): Long
+
     @Query("DELETE FROM words")
     suspend fun deleteAllWords()
 
@@ -52,8 +55,6 @@ interface WordDao {
     @Query("UPDATE words SET isBookmarked = :isBookmarked WHERE id = :wordId")
     suspend fun updateBookmark(wordId: Int, isBookmarked: Boolean)
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE) suspend fun insertWord(word: Word)
-
     @Insert(onConflict = OnConflictStrategy.REPLACE) suspend fun insertWords(words: List<Word>)
 
     @Update suspend fun updateWord(word: Word)
@@ -71,7 +72,7 @@ interface WordDao {
     @Query("""
         SELECT * FROM words 
         WHERE timesReviewed = 0
-        ORDER BY RANDOM()
+        ORDER BY id ASC
     """)
     suspend fun getUnseenWords(): List<Word>
 
@@ -137,6 +138,36 @@ interface WordDao {
         interval: Int,
         repetitionCount: Int,
         nextReviewDate: Long
+    )
+
+    @Query("SELECT * FROM words WHERE word = :wordText LIMIT 1")
+    suspend fun getWordByText(wordText: String): Word?
+
+    // Update word learning data for sync
+    @Query("""
+        UPDATE words 
+        SET isBookmarked = :isBookmarked,
+            timesReviewed = :timesReviewed,
+            timesCorrect = :timesCorrect,
+            lastReviewed = :lastReviewed,
+            easeFactor = :easeFactor,
+            interval = :interval,
+            repetitionCount = :repetitionCount,
+            nextReviewDate = :nextReviewDate,
+            quality = :quality
+        WHERE id = :wordId
+    """)
+    suspend fun updateWordLearningData(
+        wordId: Int,
+        isBookmarked: Boolean,
+        timesReviewed: Int,
+        timesCorrect: Int,
+        lastReviewed: Long,
+        easeFactor: Float,
+        interval: Int,
+        repetitionCount: Int,
+        nextReviewDate: Long,
+        quality: Int
     )
 }
 

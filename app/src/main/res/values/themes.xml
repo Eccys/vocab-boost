@@ -1,5 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.VocabularyBooster" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.VocabularyBooster" parent="android:Theme.Material.NoActionBar">
+        <!-- Set the background color for the splash screen -->
+        <item name="android:windowBackground">@color/background</item>
+        
+        <!-- Make status bar and navigation bar dark -->
+        <item name="android:statusBarColor">@color/background</item>
+        <item name="android:navigationBarColor">@color/background</item>
+        
+        <!-- Make the splash screen icons appear in white -->
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+    </style>
 </resources>

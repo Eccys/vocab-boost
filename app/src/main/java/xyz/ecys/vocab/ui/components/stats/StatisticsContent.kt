@@ -28,6 +28,12 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Text
+import androidx.compose.animation.core.spring
 
 @Composable
 private fun StatBoxWithIcon(
@@ -243,16 +249,44 @@ fun StatisticsContent(
 
         item {
             Spacer(modifier = Modifier.height(16.dp))
+            // Database Section
+            var isResetPressed by remember { mutableStateOf(false) }
+            val resetScale by animateFloatAsState(
+                targetValue = if (isResetPressed) 0.97f else 1f,
+                animationSpec = spring(
+                    dampingRatio = 0.75f,
+                    stiffness = 300f
+                )
+            )
+
             OutlinedButton(
                 onClick = onResetClick,
                 colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = Color(0xFFF44336)
+                    contentColor = Color(0xFFED333B)
                 ),
                 border = BorderStroke(
                     1.dp,
-                    Color(0xFFF44336).copy(alpha = 0.5f)
+                    Color(0xFFED333B).copy(alpha = 0.5f)
                 ),
-                modifier = Modifier.fillMaxWidth()
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .graphicsLayer {
+                        scaleX = resetScale
+                        scaleY = resetScale
+                    },
+                interactionSource = remember { MutableInteractionSource() }
+                    .also { interactionSource ->
+                        LaunchedEffect(interactionSource) {
+                            interactionSource.interactions.collect { interaction ->
+                                when (interaction) {
+                                    is PressInteraction.Press -> isResetPressed = true
+                                    is PressInteraction.Release -> isResetPressed = false
+                                    is PressInteraction.Cancel -> isResetPressed = false
+                                }
+                            }
+                        }
+                    }
             ) {
                 Text("Reset Learning Progress")
             }
