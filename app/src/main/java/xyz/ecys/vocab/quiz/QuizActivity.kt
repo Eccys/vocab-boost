@@ -9,11 +9,13 @@ import kotlinx.coroutines.launch
 import xyz.ecys.vocab.data.*
 import xyz.ecys.vocab.ui.theme.VocabularyBoosterTheme
 import xyz.ecys.vocab.quiz.components.QuizContent
+import xyz.ecys.vocab.data.SettingsManager
 
 class QuizActivity : ComponentActivity() {
     private lateinit var wordRepository: WordRepository
     private lateinit var appUsageManager: AppUsageManager
     private lateinit var correctAnswerTracker: CorrectAnswerTracker
+    private lateinit var settingsManager: SettingsManager
     private var isBookmarkMode = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -21,6 +23,7 @@ class QuizActivity : ComponentActivity() {
         wordRepository = WordRepository.getInstance(this)
         appUsageManager = AppUsageManager.getInstance(this)
         correctAnswerTracker = CorrectAnswerTracker.getInstance(this)
+        settingsManager = SettingsManager.getInstance(this)
         isBookmarkMode = intent.getStringExtra("mode") == "bookmarks"
 
         appUsageManager.startQuizSession()
@@ -37,7 +40,8 @@ class QuizActivity : ComponentActivity() {
                     wordRepository = wordRepository,
                     appUsageManager = appUsageManager,
                     isBookmarkMode = isBookmarkMode,
-                    onFinish = { finish() }
+                    onFinish = { finish() },
+                    settingsManager = settingsManager
                 )
             }
         }

@@ -27,6 +27,7 @@ import xyz.ecys.vocab.data.QuizResult
 import xyz.ecys.vocab.quiz.QuizScreen
 import xyz.ecys.vocab.quiz.QuizTopBar
 import xyz.ecys.vocab.quiz.generateOptions
+import xyz.ecys.vocab.data.SettingsManager
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -34,7 +35,8 @@ fun QuizContent(
     wordRepository: WordRepository,
     appUsageManager: AppUsageManager,
     isBookmarkMode: Boolean,
-    onFinish: () -> Unit
+    onFinish: () -> Unit,
+    settingsManager: SettingsManager
 ) {
     val currentWord = remember { mutableStateOf<Word?>(null) }
     val lives = remember { mutableStateOf(3) }
@@ -73,7 +75,8 @@ fun QuizContent(
                     appUsageManager.endSession()
                 }
                 onFinish()
-            }
+            },
+            settingsManager = settingsManager
         )
     }
 } 

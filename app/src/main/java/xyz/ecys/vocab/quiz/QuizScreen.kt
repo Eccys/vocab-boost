@@ -51,6 +51,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import xyz.ecys.vocab.data.SettingsManager
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -61,7 +62,8 @@ fun QuizScreen(
     isBookmarkMode: Boolean,
     currentWord: MutableState<Word?>,
     lives: MutableState<Int>,
-    onGameOver: () -> Unit
+    onGameOver: () -> Unit,
+    settingsManager: SettingsManager
 ) {
     val context = LocalContext.current
     val view = LocalView.current
@@ -77,6 +79,7 @@ fun QuizScreen(
     var currentBatch by remember { mutableStateOf<List<Word>>(emptyList()) }
     var options by remember { mutableStateOf<List<String>>(emptyList()) }
     var totalBookmarkedWords by remember { mutableStateOf(0) }
+    var showTooltip by remember { mutableStateOf(false) }
 
     // Debug state
     var showDebugInfo by remember { mutableStateOf(true) }
@@ -197,6 +200,9 @@ fun QuizScreen(
         }
     }
 
+    // Get the options count from settings
+    val optionsCount = settingsManager.getMultipleChoiceOptionsCount()
+
     // Function to advance to next question
     fun advanceToNextQuestion() {
         coroutineScope.launch {
@@ -215,11 +221,11 @@ fun QuizScreen(
                 wordRepository.getNextWord(currentWord.value)
             }
 
-            // Build a batch with the selected word and 3 other random words
+            // Build a batch with the selected word and (optionsCount-1) other random words
             val otherWords = if (isBookmarkMode) {
-                wordRepository.getRandomBookmarkedWordsExcluding(3, nextWord.id)
+                wordRepository.getRandomBookmarkedWordsExcluding(optionsCount - 1, nextWord.id)
             } else {
-                wordRepository.getRandomWordsExcluding(3, nextWord)
+                wordRepository.getRandomWordsExcluding(optionsCount - 1, nextWord)
             }
             
             // Create the new batch with the prioritized word first
@@ -235,6 +241,7 @@ fun QuizScreen(
             selectedAnswer = null
             showNextButton = false
             expandedExamples = emptySet()
+            showTooltip = false
             questionStartTime = System.currentTimeMillis()
             
             // Update debug info
@@ -258,11 +265,11 @@ fun QuizScreen(
         }
         
         if (initialWord != null) {
-            // Build a batch with the selected word and 3 other random words
+            // Build a batch with the selected word and (optionsCount-1) other random words
             val otherWords = if (isBookmarkMode) {
-                wordRepository.getRandomBookmarkedWordsExcluding(3, initialWord.id)
+                wordRepository.getRandomBookmarkedWordsExcluding(optionsCount - 1, initialWord.id)
             } else {
-                wordRepository.getRandomWordsExcluding(3, initialWord)
+                wordRepository.getRandomWordsExcluding(optionsCount - 1, initialWord)
             }
             
             // Create the batch with the prioritized word first
@@ -463,7 +470,7 @@ fun QuizScreen(
                         onClick = {
                             coroutineScope.launch {
                                 val nextWord = wordRepository.getNextWord(currentWord.value)
-                                val otherWords = wordRepository.getRandomWordsExcluding(3, nextWord)
+                                val otherWords = wordRepository.getRandomWordsExcluding(optionsCount - 1, nextWord)
                                 currentBatch = listOf(nextWord) + otherWords
                                 currentWord.value = nextWord
                                 val (newOptions, newSynonymSet) = generateOptions(currentBatch, nextWord)
@@ -552,9 +559,6 @@ fun QuizScreen(
                 }
             }
         }
-
-        // Add state for tooltip visibility
-        var showTooltip by remember { mutableStateOf(false) }
 
         Text(
             text = currentWord.value!!.word.lowercase(),
@@ -738,6 +742,7 @@ fun QuizScreen(
                     selectedAnswer = null
                     showNextButton = false
                     expandedExamples = emptySet()
+                    showTooltip = false  // Also reset tooltip here for good measure
                     advanceToNextQuestion() 
                 },
                 modifier = Modifier

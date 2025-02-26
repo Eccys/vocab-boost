@@ -72,11 +72,13 @@ import xyz.ecys.vocab.ui.theme.White
 import xyz.ecys.vocab.ui.theme.Success
 import xyz.ecys.vocab.ui.theme.Error
 import xyz.ecys.vocab.data.QuizResult
+import xyz.ecys.vocab.data.SettingsManager
 
 class QuizActivity : ComponentActivity() {
     private lateinit var wordRepository: WordRepository
     private lateinit var appUsageManager: AppUsageManager
     private lateinit var correctAnswerTracker: CorrectAnswerTracker
+    private lateinit var settingsManager: SettingsManager
     private var isBookmarkMode = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -84,6 +86,7 @@ class QuizActivity : ComponentActivity() {
         wordRepository = WordRepository.getInstance(this)
         appUsageManager = AppUsageManager.getInstance(this)
         correctAnswerTracker = CorrectAnswerTracker.getInstance(this)
+        settingsManager = SettingsManager.getInstance(this)
         isBookmarkMode = intent.getStringExtra("mode") == "bookmarks"
 
         // Start tracking quiz session
@@ -139,7 +142,8 @@ class QuizActivity : ComponentActivity() {
                             lifecycleScope.launch {
                                 appUsageManager.endSession()
                             }
-                        }
+                        },
+                        settingsManager = settingsManager
                     )
                 }
             }
@@ -225,7 +229,8 @@ fun QuizScreen(
     isBookmarkMode: Boolean,
     currentWord: MutableState<Word?>,
     lives: MutableState<Int>,
-    onGameOver: () -> Unit
+    onGameOver: () -> Unit,
+    settingsManager: SettingsManager
 ) {
     val context = LocalContext.current
     val view = LocalView.current
