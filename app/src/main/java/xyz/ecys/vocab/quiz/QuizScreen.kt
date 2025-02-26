@@ -553,16 +553,69 @@ fun QuizScreen(
             }
         }
 
+        // Add state for tooltip visibility
+        var showTooltip by remember { mutableStateOf(false) }
+
         Text(
             text = currentWord.value!!.word.lowercase(),
             style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier
                 .pointerInput(Unit) {
                     detectTapGestures(
-                        onLongPress = { lookupWord(currentWord.value!!.word) }
+                        onLongPress = { 
+                            // Show tooltip with example sentence instead of looking up the word
+                            view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
+                            showTooltip = true
+                        }
                     )
                 }
         )
+
+        // Tooltip for example sentence
+        AnimatedVisibility(
+            visible = showTooltip,
+            enter = fadeIn() + expandVertically(
+                animationSpec = spring(
+                    dampingRatio = 0.75f,
+                    stiffness = 300f
+                ),
+                expandFrom = Alignment.Top
+            ),
+            exit = fadeOut() + shrinkVertically(
+                animationSpec = spring(
+                    dampingRatio = 0.75f,
+                    stiffness = 300f
+                ),
+                shrinkTowards = Alignment.Top
+            )
+        ) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+                    .clickable { showTooltip = false },
+                colors = CardDefaults.cardColors(
+                    containerColor = Color(0xFF2D2D3A)
+                ),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    Text(
+                        text = "Example:",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = Color(0xFF90CAF9)
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = currentWord.value!!.exampleSentence,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.White
+                    )
+                }
+            }
+        }
 
         options.forEach { optionSynonym ->
             Column(

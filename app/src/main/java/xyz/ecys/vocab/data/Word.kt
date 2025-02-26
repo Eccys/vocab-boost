@@ -9,6 +9,7 @@ data class Word(
         @PrimaryKey(autoGenerate = true) val id: Int = 0,
         val word: String,
         val definition: String,
+        val exampleSentence: String = "", // Example sentence for the main word
 
         // First synonym set
         val synonym1: String,

@@ -260,4 +260,29 @@ class AuthViewModel : ViewModel() {
     fun hasPassword(): Boolean {
         return authRepository.hasPassword()
     }
+
+    fun verifyPasswordResetCode(code: String, onComplete: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            try {
+                authRepository.verifyPasswordResetCode(code).await()
+                _authError.value = null
+                onComplete(true)
+            } catch (e: Exception) {
+                _authError.value = e.message
+                onComplete(false)
+            }
+        }
+    }
+
+    fun getCurrentUserEmail(): String? {
+        return authRepository.getCurrentUserEmail()
+    }
+
+    fun canRequestPasswordReset(): Boolean {
+        return authRepository.canRequestPasswordReset()
+    }
+
+    fun getTimeUntilNextPasswordReset(): Long {
+        return authRepository.getTimeUntilNextPasswordReset()
+    }
 } 

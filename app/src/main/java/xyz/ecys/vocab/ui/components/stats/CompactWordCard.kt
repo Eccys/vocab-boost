@@ -60,8 +60,7 @@ fun CompactWordCard(
     val cardBackground = Color(0xFF19181E)  // Specific card background color
     val textColor = Color(0xFFFCFCFC)       // White text
     val dimmedText = textColor.copy(alpha = 0.7f)
-    val Success = MaterialTheme.colorScheme.primary
-    val Error = MaterialTheme.colorScheme.error
+
 
     Card(
         modifier = Modifier
@@ -72,11 +71,11 @@ fun CompactWordCard(
                     stiffness = Spring.StiffnessLow
                 )
             )
-            .clickable(
-                interactionSource = interactionSource,
-                indication = null
-            ) {
-                onExpandedWordIdChange(if (isExpanded) null else word.id)
+            .pointerInput(word.id, expandedWordId) {
+                detectTapGestures(
+                    onLongPress = { lookupWord(word.word) },
+                    onTap = { onExpandedWordIdChange(if (isExpanded) null else word.id) }
+                )
             },
         colors = CardDefaults.cardColors(
             containerColor = cardBackground

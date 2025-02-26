@@ -34,6 +34,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.Spring
 
 @Composable
 private fun StatBoxWithIcon(
@@ -254,8 +255,8 @@ fun StatisticsContent(
             val resetScale by animateFloatAsState(
                 targetValue = if (isResetPressed) 0.97f else 1f,
                 animationSpec = spring(
-                    dampingRatio = 0.75f,
-                    stiffness = 300f
+                    dampingRatio = Spring.DampingRatioLowBouncy,
+                    stiffness = Spring.StiffnessLow
                 )
             )
 

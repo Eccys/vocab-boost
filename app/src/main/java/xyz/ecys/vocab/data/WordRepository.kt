@@ -5,7 +5,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 
-class WordRepository private constructor(private val wordDao: WordDao) {
+class WordRepository private constructor(
+    private val wordDao: WordDao,
+    private val context: Context
+) {
     
     companion object {
         @Volatile
@@ -14,7 +17,7 @@ class WordRepository private constructor(private val wordDao: WordDao) {
         fun getInstance(context: Context): WordRepository {
             return INSTANCE ?: synchronized(this) {
                 val database = WordDatabase.getDatabase(context)
-                WordRepository(database.wordDao()).also {
+                WordRepository(database.wordDao(), context.applicationContext).also {
                     INSTANCE = it
                 }
             }
@@ -139,110 +142,13 @@ class WordRepository private constructor(private val wordDao: WordDao) {
 
     // Database initialization
     suspend fun insertInitialWords() = withContext(Dispatchers.IO) {
-        // First, delete all existing words
-        wordDao.deleteAllWords()
-        // Reset the SQLite sequence so IDs start from 1 again
-        wordDao.resetWordsSequence()
-        
-        val initialWords = listOf(
-            Word(
-                word = "ephemeral",
-                definition = "lasting for a very short time",
-                
-                synonym1 = "temporary",
-                synonym1Definition = "existing only for a limited time, not permanent",
-                synonym1ExampleSentence = "The temporary exhibit will only be at the museum for one month.",
-                
-                synonym2 = "fleeting",
-                synonym2Definition = "passing swiftly; lasting for a very brief time",
-                synonym2ExampleSentence = "She caught a fleeting glimpse of the rare bird before it flew away.",
-                
-                synonym3 = "transient",
-                synonym3Definition = "lasting only for a short time; impermanent",
-                synonym3ExampleSentence = "The transient nature of fashion trends makes it hard to keep up."
-            ),
-            Word(
-                word = "ubiquitous",
-                definition = "present, appearing, or found everywhere",
-                
-                synonym1 = "omnipresent",
-                synonym1Definition = "present everywhere at the same time",
-                synonym1ExampleSentence = "The omnipresent smell of coffee filled every corner of the café.",
-                
-                synonym2 = "pervasive",
-                synonym2Definition = "spreading widely throughout an area or group of people",
-                synonym2ExampleSentence = "Social media has become a pervasive influence in modern life.",
-                
-                synonym3 = "universal",
-                synonym3Definition = "present or occurring everywhere",
-                synonym3ExampleSentence = "The universal appeal of music transcends cultural boundaries."
-            ),
-            Word(
-                word = "serendipity",
-                definition = "the occurrence of finding pleasant things by chance",
-                
-                synonym1 = "chance",
-                synonym1Definition = "a random or unplanned fortunate discovery",
-                synonym1ExampleSentence = "By chance, she discovered her favorite book in a small bookstore.",
-                
-                synonym2 = "fortune",
-                synonym2Definition = "a happy accident or pleasant surprise",
-                synonym2ExampleSentence = "It was pure fortune that led him to meet his future business partner.",
-                
-                synonym3 = "luck",
-                synonym3Definition = "success or good fortune by chance rather than design",
-                synonym3ExampleSentence = "Through sheer luck, they found the perfect house within their budget."
-            ),
-            Word(
-                word = "aberration",
-                definition = "a state or condition markedly different from the norm",
-                
-                synonym1 = "anomaly",
-                synonym1Definition = "something that deviates from the standard pattern",
-                synonym1ExampleSentence = "Scientists detected an anomaly in the data that required further investigation.",
-                
-                synonym2 = "deviation",
-                synonym2Definition = "departure from the usual or expected course",
-                synonym2ExampleSentence = "The sudden drop in temperature was a deviation from typical summer weather.",
-                
-                synonym3 = "irregularity",
-                synonym3Definition = "something that varies from the normal arrangement or development",
-                synonym3ExampleSentence = "The irregularity in his heartbeat prompted a visit to the doctor."
-            ),
-            Word(
-                word = "abhor",
-                definition = "to feel hatred or disgust toward",
-                
-                synonym1 = "detest",
-                synonym1Definition = "to dislike intensely; to feel repugnance toward",
-                synonym1ExampleSentence = "He detests the sound of nails on a chalkboard.",
-                
-                synonym2 = "loathe",
-                synonym2Definition = "to feel intense dislike or disgust for",
-                synonym2ExampleSentence = "She loathes getting up early on cold winter mornings.",
-                
-                synonym3 = "despise",
-                synonym3Definition = "to regard with deep contempt or aversion",
-                synonym3ExampleSentence = "They despise any form of dishonesty in their organization."
-            ),
-            Word(
-                word = "acquiesce",
-                definition = "to agree or express agreement reluctantly",
-                
-                synonym1 = "comply",
-                synonym1Definition = "to accept or go along with something without protest",
-                synonym1ExampleSentence = "The students complied with the new dress code regulations.",
-                
-                synonym2 = "consent",
-                synonym2Definition = "to give permission or approval",
-                synonym2ExampleSentence = "After much discussion, she consented to the proposed changes.",
-                
-                synonym3 = "yield",
-                synonym3Definition = "to give way to or submit to pressure or demands",
-                synonym3ExampleSentence = "The committee finally yielded to public pressure and changed their policy."
-            )
-        )
-        wordDao.insertWords(initialWords)
+        // Use the WordLoader to load words from JSON
+        WordLoader.replaceAllWordsFromJson(context, wordDao)
+    }
+
+    // Add a method to add words without deleting existing ones
+    suspend fun addWordsFromJson() = withContext(Dispatchers.IO) {
+        WordLoader.addWordsFromJson(context, wordDao)
     }
 
     suspend fun resetAllStats() = withContext(Dispatchers.IO) {

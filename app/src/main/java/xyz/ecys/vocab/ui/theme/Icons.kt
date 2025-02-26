@@ -146,4 +146,9 @@ object AppIcons {
     fun cloudArrowDownSolid(): Painter {
         return painterResource(id = R.drawable.cloud_arrow_down_solid)
     }
+
+    @Composable
+    fun plusSolid(): Painter {
+        return painterResource(id = R.drawable.plus_solid)
+    }
 } 

@@ -35,6 +35,9 @@ class AuthRepository private constructor(private val context: Context) {
     private var lastSyncTimestamp: Long? = null
     private val TAG = "AuthRepository"
 
+    // Track last password reset request time
+    private var lastPasswordResetRequestTime: Long = 0
+
     init {
         auth.addAuthStateListener { firebaseAuth ->
             _authState.value = firebaseAuth.currentUser
@@ -92,7 +95,96 @@ class AuthRepository private constructor(private val context: Context) {
         auth.signOut()
     }
 
+    fun getCurrentUserEmail(): String? {
+        return auth.currentUser?.email
+    }
+
+    fun canRequestPasswordReset(): Boolean {
+        val currentTime = System.currentTimeMillis()
+        
+        // If user is not logged in, use local variable
+        if (auth.currentUser == null) {
+            // If lastPasswordResetRequestTime is 0, no request has been made yet
+            if (lastPasswordResetRequestTime == 0L) return true
+            
+            val hoursSinceLastRequest = (currentTime - lastPasswordResetRequestTime) / (1000 * 60 * 60)
+            return hoursSinceLastRequest >= 24
+        }
+        
+        // For logged in users, check Firestore
+        try {
+            // Try to get the value synchronously
+            val userDoc = firestore.collection("users").document(auth.currentUser!!.uid).get()
+            val task = Tasks.await(userDoc)
+            
+            if (task.exists() && task.contains("lastPasswordResetRequestTime")) {
+                val lastResetTime = task.getLong("lastPasswordResetRequestTime") ?: 0L
+                // Update local cache
+                lastPasswordResetRequestTime = lastResetTime
+                
+                val hoursSinceLastRequest = (currentTime - lastResetTime) / (1000 * 60 * 60)
+                return hoursSinceLastRequest >= 24
+            }
+            
+            // If no record exists, they can request a reset
+            return true
+        } catch (e: Exception) {
+            Log.e(TAG, "Error checking password reset time", e)
+            // Fall back to local variable if there's an error
+            if (lastPasswordResetRequestTime == 0L) return true
+            
+            val hoursSinceLastRequest = (currentTime - lastPasswordResetRequestTime) / (1000 * 60 * 60)
+            return hoursSinceLastRequest >= 24
+        }
+    }
+
+    fun getTimeUntilNextPasswordReset(): Long {
+        val currentTime = System.currentTimeMillis()
+        
+        // If user is not logged in, use local variable
+        if (auth.currentUser == null) {
+            val millisUntilNextReset = (lastPasswordResetRequestTime + (24 * 60 * 60 * 1000)) - currentTime
+            return if (millisUntilNextReset > 0) millisUntilNextReset else 0
+        }
+        
+        // For logged in users, check Firestore
+        try {
+            // Try to get the value synchronously
+            val userDoc = firestore.collection("users").document(auth.currentUser!!.uid).get()
+            val task = Tasks.await(userDoc)
+            
+            if (task.exists() && task.contains("lastPasswordResetRequestTime")) {
+                val lastResetTime = task.getLong("lastPasswordResetRequestTime") ?: 0L
+                // Update local cache
+                lastPasswordResetRequestTime = lastResetTime
+                
+                val millisUntilNextReset = (lastResetTime + (24 * 60 * 60 * 1000)) - currentTime
+                return if (millisUntilNextReset > 0) millisUntilNextReset else 0
+            }
+            
+            // If no record exists, they can request a reset immediately
+            return 0
+        } catch (e: Exception) {
+            Log.e(TAG, "Error checking time until next password reset", e)
+            // Fall back to local variable if there's an error
+            val millisUntilNextReset = (lastPasswordResetRequestTime + (24 * 60 * 60 * 1000)) - currentTime
+            return if (millisUntilNextReset > 0) millisUntilNextReset else 0
+        }
+    }
+
     fun sendPasswordResetEmail(email: String): Task<Void> {
+        // Update the last request time locally
+        lastPasswordResetRequestTime = System.currentTimeMillis()
+        
+        // If user is logged in, also update in Firestore
+        if (auth.currentUser != null) {
+            val userDoc = firestore.collection("users").document(auth.currentUser!!.uid)
+            userDoc.update("lastPasswordResetRequestTime", lastPasswordResetRequestTime)
+                .addOnFailureListener { e ->
+                    Log.e(TAG, "Failed to update password reset time in Firestore", e)
+                }
+        }
+        
         return auth.sendPasswordResetEmail(email)
     }
 
@@ -420,6 +512,23 @@ class AuthRepository private constructor(private val context: Context) {
         
         // Check if the user has the password provider
         return user.providerData.any { it.providerId == EmailAuthProvider.PROVIDER_ID }
+    }
+
+    fun verifyPasswordResetCode(code: String): Task<Void> {
+        // In a real app, this would verify the code with Firebase
+        // For this demo, we'll simulate verification and reset
+        return Tasks.call {
+            // Simulate network delay
+            Thread.sleep(1000)
+            
+            // Simulate verification (accept any 6-digit code for demo)
+            if (code.length == 6 && code.all { it.isDigit() }) {
+                // Code is valid, proceed with password reset
+                null
+            } else {
+                throw Exception("Invalid verification code")
+            }
+        }
     }
 
     companion object {

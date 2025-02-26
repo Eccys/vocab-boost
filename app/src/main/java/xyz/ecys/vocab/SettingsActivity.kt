@@ -50,6 +50,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.fadeOut
+import androidx.compose.material3.HorizontalDivider
 
 @OptIn(ExperimentalMaterial3Api::class)
 class SettingsActivity : ComponentActivity() {
@@ -86,18 +87,34 @@ class SettingsActivity : ComponentActivity() {
             }
         }
 
+        // Create a variable to track auth sheet state changes
+        var authSheetVisible = false
+        
+        // Observe auth state changes to dismiss auth sheet and show success message
+        lifecycleScope.launch {
+            authViewModel.authState.collect { user ->
+                if (user != null && authSheetVisible) {
+                    authSheetVisible = false
+                    authViewModel.showMessage("Successfully signed in")
+                }
+            }
+        }
+
         setContent {
             VocabularyBoosterTheme {
                 val context = LocalContext.current
                 var showNeuralInfo by remember { mutableStateOf(false) }
                 var showRefreshConfirmation by remember { mutableStateOf(false) }
-                var showAuthSheet by remember { mutableStateOf(false) }
+                var showAuthSheet by remember { mutableStateOf(authSheetVisible) }
                 var showGoalDialog by remember { mutableStateOf(false) }
                 var goalInput by remember { mutableStateOf("20") }
                 
                 // Password dialog state
                 var showPasswordDialog by remember { mutableStateOf(false) }
                 var passwordInput by remember { mutableStateOf("") }
+                
+                // Forgot password dialog state
+                var showForgotPasswordDialog by remember { mutableStateOf(false) }
                 
                 // Custom snackbar state
                 var showSnackbar by remember { mutableStateOf(false) }
@@ -134,6 +151,11 @@ class SettingsActivity : ComponentActivity() {
                 }
                 var neuralProcessing by remember { 
                     mutableStateOf(prefs.getBoolean("neural_processing", false))
+                }
+
+                // Update the external variable when showAuthSheet changes
+                LaunchedEffect(showAuthSheet) {
+                    authSheetVisible = showAuthSheet
                 }
 
                 if (showNeuralInfo) {
@@ -344,6 +366,124 @@ class SettingsActivity : ComponentActivity() {
                     )
                 }
 
+                // Forgot Password Dialog
+                if (showForgotPasswordDialog) {
+                    var emailError by remember { mutableStateOf<String?>(null) }
+                    var emailSuccess by remember { mutableStateOf<String?>(null) }
+                    
+                    // Get current user email
+                    val userEmail = authViewModel.getCurrentUserEmail() ?: ""
+                    // Check if password reset is allowed (24h limit)
+                    val canRequestReset = authViewModel.canRequestPasswordReset()
+                    
+                    // Format time until next reset is allowed
+                    val timeUntilNextReset = if (!canRequestReset) {
+                        val millisRemaining = authViewModel.getTimeUntilNextPasswordReset()
+                        val hoursRemaining = millisRemaining / (1000 * 60 * 60)
+                        val minutesRemaining = (millisRemaining % (1000 * 60 * 60)) / (1000 * 60)
+                        "${hoursRemaining}h ${minutesRemaining}m"
+                    } else ""
+                    
+                    AlertDialog(
+                        onDismissRequest = { showForgotPasswordDialog = false },
+                        title = { Text("Reset Password") },
+                        containerColor = Color(0xFF18191E),
+                        titleContentColor = Color(0xFFFCFCFC),
+                        textContentColor = Color(0xFFFCFCFC),
+                        text = {
+                            Column(
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                // Email input screen
+                                if (canRequestReset) {
+                                    Text(
+                                        "A password reset link will be sent to your email address ($userEmail).",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = Color(0xFFAAAAAA)
+                                    )
+                                    
+                                    Text(
+                                        "Note: You can only request one password reset every 24 hours.",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = Color(0xFFFF9800)
+                                    )
+                                } else {
+                                    Text(
+                                        "You have already requested a password reset recently.",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = Color(0xFFAAAAAA)
+                                    )
+                                    
+                                    Text(
+                                        "You can request another reset in $timeUntilNextReset.",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = Color(0xFFFF9800)
+                                    )
+                                }
+                                
+                                emailError?.let {
+                                    Text(
+                                        text = it,
+                                        color = Color(0xFFED333B),
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
+                                }
+                                
+                                emailSuccess?.let {
+                                    Text(
+                                        text = it,
+                                        color = Color(0xFF4CAF50),
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
+                                }
+                                
+                                authError?.let {
+                                    Text(
+                                        text = it,
+                                        color = Color(0xFFED333B),
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
+                                }
+                            }
+                        },
+                        confirmButton = {
+                            TextButton(
+                                onClick = {
+                                    if (canRequestReset) {
+                                        authViewModel.sendPasswordResetEmail(userEmail) { success ->
+                                            if (success) {
+                                                emailSuccess = "Password reset link sent!"
+                                                // Close dialog after a short delay
+                                                scope.launch {
+                                                    kotlinx.coroutines.delay(1500)
+                                                    showForgotPasswordDialog = false
+                                                    authViewModel.showMessage("Password reset link sent to your email")
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                enabled = canRequestReset
+                            ) {
+                                Text(
+                                    "Send Reset Link", 
+                                    color = if (canRequestReset) Color(0xFF90CAF9) else Color(0xFF546E7A)
+                                )
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(
+                                onClick = { 
+                                    showForgotPasswordDialog = false
+                                    authViewModel.clearError()
+                                }
+                            ) {
+                                Text("Cancel", color = Color(0xFF90CAF9))
+                            }
+                        }
+                    )
+                }
+
                 if (showAuthSheet) {
                     ModalBottomSheet(
                         onDismissRequest = { 
@@ -524,7 +664,7 @@ class SettingsActivity : ComponentActivity() {
                                 }
                             }
 
-                            Divider(
+                            HorizontalDivider(
                                 color = Color(0xFF18191E),
                                 thickness = 1.dp,
                                 modifier = Modifier.padding(vertical = 8.dp)
@@ -594,15 +734,41 @@ class SettingsActivity : ComponentActivity() {
                             }
 
                             // Daily Goal Setting
+                            var isDailyGoalPressed by remember { mutableStateOf(false) }
+                            val dailyGoalScale by animateFloatAsState(
+                                targetValue = if (isDailyGoalPressed) 0.97f else 1f,
+                                animationSpec = spring(
+                                    dampingRatio = 0.75f,
+                                    stiffness = 300f
+                                )
+                            )
+                            
                             Card(
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .graphicsLayer {
+                                        scaleX = dailyGoalScale
+                                        scaleY = dailyGoalScale
+                                    },
                                 colors = CardDefaults.cardColors(
                                     containerColor = Color(0xFF18191E)
                                 ),
                                 shape = RoundedCornerShape(12.dp),
                                 onClick = { 
                                     showGoalDialog = true 
-                                }
+                                },
+                                interactionSource = remember { MutableInteractionSource() }
+                                    .also { interactionSource ->
+                                        LaunchedEffect(interactionSource) {
+                                            interactionSource.interactions.collect { interaction ->
+                                                when (interaction) {
+                                                    is PressInteraction.Press -> isDailyGoalPressed = true
+                                                    is PressInteraction.Release -> isDailyGoalPressed = false
+                                                    is PressInteraction.Cancel -> isDailyGoalPressed = false
+                                                }
+                                            }
+                                        }
+                                    }
                             ) {
                                 Row(
                                     modifier = Modifier
@@ -721,17 +887,39 @@ class SettingsActivity : ComponentActivity() {
                         // Custom Snackbar
                         AnimatedVisibility(
                             visible = showSnackbar,
-                            enter = slideInVertically(initialOffsetY = { -it }) + fadeIn(),
-                            exit = slideOutVertically(targetOffsetY = { -it }) + fadeOut(),
+                            enter = slideInVertically(
+                                initialOffsetY = { -it },
+                                animationSpec = spring(
+                                    dampingRatio = 0.6f,
+                                    stiffness = 300f
+                                )
+                            ) + fadeIn(
+                                animationSpec = spring(
+                                    dampingRatio = 0.6f,
+                                    stiffness = 300f
+                                )
+                            ),
+                            exit = slideOutVertically(
+                                targetOffsetY = { -it },
+                                animationSpec = spring(
+                                    dampingRatio = 0.6f,
+                                    stiffness = 300f
+                                )
+                            ) + fadeOut(
+                                animationSpec = spring(
+                                    dampingRatio = 0.6f,
+                                    stiffness = 300f
+                                )
+                            ),
                             modifier = Modifier
                                 .align(Alignment.TopCenter)
-                                .padding(top = 80.dp) // Position below the top bar
+                                .padding(top = 100.dp) // Position further below the top bar
                         ) {
                             Card(
                                 modifier = Modifier
-                                    .padding(horizontal = 16.dp)
-                                    .fillMaxWidth(),
-                                shape = RoundedCornerShape(12.dp),
+                                    .padding(horizontal = 24.dp)
+                                    .fillMaxWidth(0.9f), // Make it less wide
+                                shape = RoundedCornerShape(16.dp), // Less rounded corners
                                 colors = CardDefaults.cardColors(
                                     containerColor = Color(0xFF18191E)
                                 ),

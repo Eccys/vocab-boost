@@ -45,8 +45,6 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.activity.compose.BackHandler
 import androidx.activity.OnBackPressedCallback
 import androidx.compose.foundation.clickable
-import androidx.compose.animation.core.Spring
-import androidx.compose.animation.core.spring
 import java.util.*
 
 fun toSentenceCase(text: String): String {

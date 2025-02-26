@@ -627,7 +627,7 @@ class MainActivity : ComponentActivity() { // Calendar Card
                                 )
                             }
                         }
-
+                        
                         // Add remaining space at the bottom
                         Spacer(modifier = Modifier.weight(1f))
                     }

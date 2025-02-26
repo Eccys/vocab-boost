@@ -175,6 +175,8 @@ fun AuthSheet(
                         }
                         action(email, password) { success ->
                             if (success) {
+                                // Show success message before dismissing
+                                authViewModel.showMessage(if (isSignUp) "Successfully signed up" else "Successfully signed in")
                                 onDismiss()
                             }
                         }
@@ -209,7 +211,9 @@ fun AuthSheet(
                 )
 
                 OutlinedButton(
-                    onClick = { authViewModel.signInWithGoogle() },
+                    onClick = {
+                        authViewModel.signInWithGoogle()
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(48.dp)
