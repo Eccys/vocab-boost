@@ -164,22 +164,22 @@ class DailyWordActivity : ComponentActivity() {
                                     val word = dailyWordManager.getWordForSpecificDate(selectedDate)
                                     initialWords.add(Pair(word, selectedDate))
                                     
-                                    // Get 3 days after the selected date
+                                    // Get 10 days after the selected date - increased from 3 to 10
                                     val afterCalendar = Calendar.getInstance().apply {
                                         time = selectedDateObj
                                     }
-                                    for (i in 1..3) {
+                                    for (i in 1..10) {
                                         afterCalendar.add(Calendar.DAY_OF_MONTH, 1)
                                         val nextDay = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(afterCalendar.time)
                                         val nextWord = dailyWordManager.getWordForSpecificDate(nextDay)
                                         initialWords.add(Pair(nextWord, nextDay))
                                     }
                                     
-                                    // Get 3 days before the selected date
+                                    // Get 10 days before the selected date - increased from 3 to 10
                                     val beforeCalendar = Calendar.getInstance().apply {
                                         time = selectedDateObj
                                     }
-                                    for (i in 1..3) {
+                                    for (i in 1..10) {
                                         beforeCalendar.add(Calendar.DAY_OF_MONTH, -1)
                                         val prevDay = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(beforeCalendar.time)
                                         val prevWord = dailyWordManager.getWordForSpecificDate(prevDay)
@@ -207,8 +207,8 @@ class DailyWordActivity : ComponentActivity() {
                             // Add previous days
                             val calendar = Calendar.getInstance()
                             
-                            // Get the 6 days before today
-                            for (i in 1..6) {
+                            // Get the 15 days before today - increased from 6 to 15
+                            for (i in 1..15) {
                                 calendar.add(Calendar.DAY_OF_MONTH, -1)
                                 val prevDay = String.format("%04d-%02d-%02d", 
                                     calendar.get(Calendar.YEAR), 
@@ -249,9 +249,10 @@ class DailyWordActivity : ComponentActivity() {
                     }
                 }
                 
-                // Preload more words when needed
+                // Preload more words when needed - both older and newer dates
                 LaunchedEffect(pagerState.currentPage) {
-                    if (pagerState.currentPage >= wordsWithDates.size - 2 && !isLoading) {
+                    // Load older dates when approaching the end of the list
+                    if (pagerState.currentPage >= wordsWithDates.size - 4 && !isLoading) {
                         withContext(Dispatchers.IO) {
                             isLoading = true
                             
@@ -269,8 +270,8 @@ class DailyWordActivity : ComponentActivity() {
                             if (lastDate != null) {
                                 val newWords = mutableListOf<Pair<DailyWord, String>>()
                                 
-                                // Load more words
-                                for (i in 1..5) {
+                                // Load more words - increased from 5 to 10
+                                for (i in 1..10) {
                                     // Parse the last date string
                                     val simpleDateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
                                     val lastCalendar = Calendar.getInstance()
@@ -296,6 +297,57 @@ class DailyWordActivity : ComponentActivity() {
                                 }
                             } else {
                                 isLoading = false
+                            }
+                        }
+                    }
+                    
+                    // Add new LaunchedEffect to load newer dates when approaching the beginning of the list
+                    if (pagerState.currentPage <= 3 && !isLoading && wordsWithDates.isNotEmpty()) {
+                        withContext(Dispatchers.IO) {
+                            isLoading = true
+                            
+                            val firstDate = wordsWithDates.maxByOrNull { it.second }?.second
+                            
+                            if (firstDate != null) {
+                                val newWords = mutableListOf<Pair<DailyWord, String>>()
+                                
+                                // Load future/newer words
+                                for (i in 1..10) {
+                                    val simpleDateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+                                    val firstCalendar = Calendar.getInstance()
+                                    try {
+                                        val parsedDate = simpleDateFormat.parse(firstDate)
+                                        if (parsedDate != null) {
+                                            firstCalendar.time = parsedDate
+                                            // Add days
+                                            firstCalendar.add(Calendar.DAY_OF_MONTH, i)
+                                            // Format back to string
+                                            val nextDateStr = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(firstCalendar.time)
+                                            val word = dailyWordManager.getWordForSpecificDate(nextDateStr)
+                                            newWords.add(Pair(word, nextDateStr))
+                                        }
+                                    } catch (e: Exception) {
+                                        // Skip this date if parsing fails
+                                    }
+                                }
+                                
+                                if (newWords.isNotEmpty()) {
+                                    withContext(Dispatchers.Main) {
+                                        // When adding newer dates, we need to adjust currentPage to keep the same word visible
+                                        val oldCurrentPage = pagerState.currentPage
+                                        wordsWithDates = (wordsWithDates + newWords).sortedByDescending { it.second }
+                                        // Scrolling will happen automatically to maintain position + newWords.size
+                                        isLoading = false
+                                    }
+                                } else {
+                                    withContext(Dispatchers.Main) {
+                                        isLoading = false
+                                    }
+                                }
+                            } else {
+                                withContext(Dispatchers.Main) {
+                                    isLoading = false
+                                }
                             }
                         }
                     }
