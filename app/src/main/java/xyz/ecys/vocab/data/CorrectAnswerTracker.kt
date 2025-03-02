@@ -5,6 +5,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.time.LocalDateTime
 import java.time.ZoneId
+import java.util.*
 
 class CorrectAnswerTracker private constructor(private val appUsageDao: AppUsageDao) {
     companion object {
@@ -21,11 +22,13 @@ class CorrectAnswerTracker private constructor(private val appUsageDao: AppUsage
         }
 
         private fun getStartOfDayTimestamp(): Long {
-            return LocalDateTime.now()
-                .toLocalDate()
-                .atStartOfDay(ZoneId.systemDefault())
-                .toInstant()
-                .toEpochMilli()
+            // Use Calendar API which is compatible with API level 24
+            val calendar = Calendar.getInstance()
+            calendar.set(Calendar.HOUR_OF_DAY, 0)
+            calendar.set(Calendar.MINUTE, 0)
+            calendar.set(Calendar.SECOND, 0)
+            calendar.set(Calendar.MILLISECOND, 0)
+            return calendar.timeInMillis
         }
     }
 
