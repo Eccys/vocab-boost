@@ -907,13 +907,39 @@ class SettingsActivity : ComponentActivity() {
                             }
 
                             // Database Section
+                            var isResetDatabasePressed by remember { mutableStateOf(false) }
+                            val resetDatabaseScale by animateFloatAsState(
+                                targetValue = if (isResetDatabasePressed) 0.97f else 1f,
+                                animationSpec = spring(
+                                    dampingRatio = 0.75f,
+                                    stiffness = 300f
+                                )
+                            )
+                            
                             Card(
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .graphicsLayer {
+                                        scaleX = resetDatabaseScale
+                                        scaleY = resetDatabaseScale
+                                    },
                                 colors = CardDefaults.cardColors(
                                     containerColor = Color(0xFF18191E)
                                 ),
                                 shape = RoundedCornerShape(12.dp),
-                                onClick = { showRefreshConfirmation = true }
+                                onClick = { showRefreshConfirmation = true },
+                                interactionSource = remember { MutableInteractionSource() }
+                                    .also { interactionSource ->
+                                        LaunchedEffect(interactionSource) {
+                                            interactionSource.interactions.collect { interaction ->
+                                                when (interaction) {
+                                                    is PressInteraction.Press -> isResetDatabasePressed = true
+                                                    is PressInteraction.Release -> isResetDatabasePressed = false
+                                                    is PressInteraction.Cancel -> isResetDatabasePressed = false
+                                                }
+                                            }
+                                        }
+                                    }
                             ) {
                                 Row(
                                     modifier = Modifier
