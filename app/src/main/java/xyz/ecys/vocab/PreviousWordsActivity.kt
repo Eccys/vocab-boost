@@ -256,12 +256,11 @@ fun WordItem(
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
-            // Apply scale transformation using graphicsLayer
             .graphicsLayer {
                 scaleX = scale
                 scaleY = scale
             }
+            .clip(RoundedCornerShape(12.dp))
             .clickable(
                 interactionSource = remember { MutableInteractionSource() }
                     .also { interactionSource ->
