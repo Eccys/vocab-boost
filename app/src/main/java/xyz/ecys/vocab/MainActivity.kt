@@ -95,7 +95,7 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelChildren
-import kotlinx.coroutines.rememberCoroutineScope
+import androidx.compose.runtime.rememberCoroutineScope
 
 data class CalendarDay(
     val date: LocalDate,
@@ -151,7 +151,7 @@ class MainActivity : ComponentActivity() { // Calendar Card
                         // Cancel previous job if it exists
                         calendarJob.value?.cancel()
                         // Create new job
-                        calendarJob.value = coroutineScope.launch {
+                        calendarJob.value = launch {  // Use directly launch from LaunchedEffect scope
                             // Generate new calendar days with today's date
                             val today = LocalDate.now()
                             val days = mutableListOf<CalendarDay>()
@@ -196,7 +196,7 @@ class MainActivity : ComponentActivity() { // Calendar Card
                         // Cancel previous job if it exists
                         wordLoadJob.value?.cancel()
                         // Create new job
-                        wordLoadJob.value = coroutineScope.launch {
+                        wordLoadJob.value = launch {  // Use directly launch from LaunchedEffect scope
                             // Force refresh the word preview from the manager
                             // Clear the cache first to ensure we get the latest word
                             withContext(Dispatchers.IO) {
@@ -220,7 +220,7 @@ class MainActivity : ComponentActivity() { // Calendar Card
                             // Cancel previous job if it exists
                             activityDataJob.value?.cancel()
                             // Create new job with safer flow collection
-                            activityDataJob.value = coroutineScope.launch {
+                            activityDataJob.value = launch {  // Use directly launch from LaunchedEffect scope
                                 val startDate = activityDays.value.first().date.atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli()
                                 val endDate = activityDays.value.last().date.atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli()
                                 
