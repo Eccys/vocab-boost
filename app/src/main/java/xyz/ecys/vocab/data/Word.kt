@@ -45,6 +45,7 @@ data class Word(
 data class AppUsage(
         @PrimaryKey val date: Long, // Store date as timestamp
         val duration: Long = 0, // Store duration in milliseconds
+        val quizDuration: Long = 0, // Store quiz duration in milliseconds
         val sessionCount: Int = 0, // Number of quiz sessions on this date
         val correctAnswers: Int = 0 // Number of correct answers on this date
 )

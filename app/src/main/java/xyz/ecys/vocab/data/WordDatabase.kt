@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
-@Database(entities = [Word::class, AppUsage::class], version = 18, exportSchema = true) // Increment version to 18
+@Database(entities = [Word::class, AppUsage::class], version = 19, exportSchema = true) // Increment version to 19
 abstract class WordDatabase : RoomDatabase() {
     abstract fun wordDao(): WordDao
     abstract fun appUsageDao(): AppUsageDao
@@ -15,6 +15,17 @@ abstract class WordDatabase : RoomDatabase() {
     companion object {
         @Volatile
         private var INSTANCE: WordDatabase? = null
+
+        // Add migration from version 18 to 19
+        private val MIGRATION_18_19 = object : Migration(18, 19) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                // Add quizDuration column with a default 0 value
+                database.execSQL("""
+                    ALTER TABLE app_usage 
+                    ADD COLUMN quizDuration INTEGER NOT NULL DEFAULT 0
+                """)
+            }
+        }
 
         // Add migration from version 17 to 18
         private val MIGRATION_17_18 = object : Migration(17, 18) {
@@ -402,7 +413,8 @@ abstract class WordDatabase : RoomDatabase() {
                     MIGRATION_14_15,
                     MIGRATION_15_16,
                     MIGRATION_16_17,
-                    MIGRATION_17_18
+                    MIGRATION_17_18,
+                    MIGRATION_18_19
                 )
                 .fallbackToDestructiveMigration()
                 .build()
