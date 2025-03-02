@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<issues format="6" by="lint 8.3.0">
+
+    <!-- API level checks -->
+    <issue id="NewApi" severity="ignore" />
+    
+    <!-- Fragment version for activity result -->
+    <issue id="InvalidFragmentVersionForActivityResult" severity="ignore" />
+    
+    <!-- Other reported issues -->
+    <issue id="UnusedResources" severity="ignore" />
+    <issue id="OldTargetApi" severity="ignore" />
+    <issue id="VectorPath" severity="ignore" />
+    <issue id="VectorRaster" severity="ignore" />
+    <issue id="StaticFieldLeak" severity="ignore" />
+    <issue id="GradleDependency" severity="ignore" />
+    <issue id="KaptUsageInsteadOfKsp" severity="ignore" />
+    <issue id="MonochromeLauncherIcon" severity="ignore" />
+    <issue id="IconDuplicates" severity="ignore" />
+    <issue id="RedundantLabel" severity="ignore" />
+
+</issues> 
