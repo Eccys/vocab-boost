@@ -256,46 +256,45 @@ fun WordItem(
         )
     )
 
-    // Create the interactionSource before using it
-    val interactionSource = remember { MutableInteractionSource() }
-    // Track press state changes
-    LaunchedEffect(interactionSource) {
-        interactionSource.interactions.collect { interaction ->
-            when (interaction) {
-                is PressInteraction.Press -> isPressed = true
-                is PressInteraction.Release -> isPressed = false
-                is PressInteraction.Cancel -> isPressed = false
-            }
-        }
-    }
-
-    Card(
+    // Use Button component like in MainActivity
+    Button(
+        onClick = { onClick(date) },
         modifier = Modifier
             .fillMaxWidth()
             .graphicsLayer {
                 scaleX = scale
                 scaleY = scale
-            }
-            .clip(RoundedCornerShape(12.dp))
-            .clickable(
-                interactionSource = interactionSource,
-                indication = rememberRipple()  // Use rememberRipple directly
-            ) {
-                onClick(date)
             },
-        colors = CardDefaults.cardColors(
+        shape = RoundedCornerShape(12.dp),
+        colors = ButtonDefaults.buttonColors(
             containerColor = Color(0xFF18191E)
         ),
-        shape = RoundedCornerShape(12.dp)
+        elevation = ButtonDefaults.buttonElevation(
+            defaultElevation = 0.dp,
+            pressedElevation = 0.dp
+        ),
+        contentPadding = PaddingValues(16.dp),
+        interactionSource = remember { MutableInteractionSource() }
+            .also { interactionSource ->
+                LaunchedEffect(interactionSource) {
+                    interactionSource.interactions.collect { interaction ->
+                        when (interaction) {
+                            is PressInteraction.Press -> isPressed = true
+                            is PressInteraction.Release -> isPressed = false
+                            is PressInteraction.Cancel -> isPressed = false
+                        }
+                    }
+                }
+            }
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column {
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
                 Text(
                     text = word.word,
                     style = MaterialTheme.typography.titleMedium,

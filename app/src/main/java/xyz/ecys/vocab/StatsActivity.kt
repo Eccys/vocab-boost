@@ -108,8 +108,8 @@ class StatsActivity : ComponentActivity() {
                 // Load statistics
                 LaunchedEffect(words) {
                     totalReviewed = words.count { it.timesReviewed > 0 }
-                    timeSpentToday = appUsageManager.getTimeSpentToday()
-                    totalTimeSpent = appUsageManager.getTotalTimeSpent()
+                    timeSpentToday = appUsageManager.getQuizTimeSpentToday()
+                    totalTimeSpent = appUsageManager.getTotalQuizTimeSpent()
                     bestStreak = appUsageManager.getBestStreak()
                     wordsToday = words.count { word ->
                         val today = Calendar.getInstance().apply {

@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 18,
-    "identityHash": "490c9ceba1e49ae1067e2a31b48abd19",
+    "identityHash": "35d09e840a0510c27796650c3db3d173",
     "entities": [
       {
         "tableName": "words",
@@ -168,7 +168,7 @@
       },
       {
         "tableName": "app_usage",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`date` INTEGER NOT NULL, `duration` INTEGER NOT NULL, `sessionCount` INTEGER NOT NULL, `correctAnswers` INTEGER NOT NULL, PRIMARY KEY(`date`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`date` INTEGER NOT NULL, `duration` INTEGER NOT NULL, `quizDuration` INTEGER NOT NULL, `sessionCount` INTEGER NOT NULL, `correctAnswers` INTEGER NOT NULL, PRIMARY KEY(`date`))",
         "fields": [
           {
             "fieldPath": "date",
@@ -179,6 +179,12 @@
           {
             "fieldPath": "duration",
             "columnName": "duration",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "quizDuration",
+            "columnName": "quizDuration",
             "affinity": "INTEGER",
             "notNull": true
           },
@@ -208,7 +214,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '490c9ceba1e49ae1067e2a31b48abd19')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '35d09e840a0510c27796650c3db3d173')"
     ]
   }
 }

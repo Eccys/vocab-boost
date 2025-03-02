@@ -423,6 +423,7 @@ class AuthRepository private constructor(private val context: Context) {
                     
                     val date = usageData["date"] as? Long ?: continue
                     val duration = usageData["duration"] as? Long ?: 0
+                    val quizDuration = usageData["quizDuration"] as? Long ?: 0
                     val sessionCount = usageData["sessionCount"] as? Int ?: 0
                     val correctAnswers = usageData["correctAnswers"] as? Int ?: 0
                     
@@ -434,14 +435,16 @@ class AuthRepository private constructor(private val context: Context) {
                         appUsageDao.updateUsage(
                             date = date,
                             duration = existingUsage.duration + duration,
+                            quizDuration = existingUsage.quizDuration + quizDuration,
                             sessionCount = existingUsage.sessionCount + sessionCount,
                             correctAnswers = existingUsage.correctAnswers + correctAnswers
                         )
-                    } else {
+                    
                         // Create new usage data
                         val newUsage = AppUsage(
                             date = date,
                             duration = duration,
+                            quizDuration = quizDuration,
                             sessionCount = sessionCount,
                             correctAnswers = correctAnswers
                         )
