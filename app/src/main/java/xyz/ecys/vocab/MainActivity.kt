@@ -659,14 +659,17 @@ class MainActivity : ComponentActivity() { // Calendar Card
                                                 interactionSource.interactions.collect { interaction ->
                                                     when (interaction) {
                                                         is PressInteraction.Press -> isPlayCardPressed = true
-                                                        is PressInteraction.Release -> isPlayCardPressed = false
+                                                        is PressInteraction.Release -> {
+                                                            isPlayCardPressed = false
+                                                            // No action here as the button below handles the actual click
+                                                        }
                                                         is PressInteraction.Cancel -> isPlayCardPressed = false
                                                     }
                                                 }
                                             }
                                         },
-                                    indication = null,  // Remove default ripple
-                                    onClick = { }  // Empty click handler - just for the animation
+                                    indication = rememberRipple(color = Color(0xFF1A1A1A).copy(alpha = 0.1f)),
+                                    onClick = { }  // Empty click handler - keep empty as the button below handles the actual click
                                 )
                                 .padding(16.dp)
                         ) {
