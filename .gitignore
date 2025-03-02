@@ -15,3 +15,6 @@
 .cxx
 local.properties
 gradlew
+.cursor/
+gradle-profiler/
+*.apk
