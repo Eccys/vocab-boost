@@ -8,6 +8,7 @@ import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
 import kotlin.math.abs
 import kotlin.random.Random
 
@@ -20,6 +21,9 @@ class DailyWordManager(private val context: Context) {
     // Cache for today's word to avoid repeated calculations
     private var cachedTodayWord: DailyWord? = null
     private var cachedDate: LocalDate? = null
+    
+    // Reference date for deterministic shuffling
+    private val referenceDate = LocalDate.of(2023, 1, 1)
     
     init {
         loadAllWords()
@@ -81,13 +85,46 @@ class DailyWordManager(private val context: Context) {
             .apply()
     }
     
-    private fun getWordIndexForDate(date: LocalDate): Int {
-        if (allWords.isEmpty()) return 0
+    /**
+     * Creates a deterministically shuffled sequence of indices based on cycle number.
+     * This ensures a complete cycle through all words before any repeats.
+     * 
+     * @param cycleNumber The current cycle number (increases each time we go through all words)
+     * @return A shuffled list of indices (0 to allWords.size-1)
+     */
+    private fun createDeterministicShuffle(cycleNumber: Int): List<Int> {
+        // Create a sequence 0..allWords.size-1
+        val indices = (0 until allWords.size).toList()
         
-        // Use the date to determine the index using our deterministic algorithm
-        val dateString = date.format(DateTimeFormatter.ISO_LOCAL_DATE)
-        val hash = consistentHash(dateString)
-        return abs(hash) % allWords.size
+        // Use the cycle number as a seed for shuffling
+        val random = Random(cycleNumber)
+        
+        // Shuffle the indices deterministically
+        return indices.shuffled(random)
+    }
+    
+    /**
+     * Gets a word for a specific date using a deterministic shuffling algorithm.
+     * This ensures all users see the same word on the same date, and that
+     * all words appear exactly once before any word repeats.
+     */
+    private fun getWordForDate(date: LocalDate): DailyWord {
+        if (allWords.isEmpty()) {
+            return getDefaultWord()
+        }
+
+        // Calculate days since reference date
+        val daysSinceReference = ChronoUnit.DAYS.between(referenceDate, date).toInt()
+        
+        // Calculate which cycle we're in and position within cycle
+        val cycleNumber = daysSinceReference / allWords.size
+        val positionInCycle = daysSinceReference % allWords.size
+        
+        // Create a deterministically shuffled sequence for this cycle
+        val shuffledIndices = createDeterministicShuffle(cycleNumber)
+        
+        // Get the word at the shuffled position
+        return allWords[shuffledIndices[positionInCycle]]
     }
     
     fun getTodaysWord(): DailyWord {
@@ -182,51 +219,6 @@ class DailyWordManager(private val context: Context) {
             val type = object : TypeToken<List<DailyWord>>() {}.type
             previousWords = gson.fromJson(previousWordsJson, type)
         }
-    }
-    
-    /**
-     * Gets a word for a specific date using a deterministic algorithm.
-     * This ensures all users see the same word on the same date.
-     */
-    private fun getWordForDate(date: LocalDate): DailyWord {
-        if (allWords.isEmpty()) {
-            return getDefaultWord()
-        }
-
-        // Use a deterministic algorithm to get a consistent word index
-        // for all users on the same day, regardless of device
-        val algorithmVersion = 1 // Increment this if the algorithm changes
-        
-        // Format the date consistently
-        val dateString = date.format(DateTimeFormatter.ISO_LOCAL_DATE) // YYYY-MM-DD format
-        
-        // Create a seed from the date + algorithm version for consistency
-        val seed = "$dateString:v$algorithmVersion"
-        
-        // Use Java's String.hashCode() which is consistent across platforms
-        var hash = seed.hashCode()
-        
-        // If you need more entropy, you can also use a more complex hash function:
-        for (char in seed) {
-            hash = 31 * hash + char.code
-        }
-        
-        // Ensure a positive index and apply modulo to get within range of available words
-        val wordIndex = Math.abs(hash) % allWords.size
-        
-        // Return the word at the computed index
-        return allWords[wordIndex]
-    }
-    
-    /**
-     * Consistent hash function to ensure the same words are selected across devices
-     */
-    private fun consistentHash(input: String): Int {
-        var h = 0
-        for (i in input.indices) {
-            h = 31 * h + input[i].code
-        }
-        return h
     }
     
     private fun getDefaultWord(): DailyWord {
