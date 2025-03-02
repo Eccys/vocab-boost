@@ -148,9 +148,49 @@ class DailyWordActivity : ComponentActivity() {
                         val initialWords = mutableListOf<Pair<DailyWord, String>>()
                         
                         if (selectedDate != null) {
-                            // Load specific date
-                            val word = dailyWordManager.getWordForSpecificDate(selectedDate)
-                            initialWords.add(Pair(word, selectedDate))
+                            // Load selected date plus dates around it
+                            // Parse the selected date to get a Calendar object
+                            try {
+                                val format = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+                                val selectedDateObj = format.parse(selectedDate)
+                                
+                                if (selectedDateObj != null) {
+                                    // Create a calendar from the selected date
+                                    val calendar = Calendar.getInstance().apply {
+                                        time = selectedDateObj
+                                    }
+                                    
+                                    // First add the selected date word
+                                    val word = dailyWordManager.getWordForSpecificDate(selectedDate)
+                                    initialWords.add(Pair(word, selectedDate))
+                                    
+                                    // Get 3 days after the selected date
+                                    val afterCalendar = Calendar.getInstance().apply {
+                                        time = selectedDateObj
+                                    }
+                                    for (i in 1..3) {
+                                        afterCalendar.add(Calendar.DAY_OF_MONTH, 1)
+                                        val nextDay = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(afterCalendar.time)
+                                        val nextWord = dailyWordManager.getWordForSpecificDate(nextDay)
+                                        initialWords.add(Pair(nextWord, nextDay))
+                                    }
+                                    
+                                    // Get 3 days before the selected date
+                                    val beforeCalendar = Calendar.getInstance().apply {
+                                        time = selectedDateObj
+                                    }
+                                    for (i in 1..3) {
+                                        beforeCalendar.add(Calendar.DAY_OF_MONTH, -1)
+                                        val prevDay = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(beforeCalendar.time)
+                                        val prevWord = dailyWordManager.getWordForSpecificDate(prevDay)
+                                        initialWords.add(Pair(prevWord, prevDay))
+                                    }
+                                }
+                            } catch (e: Exception) {
+                                // Fallback to just the selected date if parsing fails
+                                val word = dailyWordManager.getWordForSpecificDate(selectedDate)
+                                initialWords.add(Pair(word, selectedDate))
+                            }
                         } else {
                             // Load date range (e.g., today and 6 days before)
                             val today = Calendar.getInstance().let {
