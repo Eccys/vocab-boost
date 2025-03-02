@@ -25,6 +25,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -60,6 +62,7 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
+import androidx.compose.material.ripple.rememberRipple
 
 @OptIn(ExperimentalMaterial3Api::class)
 class PreviousWordsActivity : ComponentActivity() {
@@ -253,7 +256,20 @@ fun WordItem(
         )
     )
 
-    Surface(
+    // Create the interactionSource before using it
+    val interactionSource = remember { MutableInteractionSource() }
+    // Track press state changes
+    LaunchedEffect(interactionSource) {
+        interactionSource.interactions.collect { interaction ->
+            when (interaction) {
+                is PressInteraction.Press -> isPressed = true
+                is PressInteraction.Release -> isPressed = false
+                is PressInteraction.Cancel -> isPressed = false
+            }
+        }
+    }
+
+    Card(
         modifier = Modifier
             .fillMaxWidth()
             .graphicsLayer {
@@ -262,25 +278,15 @@ fun WordItem(
             }
             .clip(RoundedCornerShape(12.dp))
             .clickable(
-                interactionSource = remember { MutableInteractionSource() }
-                    .also { interactionSource ->
-                        LaunchedEffect(interactionSource) {
-                            interactionSource.interactions.collect { interaction ->
-                                when (interaction) {
-                                    is PressInteraction.Press -> isPressed = true
-                                    is PressInteraction.Release -> {
-                                        isPressed = false
-                                        onClick(date)
-                                    }
-                                    is PressInteraction.Cancel -> isPressed = false
-                                }
-                            }
-                        }
-                    },
-                indication = null,  // Remove default ripple
-                onClick = { }  // Empty click handler - handled in the interaction collector
-            ),
-        color = Color(0xFF18191E)
+                interactionSource = interactionSource,
+                indication = rememberRipple()  // Use rememberRipple directly
+            ) {
+                onClick(date)
+            },
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFF18191E)
+        ),
+        shape = RoundedCornerShape(12.dp)
     ) {
         Row(
             modifier = Modifier
