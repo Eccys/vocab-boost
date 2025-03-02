@@ -256,35 +256,4 @@ class WordRepository private constructor(
             wordDao.getRandomWordsExcluding(1, excludeWord.id).first()
         }
     }
-
-    /**
-     * Updates word categories from a JSON file in the assets folder
-     */
-    suspend fun updateCategoriesFromJson() = withContext(Dispatchers.IO) {
-        try {
-            val jsonString = context.assets.open("categories.json").bufferedReader().use { it.readText() }
-            val categoryType = object : TypeToken<Map<String, List<String>>>() {}.type
-            val categoriesMap: Map<String, List<String>> = Gson().fromJson(jsonString, categoryType)
-            
-            // Get all words from the database
-            val allWords = wordDao.getAllWords()
-            
-            // Update categories for each word
-            for (word in allWords) {
-                // Find which category this word belongs to
-                for ((category, wordList) in categoriesMap) {
-                    if (wordList.contains(word.word.lowercase())) {
-                        // Update the word's category if it's found in the list
-                        val updatedWord = word.copy(category = category)
-                        wordDao.updateWord(updatedWord)
-                        break
-                    }
-                }
-            }
-            
-            Log.d("WordRepository", "Successfully updated categories from JSON")
-        } catch (e: Exception) {
-            Log.e("WordRepository", "Error updating categories from JSON", e)
-        }
-    }
 } 

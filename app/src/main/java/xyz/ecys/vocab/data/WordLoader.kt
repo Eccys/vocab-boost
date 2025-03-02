@@ -86,51 +86,6 @@ object WordLoader {
             Log.e(TAG, "Error replacing words from JSON", e)
         }
     }
-    
-    /**
-     * Updates categories for existing words from JSON
-     * @param context Application context
-     * @param wordDao Data access object for words
-     */
-    suspend fun updateCategoriesFromJson(context: Context, wordDao: WordDao) = withContext(Dispatchers.IO) {
-        try {
-            val jsonString = context.assets.open("words.json").bufferedReader().use { it.readText() }
-            val wordType = object : TypeToken<List<JsonWord>>() {}.type
-            val jsonWords: List<JsonWord> = Gson().fromJson(jsonString, wordType)
-            
-            Log.d(TAG, "Loaded ${jsonWords.size} words from JSON for category update")
-            
-            // Get all existing words
-            val existingWords = wordDao.getAllWords()
-            Log.d(TAG, "Found ${existingWords.size} existing words in database")
-            
-            // Create a map of word text to category from JSON
-            val wordCategoryMap = jsonWords.associate { it.word to it.category }
-            
-            var updatedCount = 0
-            var missingCount = 0
-            
-            // Update categories for existing words
-            for (word in existingWords) {
-                val category = wordCategoryMap[word.word]
-                if (category != null) {
-                    if (word.category != category) {
-                        val updatedWord = word.copy(category = category)
-                        wordDao.updateWord(updatedWord)
-                        Log.d(TAG, "Updated category for word '${word.word}' to '$category'")
-                        updatedCount++
-                    }
-                } else {
-                    Log.w(TAG, "No category found in JSON for word '${word.word}'")
-                    missingCount++
-                }
-            }
-            
-            Log.d(TAG, "Category update completed. Updated: $updatedCount, Missing: $missingCount")
-        } catch (e: Exception) {
-            Log.e(TAG, "Error updating categories from JSON", e)
-        }
-    }
 }
 
 /**

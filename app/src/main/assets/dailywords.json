@@ -1080,16 +1080,6 @@
     "did_you_know": "The word 'fathom' comes from Old English 'fæthm,' meaning 'outstretched arms,' a 6-foot measure for sea depth by the 9th century. Sailors used it literally, while Shakespeare turned it to pondering motives. Today, it’s for ocean or mind depths, with some debating if it’s about reach or revelation."
   },
   {
-    "word": "garrulous",
-    "pronunciation": "GAR-uh-lus",
-    "short_definition": "Very talkative.",
-    "meaning": "Garrulous describes someone who talks a lot, often about trivial things. It suggests excessive chattiness.",
-    "category": "adjective",
-    "example": "The garrulous neighbor kept us up with endless stories.",
-    "context": "Garrulous is often used for people who chatter incessantly, like in social gatherings or with overly verbose characters.",
-    "did_you_know": "The word 'garrulous' comes from Latin 'garrulus,' meaning 'talkative,' tied to 'garrire' (to chatter). It entered English in the 17th century, often for gossipy old folks in tales. Think Austen’s chatty aunts. Now, it’s for windbags at parties, with debates on whether it’s lively or just tiresome."
-  },
-  {
     "word": "hinder",
     "pronunciation": "HIN-der",
     "short_definition": "To delay or block.",
@@ -2010,16 +2000,6 @@
     "did_you_know": "The word 'sycophant' has ancient Greek origins. It comes from 'sykophantes,' which originally referred to someone who informed against others for exporting figs illegally. Over time, it evolved to describe someone who seeks favor through flattery. The term carries a strong negative connotation, implying insincerity and self-serving behavior."
   },
   {
-    "word": "ephemeral",
-    "pronunciation": "ih-FEM-er-ul",
-    "short_definition": "Lasting for a very short time.",
-    "meaning": "Ephemeral describes something that is short-lived or fleeting. It often refers to things that are transient, such as emotions, trends, or natural phenomena.",
-    "category": "adjective",
-    "example": "The beauty of the sunset was ephemeral, fading within minutes.",
-    "context": "Ephemeral is often used in discussions about art, nature, or emotions, where the focus is on the temporary nature of experiences.",
-    "did_you_know": "The word 'ephemeral' comes from the Greek 'ephemeros,' meaning 'lasting a day.' It was originally used to describe short-lived insects, like mayflies, which live only for a day. Over time, it expanded to describe anything fleeting or transient, capturing the bittersweet nature of impermanence."
-  },
-  {
     "word": "languid",
     "pronunciation": "LAN-gwid",
     "short_definition": "Lacking energy or vitality.",
@@ -2127,7 +2107,7 @@
     "category": "adjective",
     "example": "The garrulous tour guide spent more time chatting than explaining the exhibits.",
     "context": "Garrulous is often used to describe people who dominate conversations with unnecessary or repetitive details.",
-    "did_you_know": "The word 'garrulous' comes from the Latin 'garrulus,' meaning 'chattering' or 'talkative.' It shares roots with 'gargle,' reflecting the idea of continuous, often meaningless speech."
+    "did_you_know": "The word 'garrulous' comes from the Latin 'garrulus,' meaning 'chattering' or 'talkative.' It shares roots with 'gargle,' reflecting the idea of continuous, often meaningless speech. It entered English in the 17th century, often for gossipy old folks in tales. Think Austen’s chatty aunts. Now, it’s for windbags at parties, with debates on whether it’s lively or just tiresome."
   },
   {
     "word": "harangue",

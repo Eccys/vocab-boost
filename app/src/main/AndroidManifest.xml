@@ -33,6 +33,10 @@
             android:exported="false"
             android:theme="@style/Theme.VocabularyBooster" />
         <activity
+            android:name=".DailyWordActivity"
+            android:exported="false"
+            android:theme="@style/Theme.VocabularyBooster" />
+        <activity
             android:name=".QuizResultsActivity"
             android:exported="false"
             android:theme="@style/Theme.VocabularyBooster" />
@@ -49,6 +53,10 @@
             android:theme="@style/Theme.VocabularyBooster" />
         <activity
             android:name=".debug.DebugActivity"
+            android:exported="false"
+            android:theme="@style/Theme.VocabularyBooster" />
+        <activity
+            android:name=".PreviousWordsActivity"
             android:exported="false"
             android:theme="@style/Theme.VocabularyBooster" />
     </application>

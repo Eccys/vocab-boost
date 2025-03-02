@@ -76,8 +76,12 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import xyz.ecys.vocab.data.AppUsage
 import xyz.ecys.vocab.data.AppUsageManager
+import xyz.ecys.vocab.data.DailyWord
+import xyz.ecys.vocab.data.DailyWordManager
 import xyz.ecys.vocab.data.WordDatabase
 import xyz.ecys.vocab.ui.theme.AppIcons
 import xyz.ecys.vocab.ui.theme.VocabularyBoosterTheme
@@ -98,24 +102,24 @@ data class CalendarDay(
 class MainActivity : ComponentActivity() { // Calendar Card
     private lateinit var wordDatabase: WordDatabase
     private lateinit var appUsageManager: AppUsageManager
+    private lateinit var dailyWordManager: DailyWordManager
 
     // Add state variables at class level
     private var wordsToday = mutableStateOf(0)
     private var dailyGoal = mutableStateOf(20)
+    private var todayWord = mutableStateOf<DailyWord?>(null)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         wordDatabase = WordDatabase.getDatabase(this)
         appUsageManager = AppUsageManager.getInstance(this)
+        dailyWordManager = DailyWordManager.getInstance(this)
 
         // Start session
         appUsageManager.startSession()
-        
-        // Update categories from JSON
-        lifecycleScope.launch {
-            val wordRepository = xyz.ecys.vocab.data.WordRepository.getInstance(this@MainActivity)
-            wordRepository.updateCategoriesFromJson()
-        }
+
+        // Load today's word
+        todayWord.value = dailyWordManager.getTodaysWord()
 
         enableEdgeToEdge()
         setContent {
@@ -453,7 +457,20 @@ class MainActivity : ComponentActivity() { // Calendar Card
                                                 interactionSource.interactions.collect { interaction ->
                                                     when (interaction) {
                                                         is PressInteraction.Press -> isDailyWordCardPressed = true
-                                                        is PressInteraction.Release -> isDailyWordCardPressed = false
+                                                        is PressInteraction.Release -> {
+                                                            isDailyWordCardPressed = false
+                                                            
+                                                            // Launch DailyWordActivity using coroutines for better performance
+                                                            lifecycleScope.launch(Dispatchers.IO) {
+                                                                // Ensure the word is preloaded before navigating
+                                                                // This line doesn't block UI thread because we're in Dispatchers.IO
+                                                                dailyWordManager.getTodaysWord()
+                                                                
+                                                                withContext(Dispatchers.Main) {
+                                                                    startActivity(Intent(this@MainActivity, DailyWordActivity::class.java))
+                                                                }
+                                                            }
+                                                        }
                                                         is PressInteraction.Cancel -> isDailyWordCardPressed = false
                                                     }
                                                 }
@@ -477,22 +494,57 @@ class MainActivity : ComponentActivity() { // Calendar Card
                                     verticalArrangement = Arrangement.Center
                                 ) {
                                     Text(
-                                        text = "Daily Word",
+                                        text = "Word of the Day",
                                         style = MaterialTheme.typography.titleSmall,
                                         fontWeight = FontWeight.ExtraBold,
                                         color = Color.Gray
                                     )
-                                    // Left column content will go here
+                                    
+                                    // Use a simple loading state to display just enough information without loading the full word
+                                    // We'll only load the actual word data when the user clicks the card
+                                    val simplifiedWord = remember { mutableStateOf<DailyWord?>(null) }
+                                    
+                                    LaunchedEffect(Unit) {
+                                        // Load just a minimal version of the word on a background thread to show a preview
+                                        // This makes the UI feel responsive while not doing heavy work upfront
+                                        launch(Dispatchers.IO) {
+                                            val wordPreview = dailyWordManager.getWordPreview()
+                                            withContext(Dispatchers.Main) {
+                                                simplifiedWord.value = wordPreview
+                                            }
+                                        }
+                                    }
+                                    
+                                    Text(
+                                        text = simplifiedWord.value?.word ?: "Loading...",
+                                        style = MaterialTheme.typography.headlineMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFFFCFCFC)
+                                    )
+                                    Text(
+                                        text = simplifiedWord.value?.short_definition ?: "Tap to see today's word",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.Gray,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
                                 }
                                 
                                 // Right column
                                 Column(
                                     modifier = Modifier
-                                        .weight(1f)
+                                        .weight(0.5f)
                                         .fillMaxHeight(),
-                                    verticalArrangement = Arrangement.Center
+                                    verticalArrangement = Arrangement.Center,
+                                    horizontalAlignment = Alignment.End
                                 ) {
-                                    // Right column content will go here
+                                    Icon(
+                                        painter = AppIcons.arrowRight(),
+                                        contentDescription = "View daily word",
+                                        tint = Color(0xFFFCFCFC),
+                                        modifier = Modifier.size(24.dp)
+                                    )
                                 }
                             }
                         }

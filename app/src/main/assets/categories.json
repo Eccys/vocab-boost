@@ -1,0 +1,34 @@
+[
+  {
+    "name": "Noun",
+    "description": "A word that represents a person, place, thing, or idea"
+  },
+  {
+    "name": "Verb",
+    "description": "A word that expresses an action, occurrence, or state of being"
+  },
+  {
+    "name": "Adjective",
+    "description": "A word that describes or modifies a noun"
+  },
+  {
+    "name": "Adverb",
+    "description": "A word that modifies a verb, adjective, or other adverb"
+  },
+  {
+    "name": "Preposition",
+    "description": "A word that shows the relationship between a noun and other words in a sentence"
+  },
+  {
+    "name": "Conjunction",
+    "description": "A word that connects words, phrases, or clauses"
+  },
+  {
+    "name": "Interjection",
+    "description": "A word that expresses strong emotion"
+  },
+  {
+    "name": "Pronoun",
+    "description": "A word that replaces a noun"
+  }
+] 
