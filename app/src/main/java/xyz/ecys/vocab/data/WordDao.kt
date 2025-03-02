@@ -18,6 +18,38 @@ interface WordDao {
 
     @Query("SELECT * FROM words") fun getAllWordsFlow(): Flow<List<Word>>
 
+    @Query("SELECT * FROM words WHERE category = :category")
+    fun getWordsByCategory(category: String): Flow<List<Word>>
+
+    @Query("SELECT * FROM words WHERE category = :category LIMIT :limit")
+    suspend fun getWordsByCategoryWithLimit(category: String, limit: Int): List<Word>
+
+    @Query("""
+        SELECT * FROM words 
+        WHERE category = :category 
+        ORDER BY RANDOM() 
+        LIMIT :count
+    """)
+    suspend fun getRandomWordsByCategory(category: String, count: Int): List<Word>
+
+    @Query("""
+        SELECT 
+            category, 
+            COUNT(*) as total, 
+            SUM(CASE WHEN timesReviewed > 0 THEN 1 ELSE 0 END) as studied,
+            CASE 
+                WHEN SUM(timesReviewed) > 0 
+                THEN CAST(SUM(timesCorrect) AS FLOAT) / SUM(timesReviewed) 
+                ELSE 0.0 
+            END as accuracy
+        FROM words
+        GROUP BY category
+    """)
+    suspend fun getCategoryStats(): List<CategoryStats>
+
+    @Query("SELECT DISTINCT category FROM words WHERE category != '' ORDER BY category")
+    suspend fun getDistinctCategories(): List<String>
+
     @Query("""
         SELECT * FROM words 
         WHERE id != :excludeId 
@@ -61,7 +93,7 @@ interface WordDao {
 
     @Query("""
     SELECT * FROM words 
-    WHERE nextReviewDate <= :currentTime 
+    WHERE nextReviewDate <= :currentTime AND nextReviewDate > 0
     ORDER BY 
       ((:currentTime - nextReviewDate) * 1.0 / ((CASE WHEN interval = 0 THEN 1 ELSE interval END) * 86400000)) DESC,
       easeFactor ASC, 
@@ -124,6 +156,14 @@ interface WordDao {
         )
     """)
     suspend fun countWordsReviewedToday(): Int
+
+    @Query("""
+        SELECT COUNT(DISTINCT id) FROM words 
+        WHERE lastReviewed >= (
+            strftime('%s', date('now', 'localtime', 'start of day')) * 1000
+        ) AND quality >= 3
+    """)
+    suspend fun countWordsCorrectToday(): Int
 
     @Query("SELECT * FROM words WHERE nextReviewDate <= :now AND nextReviewDate > 0 ORDER BY easeFactor ASC")
     fun getOverdueWordsFlow(now: Long = System.currentTimeMillis()): Flow<List<Word>>

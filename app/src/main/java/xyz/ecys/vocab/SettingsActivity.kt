@@ -51,23 +51,10 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.fadeOut
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Slider
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment.Companion.CenterVertically
-import xyz.ecys.vocab.data.SettingsManager
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 
 @OptIn(ExperimentalMaterial3Api::class)
 class SettingsActivity : ComponentActivity() {
     private val authViewModel: AuthViewModel by viewModels()
-    private lateinit var settingsManager: SettingsManager
-    private val snackbarHostState = SnackbarHostState()
     private val googleSignInLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -89,9 +76,6 @@ class SettingsActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         enableEdgeToEdge()
-
-        // Initialize settingsManager
-        settingsManager = SettingsManager.getInstance(this)
 
         // Observe sign-in intent
         lifecycleScope.launch {
@@ -116,6 +100,10 @@ class SettingsActivity : ComponentActivity() {
             }
         }
 
+        // Get the current debug button visibility state from preferences
+        val prefs = getSharedPreferences("vocab_settings", Context.MODE_PRIVATE)
+        val isDebugButtonVisible = prefs.getBoolean("debug_button_visible", false)
+
         setContent {
             VocabularyBoosterTheme {
                 val context = LocalContext.current
@@ -125,6 +113,21 @@ class SettingsActivity : ComponentActivity() {
                 var showGoalDialog by remember { mutableStateOf(false) }
                 var goalInput by remember { mutableStateOf("20") }
                 
+                // Title click counter state
+                var titleClickCount by remember { mutableStateOf(0) }
+                var lastClickTime by remember { mutableStateOf(0L) }
+                var showDebugButton by remember { mutableStateOf(isDebugButtonVisible) }
+                
+                // Title animation state
+                var isTitlePressed by remember { mutableStateOf(false) }
+                val titleScale by animateFloatAsState(
+                    targetValue = if (isTitlePressed) 0.92f else 1f,
+                    animationSpec = spring(
+                        dampingRatio = 0.75f,
+                        stiffness = 300f
+                    )
+                )
+                
                 // Password dialog state
                 var showPasswordDialog by remember { mutableStateOf(false) }
                 var passwordInput by remember { mutableStateOf("") }
@@ -133,7 +136,7 @@ class SettingsActivity : ComponentActivity() {
                 var showForgotPasswordDialog by remember { mutableStateOf(false) }
                 
                 // Custom snackbar state
-                var isSnackbarVisible by remember { mutableStateOf(false) }
+                var showSnackbar by remember { mutableStateOf(false) }
                 var snackbarMessage by remember { mutableStateOf("") }
                 
                 val authError by authViewModel.authError.collectAsState()
@@ -141,8 +144,23 @@ class SettingsActivity : ComponentActivity() {
                 val message by authViewModel.message.collectAsState()
                 val scope = rememberCoroutineScope()
                 
+                // Show snackbar when message changes
+                LaunchedEffect(message) {
+                    message?.let {
+                        if (it.isNotEmpty()) {
+                            snackbarMessage = it
+                            showSnackbar = true
+                            // Auto-dismiss after 3 seconds
+                            scope.launch {
+                                kotlinx.coroutines.delay(3000)
+                                showSnackbar = false
+                                authViewModel.showMessage(null) // Clear the message
+                            }
+                        }
+                    }
+                }
+                
                 // Get current settings
-                val prefs = context.getSharedPreferences("vocab_settings", Context.MODE_PRIVATE)
                 var reducedAnimations by remember { 
                     mutableStateOf(prefs.getBoolean("reduced_animations", false))
                 }
@@ -157,201 +175,173 @@ class SettingsActivity : ComponentActivity() {
                 LaunchedEffect(showAuthSheet) {
                     authSheetVisible = showAuthSheet
                 }
-                
-                // Show snackbar when message changes
-                LaunchedEffect(message) {
-                    message?.let {
-                        if (it.isNotEmpty()) {
-                            snackbarMessage = it
-                            isSnackbarVisible = true
-                            // Auto-dismiss after 3 seconds
-                            scope.launch {
-                                kotlinx.coroutines.delay(3000)
-                                isSnackbarVisible = false
-                                authViewModel.showMessage(null) // Clear the message
+
+                if (showNeuralInfo) {
+                    AlertDialog(
+                        onDismissRequest = { showNeuralInfo = false },
+                        title = { Text("Neural Processing") },
+                        text = { 
+                            Text(
+                                """
+                                Difficulty-based word selection uses an advanced algorithm to:
+                                
+                                • Track your success rate with each word
+                                • Adjust difficulty based on performance
+                                • Prioritize words you find challenging
+                                • Optimize your learning path
+                                
+                                The system uses spaced repetition and performance metrics to create a personalized learning experience.
+                                """.trimIndent()
+                            )
+                        },
+                        confirmButton = {
+                            TextButton(onClick = { showNeuralInfo = false }) {
+                                Text("Got it")
                             }
                         }
-                    }
+                    )
                 }
 
-                Box(modifier = Modifier.fillMaxSize()) {
-                    Scaffold(
-                        topBar = {
-                            TopAppBar(
-                                title = { Text("Settings") },
-                                navigationIcon = {
-                                    IconButton(onClick = { finish() }) {
-                                        Icon(
-                                            painter = AppIcons.arrowLeft(),
-                                            contentDescription = "Back",
-                                            tint = Color(0xFFFCFCFC)
-                                        )
-                                    }
-                                },
-                                actions = {
-                                    IconButton(
-                                        onClick = { showAuthSheet = true }
-                                    ) {
-                                        Icon(
-                                            painter = AppIcons.circleUserSolid(),
-                                            contentDescription = "Account",
-                                            tint = Color(0xFFFCFCFC)
-                                        )
-                                    }
-                                },
-                                colors = TopAppBarDefaults.topAppBarColors(
-                                    containerColor = Color.Transparent
-                                )
+                if (showRefreshConfirmation) {
+                    AlertDialog(
+                        onDismissRequest = { showRefreshConfirmation = false },
+                        title = { Text("Refresh Database") },
+                        text = { 
+                            Text(
+                                """
+                                This will reset the database to its initial state with the default word set.
+                                All learning progress, custom words, streaks, and time spent data will be lost.
+                                
+                                Are you sure you want to continue?
+                                """.trimIndent()
                             )
-                        }
-                    ) { paddingValues ->
-                        Column(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(paddingValues)
-                                .padding(horizontal = 16.dp)
-                                .verticalScroll(rememberScrollState()),
-                            verticalArrangement = Arrangement.spacedBy(16.dp)
-                        ) {
-                            if (showNeuralInfo) {
-                                AlertDialog(
-                                    onDismissRequest = { showNeuralInfo = false },
-                                    title = { Text("Neural Processing") },
-                                    text = { 
-                                        Text(
-                                            """
-                                            Difficulty-based word selection uses an advanced algorithm to:
+                        },
+                        confirmButton = {
+                            TextButton(
+                                onClick = { 
+                                    showRefreshConfirmation = false
+                                    
+                                    // Only show password dialog if user is signed in
+                                    if (authViewModel.currentUser != null) {
+                                        showPasswordDialog = true
+                                    } else {
+                                        // If user is not signed in, proceed without password
+                                        lifecycleScope.launch {
+                                            val wordRepository = WordRepository.getInstance(context)
+                                            wordRepository.insertInitialWords()
                                             
-                                            • Track your success rate with each word
-                                            • Adjust difficulty based on performance
-                                            • Prioritize words you find challenging
-                                            • Optimize your learning path
+                                            // Clear app usage data (streaks and time spent)
+                                            val appUsageManager = AppUsageManager.getInstance(context)
+                                            appUsageManager.resetAllUsageData()
                                             
-                                            The system uses spaced repetition and performance metrics to create a personalized learning experience.
-                                            """.trimIndent()
-                                        )
-                                    },
-                                    confirmButton = {
-                                        TextButton(onClick = { showNeuralInfo = false }) {
-                                            Text("Got it")
+                                            authViewModel.showMessage("Database reset successfully")
                                         }
                                     }
-                                )
+                                }
+                            ) {
+                                Text("Refresh", color = Color(0xFFED333B))
                             }
-
-                            if (showRefreshConfirmation) {
-                                AlertDialog(
-                                    onDismissRequest = { showRefreshConfirmation = false },
-                                    title = { Text("Refresh Database") },
-                                    text = { 
-                                        Text(
-                                            """
-                                            This will reset the database to its initial state with the default word set.
-                                            All learning progress, custom words, streaks, and time spent data will be lost.
-                                            
-                                            Are you sure you want to continue?
-                                            """.trimIndent()
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { showRefreshConfirmation = false }) {
+                                Text("Cancel")
+                            }
+                        }
+                    )
+                }
+                
+                // Password confirmation dialog
+                if (showPasswordDialog) {
+                    AlertDialog(
+                        onDismissRequest = { showPasswordDialog = false },
+                        title = { Text("Confirm Password") },
+                        text = {
+                            Column(
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                // Check if user is signed in with Google
+                                val isGoogleSignIn = authViewModel.currentUser?.providerData?.any { 
+                                    it.providerId == "google.com" 
+                                } ?: false
+                                
+                                // Check if user has a password
+                                val hasPassword = authViewModel.hasPassword()
+                                
+                                if (isGoogleSignIn && !hasPassword) {
+                                    Text(
+                                        "You're signed in with Google. Are you sure you want to reset the database? All learning progress, custom words, streaks, and time spent data will be lost."
+                                    )
+                                } else {
+                                    Text("Please enter your password to confirm database reset")
+                                    OutlinedTextField(
+                                        value = passwordInput,
+                                        onValueChange = { passwordInput = it },
+                                        label = { Text("Password") },
+                                        visualTransformation = PasswordVisualTransformation(),
+                                        singleLine = true,
+                                        colors = OutlinedTextFieldDefaults.colors(
+                                            unfocusedTextColor = Color(0xFFFCFCFC),
+                                            focusedTextColor = Color(0xFFFCFCFC),
+                                            cursorColor = Color(0xFF90CAF9),
+                                            focusedBorderColor = Color(0xFF90CAF9),
+                                            unfocusedBorderColor = Color(0xFF546E7A),
+                                            focusedLabelColor = Color(0xFF90CAF9),
+                                            unfocusedLabelColor = Color(0xFF546E7A)
                                         )
-                                    },
-                                    confirmButton = {
-                                        TextButton(
-                                            onClick = { 
-                                                showRefreshConfirmation = false
+                                    )
+                                }
+                                
+                                authError?.let {
+                                    Text(
+                                        text = it,
+                                        color = Color(0xFFED333B),
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
+                                }
+                            }
+                        },
+                        confirmButton = {
+                            TextButton(
+                                onClick = {
+                                    // Check if user is signed in with Google
+                                    val isGoogleSignIn = authViewModel.currentUser?.providerData?.any { 
+                                        it.providerId == "google.com" 
+                                    } ?: false
+                                    
+                                    // Check if user has a password
+                                    val hasPassword = authViewModel.hasPassword()
+                                    
+                                    if ((isGoogleSignIn && !hasPassword) || (hasPassword && passwordInput.isNotBlank())) {
+                                        if (isGoogleSignIn && !hasPassword) {
+                                            // For Google users without a password, proceed without verification
+                                            showPasswordDialog = false
+                                            // Proceed with database reset
+                                            lifecycleScope.launch {
+                                                val wordRepository = WordRepository.getInstance(context)
+                                                wordRepository.insertInitialWords()
                                                 
-                                                // Only show password dialog if user is signed in
-                                                if (authViewModel.currentUser != null) {
-                                                    showPasswordDialog = true
-                                                } else {
-                                                    // If user is not signed in, proceed without password
-                                                    lifecycleScope.launch {
-                                                        val wordRepository = WordRepository.getInstance(context)
-                                                        wordRepository.insertInitialWords()
-                                                        
-                                                        // Clear app usage data (streaks and time spent)
-                                                        val appUsageManager = AppUsageManager.getInstance(context)
-                                                        appUsageManager.resetAllUsageData()
-                                                        
-                                                        authViewModel.showMessage("Database reset successfully")
+                                                // Clear app usage data (streaks and time spent)
+                                                val appUsageManager = AppUsageManager.getInstance(context)
+                                                appUsageManager.resetAllUsageData()
+                                                
+                                                // Sync changes to the cloud
+                                                authViewModel.syncData { syncSuccess ->
+                                                    if (syncSuccess) {
+                                                        authViewModel.showMessage("Database reset and synced to cloud")
+                                                    } else {
+                                                        authViewModel.showMessage("Database reset but sync failed")
                                                     }
                                                 }
                                             }
-                                        ) {
-                                            Text("Refresh", color = Color(0xFFED333B))
                                         }
-                                    },
-                                    dismissButton = {
-                                        TextButton(onClick = { showRefreshConfirmation = false }) {
-                                            Text("Cancel")
-                                        }
-                                    }
-                                )
-                            }
-                            
-                            // Password confirmation dialog
-                            if (showPasswordDialog) {
-                                AlertDialog(
-                                    onDismissRequest = { showPasswordDialog = false },
-                                    title = { Text("Confirm Password") },
-                                    text = {
-                                        Column(
-                                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                                        ) {
-                                            // Check if user is signed in with Google
-                                            val isGoogleSignIn = authViewModel.currentUser?.providerData?.any { 
-                                                it.providerId == "google.com" 
-                                            } ?: false
-                                            
-                                            // Check if user has a password
-                                            val hasPassword = authViewModel.hasPassword()
-                                            
-                                            if (isGoogleSignIn && !hasPassword) {
-                                                Text(
-                                                    "You're signed in with Google. Are you sure you want to reset the database? All learning progress, custom words, streaks, and time spent data will be lost."
-                                                )
-                                            } else {
-                                                Text("Please enter your password to confirm database reset")
-                                                OutlinedTextField(
-                                                    value = passwordInput,
-                                                    onValueChange = { passwordInput = it },
-                                                    label = { Text("Password") },
-                                                    visualTransformation = PasswordVisualTransformation(),
-                                                    singleLine = true,
-                                                    colors = OutlinedTextFieldDefaults.colors(
-                                                        unfocusedTextColor = Color(0xFFFCFCFC),
-                                                        focusedTextColor = Color(0xFFFCFCFC),
-                                                        cursorColor = Color(0xFF90CAF9),
-                                                        focusedBorderColor = Color(0xFF90CAF9),
-                                                        unfocusedBorderColor = Color(0xFF546E7A),
-                                                        focusedLabelColor = Color(0xFF90CAF9),
-                                                        unfocusedLabelColor = Color(0xFF546E7A)
-                                                    )
-                                                )
-                                            }
-                                            
-                                            authError?.let {
-                                                Text(
-                                                    text = it,
-                                                    color = Color(0xFFED333B),
-                                                    style = MaterialTheme.typography.bodySmall
-                                                )
-                                            }
-                                        }
-                                    },
-                                    confirmButton = {
-                                        TextButton(
-                                            onClick = {
-                                                // Check if user is signed in with Google
-                                                val isGoogleSignIn = authViewModel.currentUser?.providerData?.any { 
-                                                    it.providerId == "google.com" 
-                                                } ?: false
-                                                
-                                                // Check if user has a password
-                                                val hasPassword = authViewModel.hasPassword()
-                                                
-                                                if ((isGoogleSignIn && !hasPassword) || (hasPassword && passwordInput.isNotBlank())) {
-                                                    if (isGoogleSignIn && !hasPassword) {
-                                                        // For Google users without a password, proceed without verification
+                                    } else {
+                                        // For users with a password, verify password
+                                        lifecycleScope.launch {
+                                            try {
+                                                authViewModel.verifyPassword(passwordInput) { success ->
+                                                    if (success) {
                                                         showPasswordDialog = false
+                                                        passwordInput = ""
                                                         // Proceed with database reset
                                                         lifecycleScope.launch {
                                                             val wordRepository = WordRepository.getInstance(context)
@@ -370,297 +360,385 @@ class SettingsActivity : ComponentActivity() {
                                                                 }
                                                             }
                                                         }
-                                                    } else {
-                                                        // For users with a password, verify password
-                                                        lifecycleScope.launch {
-                                                            try {
-                                                                authViewModel.verifyPassword(passwordInput) { success ->
-                                                                    if (success) {
-                                                                        showPasswordDialog = false
-                                                                        passwordInput = ""
-                                                                        // Proceed with database reset
-                                                                        lifecycleScope.launch {
-                                                                            val wordRepository = WordRepository.getInstance(context)
-                                                                            wordRepository.insertInitialWords()
-                                                                            
-                                                                            // Clear app usage data (streaks and time spent)
-                                                                            val appUsageManager = AppUsageManager.getInstance(context)
-                                                                            appUsageManager.resetAllUsageData()
-                                                                            
-                                                                            // Sync changes to the cloud
-                                                                            authViewModel.syncData { syncSuccess ->
-                                                                                if (syncSuccess) {
-                                                                                    authViewModel.showMessage("Database reset and synced to cloud")
-                                                                                } else {
-                                                                                    authViewModel.showMessage("Database reset but sync failed")
-                                                                                }
-                                                                            }
-                                                                        }
-                                                                    }
-                                                                }
-                                                            } catch (e: Exception) {
-                                                                authViewModel.showMessage("Error: ${e.message}")
-                                                            }
-                                                        }
                                                     }
                                                 }
+                                            } catch (e: Exception) {
+                                                authViewModel.showMessage("Error: ${e.message}")
                                             }
-                                        ) {
-                                            Text("Confirm", color = Color(0xFFED333B))
-                                        }
-                                    },
-                                    dismissButton = {
-                                        TextButton(onClick = { 
-                                            showPasswordDialog = false
-                                            passwordInput = ""
-                                            authViewModel.clearError()
-                                        }) {
-                                            Text("Cancel")
                                         }
                                     }
-                                )
+                                }
+                            ) {
+                                Text("Confirm", color = Color(0xFFED333B))
                             }
-
-                            // Forgot Password Dialog
-                            if (showForgotPasswordDialog) {
-                                var emailError by remember { mutableStateOf<String?>(null) }
-                                var emailSuccess by remember { mutableStateOf<String?>(null) }
-                                
-                                // Get current user email
-                                val userEmail = authViewModel.getCurrentUserEmail() ?: ""
-                                // Check if password reset is allowed (24h limit)
-                                val canRequestReset = authViewModel.canRequestPasswordReset()
-                                
-                                // Format time until next reset is allowed
-                                val timeUntilNextReset = if (!canRequestReset) {
-                                    val millisRemaining = authViewModel.getTimeUntilNextPasswordReset()
-                                    val hoursRemaining = millisRemaining / (1000 * 60 * 60)
-                                    val minutesRemaining = (millisRemaining % (1000 * 60 * 60)) / (1000 * 60)
-                                    "${hoursRemaining}h ${minutesRemaining}m"
-                                } else ""
-                                
-                                AlertDialog(
-                                    onDismissRequest = { showForgotPasswordDialog = false },
-                                    title = { Text("Reset Password") },
-                                    containerColor = Color(0xFF18191E),
-                                    titleContentColor = Color(0xFFFCFCFC),
-                                    textContentColor = Color(0xFFFCFCFC),
-                                    text = {
-                                        Column(
-                                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                                        ) {
-                                            // Email input screen
-                                            if (canRequestReset) {
-                                                Text(
-                                                    "A password reset link will be sent to your email address ($userEmail).",
-                                                    style = MaterialTheme.typography.bodyMedium,
-                                                    color = Color(0xFFAAAAAA)
-                                                )
-                                                
-                                                Text(
-                                                    "Note: You can only request one password reset every 24 hours.",
-                                                    style = MaterialTheme.typography.bodySmall,
-                                                    color = Color(0xFFFF9800)
-                                                )
-                                            } else {
-                                                Text(
-                                                    "You have already requested a password reset recently.",
-                                                    style = MaterialTheme.typography.bodyMedium,
-                                                    color = Color(0xFFAAAAAA)
-                                                )
-                                                
-                                                Text(
-                                                    "You can request another reset in $timeUntilNextReset.",
-                                                    style = MaterialTheme.typography.bodyMedium,
-                                                    color = Color(0xFFFF9800)
-                                                )
-                                            }
-                                            
-                                            emailError?.let {
-                                                Text(
-                                                    text = it,
-                                                    color = Color(0xFFED333B),
-                                                    style = MaterialTheme.typography.bodySmall
-                                                )
-                                            }
-                                            
-                                            emailSuccess?.let {
-                                                Text(
-                                                    text = it,
-                                                    color = Color(0xFF4CAF50),
-                                                    style = MaterialTheme.typography.bodySmall
-                                                )
-                                            }
-                                            
-                                            authError?.let {
-                                                Text(
-                                                    text = it,
-                                                    color = Color(0xFFED333B),
-                                                    style = MaterialTheme.typography.bodySmall
-                                                )
-                                            }
-                                        }
-                                    },
-                                    confirmButton = {
-                                        TextButton(
-                                            onClick = {
-                                                if (canRequestReset) {
-                                                    authViewModel.sendPasswordResetEmail(userEmail) { success ->
-                                                        if (success) {
-                                                            emailSuccess = "Password reset link sent!"
-                                                            // Close dialog after a short delay
-                                                            scope.launch {
-                                                                kotlinx.coroutines.delay(1500)
-                                                                showForgotPasswordDialog = false
-                                                                authViewModel.showMessage("Password reset link sent to your email")
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            },
-                                            enabled = canRequestReset
-                                        ) {
-                                            Text(
-                                                "Send Reset Link", 
-                                                color = if (canRequestReset) Color(0xFF90CAF9) else Color(0xFF546E7A)
-                                            )
-                                        }
-                                    },
-                                    dismissButton = {
-                                        TextButton(
-                                            onClick = { 
-                                                showForgotPasswordDialog = false
-                                                authViewModel.clearError()
-                                            }
-                                        ) {
-                                            Text("Cancel", color = Color(0xFF90CAF9))
-                                        }
-                                    }
-                                )
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { 
+                                showPasswordDialog = false
+                                passwordInput = ""
+                                authViewModel.clearError()
+                            }) {
+                                Text("Cancel")
                             }
+                        }
+                    )
+                }
 
-                            if (showAuthSheet) {
-                                ModalBottomSheet(
-                                    onDismissRequest = { 
-                                        showAuthSheet = false
-                                        authViewModel.clearError()
-                                    },
-                                    containerColor = Color(0xFF05080D),
-                                    dragHandle = { BottomSheetDefaults.DragHandle() },
-                                    windowInsets = WindowInsets(0),
-                                    sheetState = rememberModalBottomSheetState(
-                                        skipPartiallyExpanded = true
-                                    ),
-                                    shape = RoundedCornerShape(
-                                        topStart = 28.dp,
-                                        topEnd = 28.dp,
-                                        bottomStart = 0.dp,
-                                        bottomEnd = 0.dp
+                // Forgot Password Dialog
+                if (showForgotPasswordDialog) {
+                    var emailError by remember { mutableStateOf<String?>(null) }
+                    var emailSuccess by remember { mutableStateOf<String?>(null) }
+                    
+                    // Get current user email
+                    val userEmail = authViewModel.getCurrentUserEmail() ?: ""
+                    // Check if password reset is allowed (24h limit)
+                    val canRequestReset = authViewModel.canRequestPasswordReset()
+                    
+                    // Format time until next reset is allowed
+                    val timeUntilNextReset = if (!canRequestReset) {
+                        val millisRemaining = authViewModel.getTimeUntilNextPasswordReset()
+                        val hoursRemaining = millisRemaining / (1000 * 60 * 60)
+                        val minutesRemaining = (millisRemaining % (1000 * 60 * 60)) / (1000 * 60)
+                        "${hoursRemaining}h ${minutesRemaining}m"
+                    } else ""
+                    
+                    AlertDialog(
+                        onDismissRequest = { showForgotPasswordDialog = false },
+                        title = { Text("Reset Password") },
+                        containerColor = Color(0xFF18191E),
+                        titleContentColor = Color(0xFFFCFCFC),
+                        textContentColor = Color(0xFFFCFCFC),
+                        text = {
+                            Column(
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                // Email input screen
+                                if (canRequestReset) {
+                                    Text(
+                                        "A password reset link will be sent to your email address ($userEmail).",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = Color(0xFFAAAAAA)
                                     )
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .wrapContentHeight()
-                                            .navigationBarsPadding()
-                                    ) {
-                                        AuthSheet(
-                                            onDismiss = { 
-                                                showAuthSheet = false
-                                                authViewModel.clearError()
-                                            },
-                                            authViewModel = authViewModel
-                                        )
-                                    }
+                                    
+                                    Text(
+                                        "Note: You can only request one password reset every 24 hours.",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = Color(0xFFFF9800)
+                                    )
+                                } else {
+                                    Text(
+                                        "You have already requested a password reset recently.",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = Color(0xFFAAAAAA)
+                                    )
+                                    
+                                    Text(
+                                        "You can request another reset in $timeUntilNextReset.",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = Color(0xFFFF9800)
+                                    )
+                                }
+                                
+                                emailError?.let {
+                                    Text(
+                                        text = it,
+                                        color = Color(0xFFED333B),
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
+                                }
+                                
+                                emailSuccess?.let {
+                                    Text(
+                                        text = it,
+                                        color = Color(0xFF4CAF50),
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
+                                }
+                                
+                                authError?.let {
+                                    Text(
+                                        text = it,
+                                        color = Color(0xFFED333B),
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
                                 }
                             }
-
-                            // Add GoalDialog
-                            GoalDialog(
-                                showDialog = showGoalDialog,
-                                goalInput = goalInput,
-                                onGoalInputChange = { goalInput = it },
-                                onDismiss = { showGoalDialog = false },
-                                onSave = { newGoal ->
-                                    prefs.edit().putInt("daily_goal", newGoal).apply()
+                        },
+                        confirmButton = {
+                            TextButton(
+                                onClick = {
+                                    if (canRequestReset) {
+                                        authViewModel.sendPasswordResetEmail(userEmail) { success ->
+                                            if (success) {
+                                                emailSuccess = "Password reset link sent!"
+                                                // Close dialog after a short delay
+                                                scope.launch {
+                                                    kotlinx.coroutines.delay(1500)
+                                                    showForgotPasswordDialog = false
+                                                    authViewModel.showMessage("Password reset link sent to your email")
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                enabled = canRequestReset
+                            ) {
+                                Text(
+                                    "Send Reset Link", 
+                                    color = if (canRequestReset) Color(0xFF90CAF9) else Color(0xFF546E7A)
+                                )
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(
+                                onClick = { 
+                                    showForgotPasswordDialog = false
+                                    authViewModel.clearError()
                                 }
-                            )
+                            ) {
+                                Text("Cancel", color = Color(0xFF90CAF9))
+                            }
+                        }
+                    )
+                }
 
-                            // Quiz Settings Section
-                            Spacer(modifier = Modifier.height(16.dp))
+                if (showAuthSheet) {
+                    ModalBottomSheet(
+                        onDismissRequest = { 
+                            showAuthSheet = false
+                            authViewModel.clearError()
+                        },
+                        containerColor = Color(0xFF05080D),
+                        dragHandle = { BottomSheetDefaults.DragHandle() },
+                        windowInsets = WindowInsets(0),
+                        sheetState = rememberModalBottomSheetState(
+                            skipPartiallyExpanded = true
+                        ),
+                        shape = RoundedCornerShape(
+                            topStart = 28.dp,
+                            topEnd = 28.dp,
+                            bottomStart = 0.dp,
+                            bottomEnd = 0.dp
+                        )
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .wrapContentHeight()
+                                .navigationBarsPadding()
+                        ) {
+                            AuthSheet(
+                                onDismiss = { 
+                                    showAuthSheet = false
+                                    authViewModel.clearError()
+                                },
+                                authViewModel = authViewModel
+                            )
+                        }
+                    }
+                }
+
+                // Add GoalDialog
+                GoalDialog(
+                    showDialog = showGoalDialog,
+                    goalInput = goalInput,
+                    onGoalInputChange = { goalInput = it },
+                    onDismiss = { showGoalDialog = false },
+                    onSave = { newGoal ->
+                        prefs.edit().putInt("daily_goal", newGoal).apply()
+                    }
+                )
+
+                Scaffold(
+                    topBar = {
+                        CenterAlignedTopAppBar(
+                            title = { 
+                                Box(
+                                    modifier = Modifier
+                                        .graphicsLayer {
+                                            scaleX = titleScale
+                                            scaleY = titleScale
+                                        }
+                                        .clickable(
+                                            interactionSource = remember { MutableInteractionSource() }
+                                                .also { interactionSource ->
+                                                    LaunchedEffect(interactionSource) {
+                                                        interactionSource.interactions.collect { interaction ->
+                                                            when (interaction) {
+                                                                is PressInteraction.Press -> isTitlePressed = true
+                                                                is PressInteraction.Release -> isTitlePressed = false
+                                                                is PressInteraction.Cancel -> isTitlePressed = false
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                            indication = null
+                                        ) {
+                                            val currentTime = System.currentTimeMillis()
+                                            // Reset counter if more than 1.5 seconds between clicks
+                                            if (currentTime - lastClickTime > 1500) {
+                                                titleClickCount = 1
+                                            } else {
+                                                titleClickCount++
+                                            }
+                                            lastClickTime = currentTime
+                                            
+                                            // Toggle debug button visibility after 7 consecutive clicks
+                                            if (titleClickCount == 7) {
+                                                showDebugButton = !showDebugButton
+                                                // Save state to preferences
+                                                prefs.edit().putBoolean("debug_button_visible", showDebugButton).apply()
+                                                // Show feedback
+                                                val debugMessage = if (showDebugButton) "Debug mode enabled" else "Debug mode disabled"
+                                                authViewModel.showMessage(debugMessage)
+                                                // Reset counter
+                                                titleClickCount = 0
+                                            }
+                                        }
+                                ) {
+                                    Text(
+                                        text = "Settings",
+                                        style = MaterialTheme.typography.titleLarge.copy(
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color(0xFFFCFCFC)
+                                        )
+                                    )
+                                }
+                            },
+                            navigationIcon = {
+                                IconButton(onClick = { finish() }) {
+                                    Icon(
+                                        painter = AppIcons.arrowLeft(),
+                                        contentDescription = "Back",
+                                        tint = Color(0xFFFCFCFC)
+                                    )
+                                }
+                            },
+                            colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                                containerColor = MaterialTheme.colorScheme.background
+                            )
+                        )
+                    },
+                    floatingActionButton = {
+                        AnimatedVisibility(
+                            visible = showDebugButton,
+                            enter = fadeIn() + slideInVertically { it },
+                            exit = fadeOut() + slideOutVertically { it }
+                        ) {
+                            FloatingActionButton(
+                                onClick = {
+                                    startActivity(Intent(context, DebugActivity::class.java))
+                                }
+                            ) {
+                                Icon(
+                                    painter = AppIcons.sparklesSolid(),
+                                    contentDescription = "Debug"
+                                )
+                            }
+                        }
+                    },
+                    floatingActionButtonPosition = FabPosition.End
+                ) { innerPadding ->
+                    Box(
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(innerPadding)
+                                .padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            // Authentication Section
                             Text(
-                                text = "Quiz Settings",
+                                text = "Authentication",
                                 style = MaterialTheme.typography.titleLarge
+                            )
+                            
+                            var isAccountCardPressed by remember { mutableStateOf(false) }
+                            val accountCardScale by animateFloatAsState(
+                                targetValue = if (isAccountCardPressed) 0.97f else 1f,
+                                animationSpec = spring(
+                                    dampingRatio = 0.75f,
+                                    stiffness = 300f
+                                )
                             )
 
                             Card(
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .graphicsLayer {
+                                        scaleX = accountCardScale
+                                        scaleY = accountCardScale
+                                    },
                                 colors = CardDefaults.cardColors(
                                     containerColor = Color(0xFF18191E)
                                 ),
-                                shape = RoundedCornerShape(12.dp)
-                            ) {
-                                Column(
-                                    modifier = Modifier.padding(16.dp)
-                                ) {
-                                    Text(
-                                        "Multiple Choice Options",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = Color(0xFFFCFCFC)
-                                    )
-                                    
-                                    Spacer(modifier = Modifier.height(8.dp))
-                                    
-                                    var optionsCount by remember { mutableIntStateOf(settingsManager.getMultipleChoiceOptionsCount()) }
-                                    
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        verticalAlignment = CenterVertically
-                                    ) {
-                                        Text(
-                                            text = "2",
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = Color(0xFFFCFCFC).copy(alpha = 0.7f)
-                                        )
-                                        
-                                        Slider(
-                                            value = optionsCount.toFloat(),
-                                            onValueChange = { 
-                                                optionsCount = it.toInt()
-                                                settingsManager.setMultipleChoiceOptionsCount(optionsCount)
-                                            },
-                                            valueRange = 2f..6f,
-                                            steps = 3,
-                                            modifier = Modifier.weight(1f)
-                                        )
-                                        
-                                        Text(
-                                            text = "6",
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = Color(0xFFFCFCFC).copy(alpha = 0.7f)
-                                        )
+                                shape = RoundedCornerShape(12.dp),
+                                onClick = { 
+                                    if (authState != null) {
+                                        val intent = Intent(context, AccountsActivity::class.java)
+                                        context.startActivity(intent)
+                                    } else {
+                                        showAuthSheet = true
                                     }
-                                    
-                                    Text(
-                                        text = "$optionsCount options",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = Color(0xFFFCFCFC).copy(alpha = 0.7f),
-                                        modifier = Modifier.fillMaxWidth(),
-                                        textAlign = TextAlign.Center
-                                    )
-                                    
-                                    Spacer(modifier = Modifier.height(4.dp))
-                                    
-                                    Text(
-                                        "Choose how many answer options appear in quizzes",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = Color(0xFFFCFCFC).copy(alpha = 0.5f)
+                                },
+                                interactionSource = remember { MutableInteractionSource() }
+                                    .also { interactionSource ->
+                                        LaunchedEffect(interactionSource) {
+                                            interactionSource.interactions.collect { interaction ->
+                                                when (interaction) {
+                                                    is PressInteraction.Press -> isAccountCardPressed = true
+                                                    is PressInteraction.Release -> isAccountCardPressed = false
+                                                    is PressInteraction.Cancel -> isAccountCardPressed = false
+                                                }
+                                            }
+                                        }
+                                    }
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 12.dp, horizontal = 16.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Row(
+                                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            painter = AppIcons.circleUserSolid(),
+                                            contentDescription = "Account",
+                                            tint = Color(0xFFFCFCFC),
+                                            modifier = Modifier.size(24.dp)
+                                        )
+                                        Column(
+                                            verticalArrangement = Arrangement.spacedBy(2.dp)
+                                        ) {
+                                            Text("Account")
+                                            Text(
+                                                text = authState?.email ?: "Not signed in",
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                color = Color(0xFFAAAAAA)
+                                            )
+                                        }
+                                    }
+                                    Icon(
+                                        painter = AppIcons.arrowRight(),
+                                        contentDescription = "Open",
+                                        tint = Color(0xFFFCFCFC)
                                     )
                                 }
                             }
 
+                            HorizontalDivider(
+                                color = Color(0xFF18191E),
+                                thickness = 1.dp,
+                                modifier = Modifier.padding(vertical = 8.dp)
+                            )
+
                             // Learning Settings Section
-                            Spacer(modifier = Modifier.height(16.dp))
                             Text(
                                 text = "Learning",
                                 style = MaterialTheme.typography.titleLarge
@@ -810,12 +888,12 @@ class SettingsActivity : ComponentActivity() {
                                 ),
                                 shape = RoundedCornerShape(12.dp)
                             ) {
-                                Column(
+                                Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .padding(vertical = 8.dp, horizontal = 16.dp),
-                                    verticalArrangement = Arrangement.SpaceBetween,
-                                    horizontalAlignment = Alignment.CenterHorizontally
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text("Reduce Animations")
                                     Switch(
@@ -873,10 +951,10 @@ class SettingsActivity : ComponentActivity() {
                                 }
                             }
                         }
-
+                        
                         // Custom Snackbar
                         AnimatedVisibility(
-                            visible = isSnackbarVisible,
+                            visible = showSnackbar,
                             enter = slideInVertically(
                                 initialOffsetY = { -it },
                                 animationSpec = spring(
@@ -936,7 +1014,7 @@ class SettingsActivity : ComponentActivity() {
                                         modifier = Modifier.weight(1f)
                                     )
                                     IconButton(
-                                        onClick = { isSnackbarVisible = false },
+                                        onClick = { showSnackbar = false },
                                         modifier = Modifier.size(24.dp)
                                     ) {
                                         Icon(
@@ -951,12 +1029,6 @@ class SettingsActivity : ComponentActivity() {
                     }
                 }
             }
-        }
-    }
-    
-    private fun showSnackbar(message: String) {
-        lifecycleScope.launch {
-            snackbarHostState.showSnackbar(message)
         }
     }
 } 

@@ -223,9 +223,33 @@ fun QuizScreen(
 
             // Build a batch with the selected word and (optionsCount-1) other random words
             val otherWords = if (isBookmarkMode) {
-                wordRepository.getRandomBookmarkedWordsExcluding(optionsCount - 1, nextWord.id)
+                // In bookmark mode, try to get words of the same category first
+                val bookmarkedWords = wordRepository.getBookmarkedWordsFlow().first()
+                val sameCategoryBookmarked = bookmarkedWords
+                    .filter { it.id != nextWord.id && it.category == nextWord.category }
+                
+                if (sameCategoryBookmarked.size >= optionsCount - 1) {
+                    // If we have enough words of the same category, use them
+                    sameCategoryBookmarked.shuffled().take(optionsCount - 1)
+                } else {
+                    // Otherwise, fall back to random bookmarked words
+                    android.util.Log.d("QuizCategory", "Not enough bookmarked words of category ${nextWord.category}, falling back to random")
+                    wordRepository.getRandomBookmarkedWordsExcluding(optionsCount - 1, nextWord.id)
+                }
             } else {
-                wordRepository.getRandomWordsExcluding(optionsCount - 1, nextWord)
+                // In normal mode, try to get words of the same category first
+                val availableWords = wordRepository.getAllWords()
+                val sameCategoryWords = availableWords
+                    .filter { it.id != nextWord.id && it.category == nextWord.category }
+                
+                if (sameCategoryWords.size >= optionsCount - 1) {
+                    // If we have enough words of the same category, use them
+                    sameCategoryWords.shuffled().take(optionsCount - 1)
+                } else {
+                    // Otherwise, fall back to random words
+                    android.util.Log.d("QuizCategory", "Not enough words of category ${nextWord.category}, falling back to random")
+                    wordRepository.getRandomWordsExcluding(optionsCount - 1, nextWord)
+                }
             }
             
             // Create the new batch with the prioritized word first
@@ -267,9 +291,33 @@ fun QuizScreen(
         if (initialWord != null) {
             // Build a batch with the selected word and (optionsCount-1) other random words
             val otherWords = if (isBookmarkMode) {
-                wordRepository.getRandomBookmarkedWordsExcluding(optionsCount - 1, initialWord.id)
+                // In bookmark mode, try to get words of the same category first
+                val bookmarkedWords = wordRepository.getBookmarkedWordsFlow().first()
+                val sameCategoryBookmarked = bookmarkedWords
+                    .filter { it.id != initialWord.id && it.category == initialWord.category }
+                
+                if (sameCategoryBookmarked.size >= optionsCount - 1) {
+                    // If we have enough words of the same category, use them
+                    sameCategoryBookmarked.shuffled().take(optionsCount - 1)
+                } else {
+                    // Otherwise, fall back to random bookmarked words
+                    android.util.Log.d("QuizCategory", "Initial: Not enough bookmarked words of category ${initialWord.category}, falling back to random")
+                    wordRepository.getRandomBookmarkedWordsExcluding(optionsCount - 1, initialWord.id)
+                }
             } else {
-                wordRepository.getRandomWordsExcluding(optionsCount - 1, initialWord)
+                // In normal mode, try to get words of the same category first
+                val availableWords = wordRepository.getAllWords()
+                val sameCategoryWords = availableWords
+                    .filter { it.id != initialWord.id && it.category == initialWord.category }
+                
+                if (sameCategoryWords.size >= optionsCount - 1) {
+                    // If we have enough words of the same category, use them
+                    sameCategoryWords.shuffled().take(optionsCount - 1)
+                } else {
+                    // Otherwise, fall back to random words
+                    android.util.Log.d("QuizCategory", "Initial: Not enough words of category ${initialWord.category}, falling back to random")
+                    wordRepository.getRandomWordsExcluding(optionsCount - 1, initialWord)
+                }
             }
             
             // Create the batch with the prioritized word first
@@ -470,7 +518,21 @@ fun QuizScreen(
                         onClick = {
                             coroutineScope.launch {
                                 val nextWord = wordRepository.getNextWord(currentWord.value)
-                                val otherWords = wordRepository.getRandomWordsExcluding(optionsCount - 1, nextWord)
+                                
+                                // Try to get words of the same category
+                                val availableWords = wordRepository.getAllWords()
+                                val sameCategoryWords = availableWords
+                                    .filter { it.id != nextWord.id && it.category == nextWord.category }
+                                
+                                val otherWords = if (sameCategoryWords.size >= optionsCount - 1) {
+                                    // If we have enough words of the same category, use them
+                                    sameCategoryWords.shuffled().take(optionsCount - 1)
+                                } else {
+                                    // Otherwise, fall back to random words
+                                    android.util.Log.d("QuizCategory", "Debug: Not enough words of category ${nextWord.category}, falling back to random")
+                                    wordRepository.getRandomWordsExcluding(optionsCount - 1, nextWord)
+                                }
+                                
                                 currentBatch = listOf(nextWord) + otherWords
                                 currentWord.value = nextWord
                                 val (newOptions, newSynonymSet) = generateOptions(currentBatch, nextWord)
@@ -513,46 +575,106 @@ fun QuizScreen(
                     }
                     
                     if (showAllWords) {
-                        val currentTime = System.currentTimeMillis()
+                        val listingTime = System.currentTimeMillis()
                         val sortedWords = allWords.sortedWith(
                             compareBy<Word> { 
                                 // First sort by status: overdue, unseen, future review
                                 when {
-                                    it.nextReviewDate > 0 && it.nextReviewDate <= currentTime -> 0
+                                    it.nextReviewDate > 0 && it.nextReviewDate <= listingTime -> 0
                                     it.timesReviewed == 0 -> 1
                                     else -> 2
                                 }
                             }.thenBy { it.word }
                         )
                         
-                        sortedWords.forEach { word ->
-                            val isOverdue = word.nextReviewDate > 0 && word.nextReviewDate <= currentTime
-                            val isUnseen = word.timesReviewed == 0
-                            val isFutureReview = word.nextReviewDate > currentTime
+                        sortedWords.forEach { listedWord ->
+                            val isWordOverdue = listedWord.nextReviewDate > 0 && listedWord.nextReviewDate <= listingTime
+                            val isWordUnseen = listedWord.timesReviewed == 0
+                            val isWordFutureReview = listedWord.nextReviewDate > listingTime
                             
                             val statusColor = when {
-                                isOverdue -> Color(0xFFFF9800)
-                                isUnseen -> Color(0xFF2196F3)
-                                isFutureReview -> Color(0xFF4CAF50)
+                                isWordOverdue -> Color(0xFFFF9800)
+                                isWordUnseen -> Color(0xFF2196F3)
+                                isWordFutureReview -> Color(0xFF4CAF50)
                                 else -> Color.White.copy(alpha = 0.7f)
                             }
                             
                             val statusText = when {
-                                isOverdue -> "OVERDUE"
-                                isUnseen -> "UNSEEN"
-                                isFutureReview -> "FUTURE"
+                                isWordOverdue -> "OVERDUE"
+                                isWordUnseen -> "UNSEEN"
+                                isWordFutureReview -> "FUTURE"
                                 else -> "REVIEWED"
                             }
                             
-                            val nextReview = if (word.nextReviewDate > 0) {
+                            val nextReview = if (listedWord.nextReviewDate > 0) {
                                 java.text.SimpleDateFormat("MM-dd", java.util.Locale.getDefault())
-                                    .format(java.util.Date(word.nextReviewDate))
+                                    .format(java.util.Date(listedWord.nextReviewDate))
                             } else "N/A"
                             
                             Text(
-                                "${word.word} (ID: ${word.id}) - $statusText - Next: $nextReview",
+                                "${listedWord.word} (ID: ${listedWord.id}) - $statusText - Next: $nextReview",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = statusColor
+                            )
+                        }
+                    }
+
+                    // Show batch composition statistics
+                    val sameCategoryCount = currentBatch.count { it.category == currentWord.value!!.category }
+                    Text(
+                        "Batch Composition: ${currentBatch.size} words total, ${sameCategoryCount} same category (${currentWord.value!!.category})",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (sameCategoryCount < currentBatch.size) Color.Red else Color.White.copy(alpha = 0.8f)
+                    )
+                    
+                    // Add detailed batch information
+                    Text(
+                        "Batch Details:",
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White.copy(alpha = 0.9f)
+                    )
+                    
+                    currentBatch.forEach { batchWord ->
+                        Text(
+                            text = "${batchWord.word} (ID: ${batchWord.id}) - Category: ${batchWord.category}${if (batchWord.id == currentWord.value!!.id) " ← CURRENT" else ""}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = if (batchWord.category != currentWord.value!!.category) Color.Red else Color.White.copy(alpha = 0.7f)
+                        )
+                    }
+
+                    // Display information about each option
+                    options.forEach { option ->
+                        // Find which word this option comes from
+                        val sourceWord = currentBatch.find { word ->
+                            word.synonym1 == option || word.synonym2 == option || word.synonym3 == option
+                        }
+                        
+                        if (sourceWord != null) {
+                            val isCorrectAnswer = option == when (currentSynonymSet) {
+                                1 -> currentWord.value!!.synonym1
+                                2 -> currentWord.value!!.synonym2
+                                else -> currentWord.value!!.synonym3
+                            }
+                            
+                            val categoryMatch = sourceWord.category == currentWord.value!!.category
+                            val synonymType = when {
+                                sourceWord.synonym1 == option -> "synonym1"
+                                sourceWord.synonym2 == option -> "synonym2"
+                                else -> "synonym3"
+                            }
+                            
+                            Text(
+                                text = "${option} → from word: ${sourceWord.word} (${sourceWord.category}) " +
+                                      "[${synonymType}] " +
+                                      "${if (isCorrectAnswer) "✓ CORRECT" else ""} " +
+                                      "${if (!categoryMatch) "⚠️ CATEGORY MISMATCH" else ""}",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = when {
+                                    isCorrectAnswer -> Color(0xFF4CAF50)
+                                    !categoryMatch -> Color(0xFFFF9800)
+                                    else -> Color.White.copy(alpha = 0.7f)
+                                }
                             )
                         }
                     }
@@ -575,6 +697,23 @@ fun QuizScreen(
                 }
         )
 
+        // Add definition after answer is selected
+        AnimatedVisibility(
+            visible = selectedAnswer != null,
+            enter = expandVertically(
+                animationSpec = AppAnimations.tweenSpec()
+            ) + fadeIn(
+                animationSpec = AppAnimations.tweenSpec()
+            ),
+            exit = shrinkVertically() + fadeOut()
+        ) {
+            Text(
+                text = currentWord.value!!.definition,
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.padding(top = 8.dp, bottom = 16.dp)
+            )
+        }
+
         // Tooltip for example sentence
         AnimatedVisibility(
             visible = showTooltip,
@@ -596,7 +735,7 @@ fun QuizScreen(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 8.dp)
+                    .padding(vertical = 4.dp)
                     .clickable { showTooltip = false },
                 colors = CardDefaults.cardColors(
                     containerColor = Color(0xFF2D2D3A)
@@ -604,20 +743,44 @@ fun QuizScreen(
                 shape = RoundedCornerShape(8.dp)
             ) {
                 Column(
-                    modifier = Modifier.padding(16.dp)
+                    modifier = Modifier.padding(8.dp)
                 ) {
                     Text(
                         text = "Example:",
                         style = MaterialTheme.typography.labelMedium,
                         color = Color(0xFF90CAF9)
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(1.dp))
                     Text(
                         text = currentWord.value!!.exampleSentence,
                         style = MaterialTheme.typography.bodyMedium,
                         color = Color.White
                     )
                 }
+            }
+        }
+
+        // Add a divider between the word section and options - modified to prevent jitter
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .animateContentSize(
+                    animationSpec = spring(
+                        dampingRatio = 0.8f,
+                        stiffness = Spring.StiffnessLow
+                    )
+                )
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                HorizontalDivider(
+                    modifier = Modifier
+                        .fillMaxWidth(0.8f)
+                        .padding(vertical = 1.dp),
+                    color = Color.Gray.copy(alpha = 0.3f)
+                )
             }
         }
 

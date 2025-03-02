@@ -80,8 +80,6 @@ import androidx.compose.foundation.background
 import androidx.compose.ui.draw.alpha
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.sp
 
 class QuizActivity : ComponentActivity() {
     private lateinit var wordRepository: WordRepository
@@ -116,11 +114,11 @@ class QuizActivity : ComponentActivity() {
                 val hintsRemaining = remember { mutableStateOf(3) }
                 
                 // Add these state variables
-                var selectedAnswerState by remember { mutableStateOf<String?>(null) }
+                var selectedAnswer by remember { mutableStateOf<String?>(null) }
                 var showNextButton by remember { mutableStateOf(false) }
                 var expandedExamples by remember { mutableStateOf(setOf<String>()) }
                 // Add a state to track if hint was used for current question
-                var hintUsedForCurrentQuestionState by remember { mutableStateOf(false) }
+                var hintUsedForCurrentQuestion by remember { mutableStateOf(false) }
                 
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
@@ -141,8 +139,8 @@ class QuizActivity : ComponentActivity() {
                             },
                             lives = lives.value,
                             hintsRemaining = hintsRemaining.value,
-                            hintUsedForCurrentQuestion = hintUsedForCurrentQuestionState,
-                            selectedAnswer = selectedAnswerState,
+                            hintUsedForCurrentQuestion = hintUsedForCurrentQuestion,
+                            selectedAnswer = selectedAnswer,
                             onHintClick = {
                                 // Only allow hint if:
                                 // 1. Hints are remaining
@@ -151,10 +149,10 @@ class QuizActivity : ComponentActivity() {
                                 // 4. User hasn't answered yet
                                 if (hintsRemaining.value > 0 && 
                                     currentWord.value != null && 
-                                    !hintUsedForCurrentQuestionState &&
-                                    selectedAnswerState == null) {
+                                    !hintUsedForCurrentQuestion &&
+                                    selectedAnswer == null) {
                                     hintsRemaining.value--
-                                    hintUsedForCurrentQuestionState = true
+                                    hintUsedForCurrentQuestion = true
                                 }
                             }
                         )
@@ -168,10 +166,10 @@ class QuizActivity : ComponentActivity() {
                         currentWord = currentWord,
                         lives = lives,
                         hintsRemaining = hintsRemaining,
-                        selectedAnswer = selectedAnswerState,
-                        setSelectedAnswer = { newValue -> selectedAnswerState = newValue },
-                        hintUsedForCurrentQuestion = hintUsedForCurrentQuestionState,
-                        setHintUsedForCurrentQuestion = { newValue -> hintUsedForCurrentQuestionState = newValue },
+                        selectedAnswer = selectedAnswer,
+                        setSelectedAnswer = { newValue -> selectedAnswer = newValue },
+                        hintUsedForCurrentQuestion = hintUsedForCurrentQuestion,
+                        setHintUsedForCurrentQuestion = { newValue -> hintUsedForCurrentQuestion = newValue },
                         onGameOver = {
                             lifecycleScope.launch {
                                 appUsageManager.endSession()
@@ -242,9 +240,9 @@ private fun QuizTopBar(
                     )
                 }
                 
-                // Hint button with count directly on the lightbulb
+                // Hint button with badge showing remaining hints
                 if (currentWord != null) {
-                    Box(contentAlignment = Alignment.Center) {
+                    Box {
                         IconButton(
                             onClick = { onHintClick() },
                             // Disable if no hints remaining, hint already used for this question, or user has answered
@@ -259,17 +257,23 @@ private fun QuizTopBar(
                             )
                         }
                         
-                        // Text directly on the lightbulb
-                        Text(
-                            text = hintsRemaining.toString(),
-                            style = MaterialTheme.typography.labelSmall.copy(
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 11.sp // Adjust text size as needed
-                            ),
-                            color = Color.Black,
-                            modifier = Modifier.offset(x = 0.dp, y = -1.dp), // Adjust x and y position as needed
-                            textAlign = TextAlign.Center // Ensures text is centered horizontally
-                        )
+                        // Badge showing remaining hints
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .size(16.dp)
+                                .background(
+                                    color = if (hintsRemaining > 0) Color(0xFFFFC107) else Color.Gray,
+                                    shape = RoundedCornerShape(8.dp)
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = hintsRemaining.toString(),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = Color.Black
+                            )
+                        }
                     }
                     
                     // Bookmark button
@@ -437,7 +441,7 @@ fun QuizScreen(
                     .take(3)  // Need 3 other words since we already have the question word
             } else {
                 wordRepository.getRandomWordsByCategory(nextWord.category, 4)  // Get 4 total words
-                    .filter { word -> word.id != nextWord.id }
+                    .filter { it.id != nextWord.id }
                     .take(3)  // Take 3 since we already have the question word
             }
             
@@ -480,7 +484,7 @@ fun QuizScreen(
                         .take(3)  // Need 3 other words since we already have the question word
                 } else {
                     wordRepository.getRandomWordsByCategory(nextWord.category, 4)  // Get 4 total words
-                        .filter { word -> word.id != nextWord.id }
+                        .filter { it.id != nextWord.id }
                         .take(3)  // Take 3 since we already have the question word
                 }
                 
@@ -516,7 +520,7 @@ fun QuizScreen(
                 .take(3)  // Need 3 other words since we already have the question word
         } else {
             wordRepository.getRandomWordsByCategory(initialWord.category, 4)  // Get 4 total words
-                .filter { word -> word.id != initialWord.id }
+                .filter { it.id != initialWord.id }
                 .take(3)  // Take 3 since we already have the question word
         }
 
@@ -553,8 +557,7 @@ fun QuizScreen(
         // Word and definition section
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.fillMaxWidth()
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
                 text = currentWord.value!!.word.lowercase(),
@@ -572,10 +575,10 @@ fun QuizScreen(
                         )
                     )
             ) {
-                Column(
+                Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = if (selectedAnswer != null) 4.dp else 0.dp)
+                        .padding(vertical = if (selectedAnswer != null) 8.dp else 0.dp)
                         .then(
                             if (selectedAnswer != null) {
                                 Modifier.wrapContentSize()
@@ -583,52 +586,64 @@ fun QuizScreen(
                                 Modifier.height(0.dp)
                             }
                         ),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color(0xFF2D2D3A)
+                    ),
+                    shape = RoundedCornerShape(8.dp)
                 ) {
-                    Text(
-                        text = currentWord.value!!.definition,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Color.White,
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        textAlign = TextAlign.Center
-                    )
-                    
-                    // Add example section
-                    Spacer(modifier = Modifier.height(8.dp))
-                    
-                    // Track if the example is expanded
-                    var isExampleExpanded by remember { mutableStateOf(false) }
-                    
-                    Text(
-                        text = "Example",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Color(0xFF2196F3),
-                        modifier = Modifier.clickable {
-                            isExampleExpanded = !isExampleExpanded
-                        }
-                    )
-                    
-                    AnimatedVisibility(
-                        visible = isExampleExpanded,
-                        enter = expandVertically(
-                            animationSpec = AppAnimations.tweenSpec()
-                        ) + fadeIn(
-                            animationSpec = AppAnimations.tweenSpec()
-                        ),
-                        exit = shrinkVertically() + fadeOut()
+                    Column(
+                        modifier = Modifier
+                            .padding(if (selectedAnswer != null) 16.dp else 0.dp)
+                            .alpha(if (selectedAnswer != null) 1f else 0f)
                     ) {
                         Text(
-                            text = currentWord.value!!.exampleSentence,
-                            style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.padding(horizontal = 24.dp, vertical = 4.dp),
-                            color = Color.White,
-                            textAlign = TextAlign.Center
+                            text = "Definition:",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = Color(0xFF90CAF9)
                         )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = currentWord.value!!.definition,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color.White
+                        )
+                        
+                        // Add example section
+                        Spacer(modifier = Modifier.height(8.dp))
+                        
+                        // Track if the example is expanded
+                        var isExampleExpanded by remember { mutableStateOf(false) }
+                        
+                        Text(
+                            text = "Example",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color(0xFF2196F3),
+                            modifier = Modifier.clickable {
+                                isExampleExpanded = !isExampleExpanded
+                            }
+                        )
+                        
+                        AnimatedVisibility(
+                            visible = isExampleExpanded,
+                            enter = expandVertically(
+                                animationSpec = AppAnimations.tweenSpec()
+                            ) + fadeIn(
+                                animationSpec = AppAnimations.tweenSpec()
+                            ),
+                            exit = shrinkVertically() + fadeOut()
+                        ) {
+                            Text(
+                                text = currentWord.value!!.exampleSentence,
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.padding(start = 8.dp, top = 4.dp),
+                                color = Color.White
+                            )
+                        }
                     }
                 }
             }
             
-            // Show hint when requested - modified to prevent jitter
+            // Show hint when requested - also modified to prevent jitter
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -639,10 +654,10 @@ fun QuizScreen(
                         )
                     )
             ) {
-                Column(
+                Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = if (showHint) 4.dp else 0.dp)
+                        .padding(vertical = if (showHint) 8.dp else 0.dp)
                         .then(
                             if (showHint) {
                                 Modifier.wrapContentSize()
@@ -650,40 +665,28 @@ fun QuizScreen(
                                 Modifier.height(0.dp)
                             }
                         ),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color(0xFF2D2D3A)
+                    ),
+                    shape = RoundedCornerShape(8.dp)
                 ) {
-                    Text(
-                        text = currentWord.value!!.exampleSentence,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Color.White,
-                        modifier = Modifier.padding(horizontal = 16.dp),
-                        textAlign = TextAlign.Center
-                    )
-                }
-            }
-            
-            // Add a divider between the word section and options - modified to prevent jitter
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .offset(y = (-8).dp)  // Reduced negative offset to position divider more evenly
-                    .animateContentSize(
-                        animationSpec = spring(
-                            dampingRatio = 0.8f,
-                            stiffness = Spring.StiffnessLow
-                        )
-                    )
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    HorizontalDivider(
+                    Column(
                         modifier = Modifier
-                            .fillMaxWidth(0.8f)
-                            .padding(vertical = 0.dp),  // Keeping vertical padding at 0.dp
-                        color = Color.Gray.copy(alpha = 0.3f)
-                    )
+                            .padding(if (showHint) 16.dp else 0.dp)
+                            .alpha(if (showHint) 1f else 0f)
+                    ) {
+                        Text(
+                            text = "Hint:",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = Color(0xFFFFC107)
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = currentWord.value!!.exampleSentence,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color.White
+                        )
+                    }
                 }
             }
         }
@@ -775,35 +778,23 @@ fun QuizScreen(
                     )
                 }
 
-                // Show definition for answer choices - modified to prevent jitter
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .animateContentSize(
-                            animationSpec = spring(
-                                dampingRatio = 0.8f,
-                                stiffness = Spring.StiffnessLow
-                            )
-                        )
+                AnimatedVisibility(
+                    visible = shouldShowDefinition,
+                    enter = expandVertically(
+                        animationSpec = AppAnimations.tweenSpec()
+                    ) + fadeIn(
+                        animationSpec = AppAnimations.tweenSpec()
+                    ),
+                    exit = shrinkVertically() + fadeOut()
                 ) {
                     Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = if (shouldShowDefinition) 8.dp else 0.dp)
-                            .then(
-                                if (shouldShowDefinition) {
-                                    Modifier.wrapContentSize()
-                                } else {
-                                    Modifier.height(0.dp)
-                                }
-                            ),
-                        verticalArrangement = Arrangement.spacedBy(4.dp),
-                        horizontalAlignment = Alignment.Start
+                        modifier = Modifier.padding(vertical = 8.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         Text(
-                            text = "$optionSynonym means $synonymDefinition",
-                            style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.padding(horizontal = 8.dp)
+                            text = "$optionSynonym means $synonymDefinition"
+                                .capitalize(Locale.current),
+                            style = MaterialTheme.typography.bodyMedium
                         )
                         
                         // Create a separate state for example expansion
@@ -821,42 +812,34 @@ fun QuizScreen(
                             text = "Example",
                             style = MaterialTheme.typography.bodyMedium,
                             color = Color(0xFF2196F3),
-                            modifier = Modifier
-                                .padding(horizontal = 8.dp)
-                                .clickable {
-                                    if (isSelected || isCorrectAnswer) {
-                                        // For correct/incorrect answers, use the expandedExamples set
-                                        expandedExamples = if (expandedExamples.contains(optionSynonym)) {
-                                            expandedExamples - optionSynonym
-                                        } else {
-                                            expandedExamples + optionSynonym
-                                        }
+                            modifier = Modifier.clickable {
+                                if (isSelected || isCorrectAnswer) {
+                                    // For correct/incorrect answers, use the expandedExamples set
+                                    expandedExamples = if (expandedExamples.contains(optionSynonym)) {
+                                        expandedExamples - optionSynonym
                                     } else {
-                                        // For other options, toggle the local state
-                                        isExampleVisible = !isExampleVisible
+                                        expandedExamples + optionSynonym
                                     }
+                                } else {
+                                    // For other options, toggle the local state
+                                    isExampleVisible = !isExampleVisible
                                 }
-                        )
-                        
-                        // Use Box with animateContentSize instead of AnimatedVisibility
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .animateContentSize(
-                                    animationSpec = spring(
-                                        dampingRatio = 0.6f,  // Lower value = more bouncy
-                                        stiffness = Spring.StiffnessMediumLow,  // Faster animation
-                                        visibilityThreshold = null
-                                    )
-                                )
-                        ) {
-                            if (showExample) {
-                                Text(
-                                    text = synonymExampleSentence,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                                )
                             }
+                        )
+                        AnimatedVisibility(
+                            visible = showExample,
+                            enter = expandVertically(
+                                animationSpec = AppAnimations.tweenSpec()
+                            ) + fadeIn(
+                                animationSpec = AppAnimations.tweenSpec()
+                            ),
+                            exit = shrinkVertically() + fadeOut()
+                        ) {
+                            Text(
+                                text = synonymExampleSentence,
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.padding(start = 8.dp)
+                            )
                         }
                     }
                 }

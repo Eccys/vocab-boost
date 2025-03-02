@@ -394,7 +394,7 @@ fun BookmarksScreen(
                                         color = dimmedText,
                                     )
                                     Text(
-                                        text = word.synonym1ExampleSentence,
+                                        text = word.exampleSentence,
                                         style = MaterialTheme.typography.bodySmall,
                                         color = dimmedText
                                     )

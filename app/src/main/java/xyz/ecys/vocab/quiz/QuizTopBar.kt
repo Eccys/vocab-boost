@@ -10,6 +10,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import xyz.ecys.vocab.data.Word
 import xyz.ecys.vocab.ui.theme.AppIcons
+import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextAlign
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -17,7 +22,11 @@ fun QuizTopBar(
     onBackClick: () -> Unit,
     currentWord: Word?,
     onBookmarkClick: (Word) -> Unit,
-    lives: Int
+    lives: Int,
+    hintsRemaining: Int = 0,
+    hintUsedForCurrentQuestion: Boolean = false,
+    selectedAnswer: String? = null,
+    onHintClick: () -> Unit = {}
 ) {
     TopAppBar(
         title = { 
@@ -51,6 +60,32 @@ fun QuizTopBar(
                     )
                 }
                 if (currentWord != null) {
+                    if (hintsRemaining > 0) {
+                        Box(contentAlignment = Alignment.Center) {
+                            IconButton(
+                                onClick = { onHintClick() },
+                                enabled = hintsRemaining > 0 && !hintUsedForCurrentQuestion && selectedAnswer == null
+                            ) {
+                                Icon(
+                                    painter = AppIcons.lightbulbSolid(),
+                                    contentDescription = "Show hint",
+                                    tint = if (hintsRemaining > 0 && !hintUsedForCurrentQuestion && selectedAnswer == null) 
+                                        Color(0xFFFFC107) else Color.Gray
+                                )
+                            }
+                            
+                            Text(
+                                text = hintsRemaining.toString(),
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 10.sp
+                                ),
+                                color = Color.Black,
+                                modifier = Modifier.offset(x = 0.dp, y = 1.dp),
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
                     IconButton(
                         onClick = { onBookmarkClick(currentWord) }
                     ) {

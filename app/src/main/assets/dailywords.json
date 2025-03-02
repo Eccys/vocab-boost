@@ -1,0 +1,2282 @@
+[
+  {
+    "word": "amelioration",
+    "pronunciation": "uh-meel-yuh-RAY-there",
+    "short_definition": "Act of improving something",
+    "meaning": "Amelioration is the act or process of improving something, making it better or more tolerable, often gradually.",
+    "category": "Noun",
+    "example": "The amelioration of living conditions boosted morale in the village.",
+    "context": "Amelioration is used in discussions of progress, such as in social reform, health, or environmental efforts, focusing on enhancement.",
+    "did_you_know": "From Latin 'melior,' meaning 'better,' via Old French 'amelioration,' this word entered English in the 17th century. Initially tied to agricultural improvements in land treatises, it evolved to cover social reforms in Enlightenment writings, like bettering the poor’s lot. Today, it’s used in policy or ecology, with debates over whether amelioration implies lasting change or mere patching, reflecting its optimistic yet practical role in human endeavors across time."
+  },
+  {
+    "word": "bucolic",
+    "pronunciation": "byoo-KOL-ik",
+    "short_definition": "Relating to rural life",
+    "meaning": "Bucolic describes something relating to the pleasant aspects of rural life, often idyllic or pastoral in nature.",
+    "category": "Adjective",
+    "example": "The bucolic landscape of rolling hills inspired her painting.",
+    "context": "Bucolic is used in art, literature, or travel to evoke the charm and simplicity of countryside scenes or lifestyles.",
+    "did_you_know": "From Greek 'boukolikos,' meaning 'of herdsmen,' via 'boukolos' (cowherd), 'bucolic' entered English in the 16th century. Rooted in Theocritus’ pastoral poetry, it shaped Virgil’s *Eclogues* and later Romantic idyllic scenes. Now it’s for farms or getaways, with debates over its nostalgia—realistic or rose-tinted?—showing its evolution from ancient shepherds to modern rural reverie."
+  },
+  {
+    "word": "depravity",
+    "pronunciation": "di-PRAV-i-tee",
+    "short_definition": "Moral corruption",
+    "meaning": "Depravity is a state of moral corruption or wickedness, often involving perverse or evil actions.",
+    "category": "Noun",
+    "example": "The novel explored the depravity of human nature in extreme conditions.",
+    "context": "Depravity is used in ethics, literature, or crime to depict profound moral decay or villainy.",
+    "did_you_know": "From Latin 'depravare,' meaning 'to corrupt,' via 'de-' (down) and 'pravus' (crooked), 'depravity' entered English in the 17th century. Used in Calvinist sin doctrines, it’s in Poe’s dark tales and now for scandals or atrocities. Its depth prompts debate—innate or learned?—showing its role in exploring evil and morality across theological and literary traditions."
+  },
+  {
+    "word": "elusive",
+    "pronunciation": "ih-LOO-siv",
+    "short_definition": "Hard to grasp",
+    "meaning": "Elusive describes something hard to grasp, define, or catch, often slipping away despite efforts to understand or capture it.",
+    "category": "Adjective",
+    "example": "The elusive solution to the puzzle frustrated the team for weeks.",
+    "context": "Elusive is used in mysteries, science, or pursuits for things that evade clear understanding or attainment.",
+    "did_you_know": "From Latin 'eludere,' meaning 'to escape,' via 'e-' (out) and 'ludere' (to play), 'elusive' entered English in the 17th century. Used in hunting for sly prey, it’s in Keats’ fleeting beauty and now for concepts or fugitives. Its slipperiness prompts debate—intriguing or maddening?—reflecting its role in challenge and enigma across fields."
+  },
+  {
+    "word": "forbearance",
+    "pronunciation": "for-BAIR-uns",
+    "short_definition": "Patient restraint",
+    "meaning": "Forbearance is patient self-control or restraint, often tolerating provocation or delaying action.",
+    "category": "Noun",
+    "example": "Her forbearance with the rude customer impressed her manager.",
+    "context": "Forbearance is used in personal relations, law, or finance for tolerance or leniency under stress.",
+    "did_you_know": "From Old English 'forberan,' meaning 'to endure,' 'forbearance' entered by the 13th century. Used in medieval patience virtues, it’s in Austen’s restraint and now for loans or tempers. Its calm prompts debate—strength or passivity?—showing its evolution from stoic endurance to modern grace under pressure across contexts."
+  },
+  {
+    "word": "gossamer",
+    "pronunciation": "GOS-uh-mer",
+    "short_definition": "Very delicate",
+    "meaning": "Gossamer describes something very light, delicate, or filmy, often like fine spider silk or a sheer fabric.",
+    "category": "Adjective",
+    "example": "The gossamer veil floated gently in the breeze at the wedding.",
+    "context": "Gossamer is used in nature, fashion, or poetry for ethereal, fragile beauty or textures.",
+    "did_you_know": "From Middle English 'gosesomer,' meaning 'goose summer' (late autumn webs), 'gossamer' entered in the 14th century. Tied to spider silk in folklore, it’s in Shelley’s airy lines and now for wings or threads. Its delicacy prompts debate—lovely or frail?—reflecting its shift from seasonal webs to poetic lightness over time."
+  },
+  {
+    "word": "heinous",
+    "pronunciation": "HAY-nus",
+    "short_definition": "Shockingly evil",
+    "meaning": "Heinous describes something shockingly evil, atrocious, or abominable, often morally outrageous.",
+    "category": "Adjective",
+    "example": "The heinous crime horrified the small town for years.",
+    "context": "Heinous is used in law, news, or ethics to condemn acts of extreme wickedness or cruelty.",
+    "did_you_know": "From Old French 'haineus,' meaning 'hateful,' via 'haine' (hate), 'heinous' entered English in the 14th century. Used in medieval trials for vile deeds, it’s in Shakespeare’s horrors and now for murders or abuses. Its outrage prompts debate—absolute or subjective?—showing its role in justice and morality across eras."
+  },
+  {
+    "word": "inscrutable",
+    "pronunciation": "in-SKROO-tuh-bul",
+    "short_definition": "Hard to understand",
+    "meaning": "Inscrutable means impossible to understand or interpret, often mysterious or enigmatic in nature.",
+    "category": "Adjective",
+    "example": "His inscrutable expression gave no hint of his true feelings.",
+    "context": "Inscrutable is used in faces, texts, or motives for things defying easy comprehension or analysis.",
+    "did_you_know": "From Latin 'inscrutabilis,' via 'in-' (not) and 'scrutari' (to search), 'inscrutable' entered English in the 15th century. Used in theology for God’s mysteries, it’s in Poe’s riddles and now for poker faces or codes. Its mystery prompts debate—deep or vague?—reflecting its role in the unknowable across disciplines."
+  },
+  {
+    "word": "lethargy",
+    "pronunciation": "LETH-ur-jee",
+    "short_definition": "Lack of energy",
+    "meaning": "Lethargy is a state of sluggishness, apathy, or lack of energy, often physical or mental inertia.",
+    "category": "Noun",
+    "example": "The heat induced a lethargy that slowed the entire team’s progress.",
+    "context": "Lethargy is used in health, mood, or productivity to describe listlessness or exhaustion.",
+    "did_you_know": "From Greek 'lethargia,' meaning 'forgetfulness,' via 'lethe' (oblivion), 'lethargy' entered English in the 14th century. Used in ancient medicine for stupor, it’s in Dickens’ idlers and now for burnout or naps. Its dullness prompts debate—rest or laziness?—showing its shift from mythic sleep to modern fatigue."
+  },
+  {
+    "word": "mirth",
+    "pronunciation": "MURTH",
+    "short_definition": "Joyful amusement",
+    "meaning": "Mirth is gladness or gaiety, often expressed through laughter or joyous amusement.",
+    "category": "Noun",
+    "example": "The room filled with mirth as the comedian delivered her punchline.",
+    "context": "Mirth is used in celebrations, stories, or moods for cheerful, lighthearted happiness.",
+    "did_you_know": "From Old English 'myrgth,' meaning 'joy,' 'mirth' entered by the 9th century. Used in medieval feasts, it’s in Shakespeare’s revels and now for giggles or parties. Its cheer prompts debate—pure or fleeting?—reflecting its role in lifting spirits from ancient halls to modern humor across cultures."
+  },
+  {
+    "word": "nefarious",
+    "pronunciation": "ni-FAIR-ee-us",
+    "short_definition": "Wickedly evil",
+    "meaning": "Nefarious describes something wicked, villainous, or despicable, often with sinister intent.",
+    "category": "Adjective",
+    "example": "The nefarious scheme to defraud investors was uncovered by the audit.",
+    "context": "Nefarious is used in crime, plots, or ethics to condemn evil, underhanded actions.",
+    "did_you_know": "From Latin 'nefarius,' meaning 'wicked,' via 'ne-' (not) and 'fas' (right), 'nefarious' entered English in the 17th century. Used in Roman law for crimes, it’s in Gothic villains and now for scams or tyrants. Its evil prompts debate—truly vile or hyped?—showing its role in dark deeds across narratives."
+  },
+  {
+    "word": "oscillate",
+    "pronunciation": "OS-uh-layt",
+    "short_definition": "Swing back and forth",
+    "meaning": "To oscillate is to swing back and forth, either physically like a pendulum or figuratively between states or opinions.",
+    "category": "Verb",
+    "example": "Her mood seemed to oscillate between hope and despair daily.",
+    "context": "Oscillate is used in physics, emotions, or decisions for regular or erratic shifts.",
+    "did_you_know": "From Latin 'oscillare,' meaning 'to swing,' 'oscillate' entered English in the 18th century, tied to pendulums in science. Used in Newton’s studies, it’s now for fans or minds in flux. Its motion prompts debate—rhythmic or unstable?—reflecting its shift from mechanics to metaphor over time."
+  },
+  {
+    "word": "palpable",
+    "pronunciation": "PAL-puh-bul",
+    "short_definition": "Clearly felt or seen",
+    "meaning": "Palpable means capable of being touched or felt, or so intense as to seem tangible, often obvious or evident.",
+    "category": "Adjective",
+    "example": "The tension in the room was palpable as the verdict was read.",
+    "context": "Palpable is used in emotions, atmospheres, or evidence for things strikingly real or noticeable.",
+    "did_you_know": "From Latin 'palpare,' meaning 'to touch,' 'palpable' entered English in the 14th century. Used in medieval medicine for feeling, it’s in Shakespeare’s thick air and now for vibes or proofs. Its tangibility prompts debate—clear or exaggerated?—showing its role in sensation and perception across eras."
+  },
+  {
+    "word": "repose",
+    "pronunciation": "ri-POHZ",
+    "short_definition": "State of calm rest",
+    "meaning": "Repose is a state of rest, tranquility, or calm, or the act of resting or lying at peace.",
+    "category": "Noun",
+    "example": "After the chaos, she found repose in the quiet garden.",
+    "context": "Repose is used in rest, art, or death for serene stillness or relaxation.",
+    "did_you_know": "From Latin 'reponere,' meaning 'to place back,' 'repose' entered English in the 15th century. Used in monastic calm, it’s in Keats’ sleep and now for naps or graves. Its peace prompts debate—restful or static?—showing its shift from action’s pause to eternal rest in culture."
+  },
+  {
+    "word": "vehement",
+    "pronunciation": "VEE-uh-munt",
+    "short_definition": "Intensely forceful",
+    "meaning": "Vehement describes something marked by intense force, passion, or emotion, often in speech or action.",
+    "category": "Adjective",
+    "example": "His vehement denial of the charges surprised the courtroom.",
+    "context": "Vehement is used in protests, arguments, or defenses for strong, forceful expression.",
+    "did_you_know": "From Latin 'vehemens,' meaning 'eager,' possibly 'veh-' (carry), 'vehement' entered English in the 15th century. Used in Roman oratory, it’s in Milton’s rages and now for outbursts or pleas. Its force prompts debate—powerful or overblown?—showing its role in passion and intensity across time."
+  },
+  {
+    "word": "wily",
+    "pronunciation": "WY-lee",
+    "short_definition": "Slyly clever",
+    "meaning": "Wily describes someone cunning, sly, or clever in a deceptive way, often to achieve tricky goals.",
+    "category": "Adjective",
+    "example": "The wily fox outsmarted the hunters with its clever tricks.",
+    "context": "Wily is used in tales, games, or strategy for crafty, often mischievous intelligence.",
+    "did_you_know": "From Old English 'wil,' meaning 'trick,' 'wily' entered by the 13th century, tied to guile in fables. Used in Robin Hood’s ploys, it’s now for cons or sports. Its slyness prompts debate—admirable or sneaky?—reflecting its role in wit and deception from folklore to modern cunning."
+  },
+  {
+    "word": "zealot",
+    "pronunciation": "ZEL-ut",
+    "short_definition": "Fanatical enthusiast",
+    "meaning": "A zealot is someone excessively enthusiastic or fanatical, often uncompromising in pursuit of a cause.",
+    "category": "Noun",
+    "example": "The zealot preached his ideology to anyone who would listen.",
+    "context": "Zealot is used in religion, politics, or fandom for fervent, sometimes extreme devotion.",
+    "did_you_know": "From Greek 'zelotes,' meaning 'emulator,' via Jewish rebels, 'zealot' entered English in the 16th century. Used for biblical fanatics, it’s in Puritan crusades and now for activists or fans. Its fervor prompts debate—passionate or mad?—showing its role in dedication and excess across history."
+  },
+  {
+    "word": "arduous",
+    "pronunciation": "AR-joo-us",
+    "short_definition": "Very difficult",
+    "meaning": "Arduous describes something requiring much effort, energy, or determination, often strenuous or difficult.",
+    "category": "Adjective",
+    "example": "The arduous trek up the mountain tested their endurance.",
+    "context": "Arduous is used in tasks, journeys, or work for challenging, taxing endeavors.",
+    "did_you_know": "From Latin 'arduus,' meaning 'steep,' 'arduous' entered English in the 16th century, tied to rugged terrain in explorers’ logs. Used in Milton’s trials, it’s now for marathons or studies. Its strain prompts debate—noble or grueling?—reflecting its role in effort and perseverance over time."
+  },
+  {
+    "word": "benevolence",
+    "pronunciation": "buh-NEV-uh-luns",
+    "short_definition": "Kind goodwill",
+    "meaning": "Benevolence is the disposition to do good or be kind, often shown through generosity or goodwill.",
+    "category": "Noun",
+    "example": "The king’s benevolence was evident in his gifts to the poor.",
+    "context": "Benevolence is used in charity, leadership, or ethics for acts of kindness or altruism.",
+    "did_you_know": "From Latin 'benevolentia,' meaning 'good will,' 'benevolence' entered English in the 14th century. Used in feudal charity, it’s in Enlightenment ideals and now for donors or deeds. Its kindness prompts debate—pure or strategic?—reflecting its role in morality and society across centuries."
+  },
+  {
+    "word": "disparity",
+    "pronunciation": "di-SPAR-i-tee",
+    "short_definition": "Significant difference",
+    "meaning": "Disparity is a significant difference or inequality, often in conditions, amounts, or treatment.",
+    "category": "Noun",
+    "example": "The disparity in wages between the workers sparked a strike.",
+    "context": "Disparity is used in economics, social issues, or stats for gaps or unevenness.",
+    "did_you_know": "From Latin 'disparitas,' via 'dis-' (apart) and 'paritas' (equality), 'disparity' entered English in the 16th century. Used in trade imbalances, it’s in modern equity talks or data. Its gap prompts debate—unfair or natural?—reflecting its role in justice and analysis across contexts."
+  },
+  {
+    "word": "enigma",
+    "pronunciation": "ih-NIG-muh",
+    "short_definition": "Mysterious puzzle",
+    "meaning": "An enigma is something mysterious, puzzling, or inexplicable, often defying easy understanding.",
+    "category": "Noun",
+    "example": "The ancient ruins remained an enigma to archaeologists for decades.",
+    "context": "Enigma is used in history, people, or codes for baffling, intriguing mysteries.",
+    "did_you_know": "From Greek 'ainigma,' meaning 'riddle,' 'enigma' entered English in the 16th century, tied to Sphinx-like puzzles. Used in Renaissance ciphers, it’s now for WWII machines or oddballs. Its mystery prompts debate—fascinating or unsolved?—showing its role in curiosity and challenge over time."
+  },
+  {
+    "word": "fervor",
+    "pronunciation": "FUR-vur",
+    "short_definition": "Intense passion",
+    "meaning": "Fervor is intense enthusiasm, passion, or zeal, often felt or shown with great warmth.",
+    "category": "Noun",
+    "example": "The crowd cheered with fervor as the band took the stage.",
+    "context": "Fervor is used in religion, fandom, or causes for ardent, spirited devotion.",
+    "did_you_know": "From Latin 'fervor,' meaning 'heat,' via 'fervēre' (to boil), 'fervor' entered English in the 14th century. Used in medieval faith, it’s in revivalist rallies and now for concerts or protests. Its heat prompts debate—vital or wild?—reflecting its role in passion and energy across eras."
+  },
+  {
+    "word": "garrulity",
+    "pronunciation": "guh-ROO-li-tee",
+    "short_definition": "Excessive talkativeness",
+    "meaning": "Garrulity is excessive talkativeness, often about trivial matters, tending toward loquacious chatter.",
+    "category": "Noun",
+    "example": "His garrulity at the party exhausted even the most patient guests.",
+    "context": "Garrulity is used in social settings, critiques, or age for nonstop, often tedious speech.",
+    "did_you_know": "From Latin 'garrulus,' meaning 'chatty,' via 'garrire' (to babble), 'garrulity' entered English in the 16th century. Used in Renaissance gossips, it’s in Austen’s bores and now for windbags. Its flow prompts debate—lively or dull?—showing its role in talk and tolerance over time."
+  },
+  {
+    "word": "hapless",
+    "pronunciation": "HAP-lis",
+    "short_definition": "Unlucky person",
+    "meaning": "Hapless describes someone unfortunate or unlucky, often pitiably beset by bad fortune.",
+    "category": "Adjective",
+    "example": "The hapless sailor was stranded after the shipwreck.",
+    "context": "Hapless is used in tales, news, or sports for those repeatedly struck by misfortune.",
+    "did_you_know": "From Old English 'hap' (luck) and '-less,' 'hapless' entered in the 14th century, meaning 'luckless.' Used in medieval woes, it’s in Dickens’ losers and now for teams or victims. Its pity prompts debate—sad or comical?—reflecting its role in sympathy and fate across narratives."
+  },
+  {
+    "word": "impugn",
+    "pronunciation": "im-PYOON",
+    "short_definition": "Challenge as false",
+    "meaning": "To impugn is to challenge or attack as false or questionable, often disputing integrity or truth.",
+    "category": "Verb",
+    "example": "She impugned his motives, suggesting greed over generosity.",
+    "context": "Impugn is used in debates, law, or accusations to question credibility or honor.",
+    "did_you_know": "From Latin 'impugnare,' meaning 'to fight against,' 'impugn' entered English in the 14th century, tied to duels in chivalry. Used in legal challenges, it’s now for reputations or claims in court or news. Its attack prompts debate—fair or mean?—showing its role in honor and doubt over time."
+  },
+  {
+    "word": "jubilant",
+    "pronunciation": "JOO-buh-lunt",
+    "short_definition": "Triumphantly joyful",
+    "meaning": "Jubilant describes a state of triumphant joy or exuberance, often loudly expressed.",
+    "category": "Adjective",
+    "example": "The jubilant fans flooded the streets after the championship win.",
+    "context": "Jubilant is used in victories, holidays, or moments for unrestrained celebration.",
+    "did_you_know": "From Latin 'jubilare,' meaning 'to shout for joy,' 'jubilant' entered English in the 17th century, tied to biblical praise. Used in Restoration fêtes, it’s now for sports or news highs. Its joy prompts debate—pure or loud?—reflecting its role in triumph and cheer across cultures."
+  },
+  {
+    "word": "knell",
+    "pronunciation": "NEL",
+    "short_definition": "Bell signaling doom",
+    "meaning": "A knell is the sound of a bell rung slowly, often for death, or a sign of doom or end.",
+    "category": "Noun",
+    "example": "The church bell’s knell marked the passing of the old leader.",
+    "context": "Knell is used in funerals, omens, or endings for somber, tolling portents.",
+    "did_you_know": "From Old English 'cnyll,' meaning 'bell sound,' 'knell' entered by the 9th century, tied to death in Anglo-Saxon rites. Used in Donne’s tolls, it’s now for ends or bells in poetry. Its doom prompts debate—mournful or final?—showing its role in closure and grief across time."
+  },
+  {
+    "word": "lucid",
+    "pronunciation": "LOO-sid",
+    "short_definition": "Clear and bright",
+    "meaning": "Lucid means clear and easy to understand, or bright and shining, often in thought or expression.",
+    "category": "Adjective",
+    "example": "Her lucid explanation made the complex topic accessible to all.",
+    "context": "Lucid is used in writing, teaching, or dreams for clarity, brightness, or coherence.",
+    "did_you_know": "From Latin 'lucidus,' meaning 'bright,' via 'lucere' (to shine), 'lucid' entered English in the 16th century. Used in optics, it’s in Locke’s clear ideas and now for prose or sleep. Its light prompts debate—simple or brilliant?—reflecting its role in understanding and vision."
+  },
+  {
+    "word": "mawkish",
+    "pronunciation": "MAW-kish",
+    "short_definition": "Overly sentimental",
+    "meaning": "Mawkish describes something overly sentimental or emotional, often cloyingly so, to the point of insincerity.",
+    "category": "Adjective",
+    "example": "The mawkish film left audiences rolling their eyes at its sappiness.",
+    "context": "Mawkish is used in reviews, art, or reactions for exaggerated, treacly feelings.",
+    "did_you_know": "From Middle English 'mawke,' meaning 'maggot,' 'mawkish' entered in the 17th century, originally 'sickly.' Used in Victorian tears, it’s now for soaps or cards. Its sweetness prompts debate—touching or fake?—showing its shift from rot to cloying emotion in critique and taste."
+  },
+  {
+    "word": "nostalgia",
+    "pronunciation": "nos-TAL-juh",
+    "short_definition": "Longing for past",
+    "meaning": "Nostalgia is a sentimental longing for the past, often idealized, tinged with wistfulness or melancholy.",
+    "category": "Noun",
+    "example": "The old song filled her with nostalgia for her childhood summers.",
+    "context": "Nostalgia is used in memory, culture, or marketing for yearning for bygone times.",
+    "did_you_know": "From Greek 'nostos' (return) and 'algos' (pain), 'nostalgia' entered English in the 18th century as a medical homesickness. Used in Romantic longing, it’s now for retro ads or tunes. Its ache prompts debate—sweet or false?—reflecting its role in memory and commerce over time."
+  },
+  {
+    "word": "demure",
+    "pronunciation": "di-MYOOR",
+    "short_definition": "Modest or reserved",
+    "meaning": "Demure describes someone modest, shy, or reserved in manner, often with a quiet, decorous charm.",
+    "category": "Adjective",
+    "example": "Her demure demeanor contrasted with the room’s loud energy.",
+    "context": "Demure is used in social settings, fashion, or character for understated, proper behavior.",
+    "did_you_know": "From Old French 'demurer,' meaning 'to linger,' 'demure' entered English in the 14th century, tied to maturity. Used in Victorian etiquette, it’s now for dresses or coy smiles. Its restraint prompts debate—sweet or prim?—showing its evolution from delay to poised modesty across centuries."
+  },
+  {
+    "word": "ephemeral",
+    "pronunciation": "ih-FEM-uh-rul",
+    "short_definition": "Short-lived",
+    "meaning": "Ephemeral describes something lasting for a very short time, fleeting or transitory, often with a sense of beauty or fragility.",
+    "category": "Adjective",
+    "example": "The ephemeral bloom of the desert flower lasted only a day.",
+    "context": "Ephemeral is used in nature, art, or trends for brief, often poignant moments or existence.",
+    "did_you_know": "From Greek 'ephēmeros,' meaning 'lasting a day,' via 'epi' (on) and 'hēmera' (day), 'ephemeral' entered English in the 16th century. Used for mayflies in science, it’s in Shelley’s fleeting joys and now for fads or posts. Its brevity prompts debate—precious or trivial?—reflecting its poetic role in impermanence."
+  },
+  {
+    "word": "fractious",
+    "pronunciation": "FRAK-shus",
+    "short_definition": "Irritable or unruly",
+    "meaning": "Fractious describes someone irritable, quarrelsome, or difficult to control, often causing disruption.",
+    "category": "Adjective",
+    "example": "The fractious debate delayed the council’s decision for hours.",
+    "context": "Fractious is used in groups, kids, or politics for cranky, contentious behavior.",
+    "did_you_know": "From Latin 'fractus,' meaning 'broken,' 'fractious' entered English in the 18th century, tied to fracture’s discord. Used in colonial assemblies, it’s now for toddlers or mobs. Its grumpiness prompts debate—spirited or petty?—showing its role in tension and unruliness over time."
+  },
+  {
+    "word": "gregarious",
+    "pronunciation": "gri-GAIR-ee-us",
+    "short_definition": "Sociable",
+    "meaning": "Gregarious describes someone fond of company, sociable, or enjoying group interaction, or animals living in flocks.",
+    "category": "Adjective",
+    "example": "His gregarious nature made him the life of every party.",
+    "context": "Gregarious is used in social life, biology, or traits for outgoing or herd-like tendencies.",
+    "did_you_know": "From Latin 'gregarius,' meaning 'of a flock,' via 'grex' (herd), 'gregarious' entered English in the 17th century. Used for birds in Linnaeus, it’s in Austen’s extroverts and now for hosts or deer. Its warmth prompts debate—friendly or needy?—reflecting its shift from nature to human connection."
+  },
+  {
+    "word": "harrowing",
+    "pronunciation": "HAR-oh-ing",
+    "short_definition": "Distressingly painful",
+    "meaning": "Harrowing describes something acutely distressing or agonizing, often evoking deep emotional pain or horror.",
+    "category": "Adjective",
+    "example": "The harrowing tale of survival moved the audience to tears.",
+    "context": "Harrowing is used in stories, news, or trauma for intensely upsetting experiences.",
+    "did_you_know": "From Old English 'hergian,' meaning 'to plunder,' 'harrowing' entered by the 14th century, tied to farm tools tearing soil. Used in medieval hell scenes, it’s now for wars or grief in films. Its pain prompts debate—stirring or grim?—showing its role in anguish from fields to feelings."
+  },
+  {
+    "word": "impetus",
+    "pronunciation": "IM-pi-tus",
+    "short_definition": "Driving force",
+    "meaning": "Impetus is a force or stimulus that encourages action or progress, often sparking movement or motivation.",
+    "category": "Noun",
+    "example": "The scandal gave impetus to reforms in the organization.",
+    "context": "Impetus is used in change, science, or motivation for a push toward activity or improvement.",
+    "did_you_know": "From Latin 'impetus,' meaning 'attack,' via 'impetere' (to rush), 'impetus' entered English in the 17th century. Used in physics for motion, it’s in revolutions and now for drives or laws. Its push prompts debate—vital or rash?—reflecting its role in momentum from science to society."
+  },
+  {
+    "word": "jejune",
+    "pronunciation": "ji-JOON",
+    "short_definition": "Dull or immature",
+    "meaning": "Jejune describes something naive, simplistic, or dull, often lacking depth, maturity, or interest.",
+    "category": "Adjective",
+    "example": "The jejune plot of the book failed to captivate adult readers.",
+    "context": "Jejune is used in critiques, youth, or ideas for shallow or childish content.",
+    "did_you_know": "From Latin 'jejunus,' meaning 'empty,' 'jejune' entered English in the 17th century, tied to fasting’s bareness. Used in Dryden’s flat verse, it’s now for trite talks or teens. Its dullness prompts debate—young or bland?—showing its shift from hunger to intellectual thinness."
+  },
+  {
+    "word": "kinetic",
+    "pronunciation": "ki-NET-ik",
+    "short_definition": "Relating to motion",
+    "meaning": "Kinetic pertains to or involves motion, often describing energy or activity derived from movement.",
+    "category": "Adjective",
+    "example": "The kinetic sculpture spun wildly in the wind.",
+    "context": "Kinetic is used in physics, art, or energy for things active or driven by motion.",
+    "did_you_know": "From Greek 'kinētikos,' meaning 'moving,' via 'kinein' (to move), 'kinetic' entered English in the 19th century. Used in mechanics by Kelvin, it’s now for art or kids’ energy in ads. Its motion prompts debate—dynamic or chaotic?—reflecting its role in science and vibrancy over time."
+  },
+  {
+    "word": "lamentation",
+    "pronunciation": "lam-un-TAY-shun",
+    "short_definition": "Expression of grief",
+    "meaning": "Lamentation is the act of expressing sorrow or mourning, often loudly or passionately, over a loss or tragedy.",
+    "category": "Noun",
+    "example": "The lamentation at the funeral echoed through the valley.",
+    "context": "Lamentation is used in funerals, poetry, or crises for vocal grief or wailing.",
+    "did_you_know": "From Latin 'lamentatio,' via 'lamentari' (to wail), 'lamentation' entered English in the 14th century. Used in biblical dirges, it’s in Milton’s cries and now for wakes or wars. Its sorrow prompts debate—cathartic or loud?—showing its role in mourning from scripture to modern loss."
+  },
+  {
+    "word": "mitigate",
+    "pronunciation": "MIT-i-gayt",
+    "short_definition": "Lessen Severity",
+    "meaning": "To mitigate is to make something less severe, serious, or painful, often reducing harm or impact.",
+    "category": "Verb",
+    "example": "The new policy aimed to mitigate the effects of pollution.",
+    "context": "Mitigate is used in law, environment, or health to lessen negative consequences or risks.",
+    "did_you_know": "From Latin 'mitigare,' meaning 'to soften,' via 'mitis' (mild), 'mitigate' entered English in the 15th century. Used in medieval law for mercy, it’s now for climate or pain in news. Its easing prompts debate—effective or partial?—reflecting its role in relief and moderation across fields."
+  },
+  {
+    "word": "nonplussed",
+    "pronunciation": "non-PLUHST",
+    "short_definition": "Bewildered",
+    "meaning": "Nonplussed means perplexed or confused, often to the point of being unsure how to react or proceed.",
+    "category": "Adjective",
+    "example": "She was nonplussed by the unexpected twist in the meeting.",
+    "context": "Nonplussed is used in surprises, debates, or puzzles for a state of bafflement.",
+    "did_you_know": "From Latin 'non plus,' meaning 'no more,' 'nonplussed' entered English in the 16th century, tied to dead ends in logic. Used in Pepys’ diaries for shock, it’s now for stumped faces or talks. Its confusion prompts debate—stuck or quaint?—showing its role in surprise from old to new."
+  },
+  {
+    "word": "oblique",
+    "pronunciation": "uh-BLEEK",
+    "short_definition": "Indirect or slanting",
+    "meaning": "Oblique describes something not straightforward or direct, often slanting, evasive, or subtly angled.",
+    "category": "Adjective",
+    "example": "His oblique reference to the scandal went unnoticed by most.",
+    "context": "Oblique is used in geometry, speech, or tactics for indirect or slanted approaches.",
+    "did_you_know": "From Latin 'obliquus,' meaning 'slanting,' 'oblique' entered English in the 15th century, tied to angles in math. Used in Donne’s sly hints, it’s now for glances or quips. Its slant prompts debate—clever or vague?—reflecting its role in subtlety from lines to language over time."
+  },
+  {
+    "word": "placid",
+    "pronunciation": "PLAS-id",
+    "short_definition": "Calm or peaceful",
+    "meaning": "Placid describes something calm, peaceful, or undisturbed, often with a serene or tranquil quality.",
+    "category": "Adjective",
+    "example": "The placid lake reflected the mountains in perfect stillness.",
+    "context": "Placid is used in nature, moods, or characters for quiet, unruffled states.",
+    "did_you_know": "From Latin 'placēre,' meaning 'to please,' 'placid' entered English in the 17th century. Used in pastoral scenes by Virgil, it’s now for waters or tempers in prose. Its calm prompts debate—soothing or dull?—showing its role in peace from Roman roots to modern calm."
+  },
+  {
+    "word": "quagmire",
+    "pronunciation": "KWAG-myr",
+    "short_definition": "Difficult situation",
+    "meaning": "A quagmire is a soft, boggy area of land that gives way underfoot, or a complex, hazardous situation.",
+    "category": "Noun",
+    "example": "The negotiations turned into a quagmire of conflicting demands.",
+    "context": "Quagmire is used in nature, politics, or dilemmas for messy, entrapping problems.",
+    "did_you_know": "From 'quag' (bog) and 'mire' (mud), 'quagmire' entered English in the 16th century, tied to swamps in travel logs. Used in Vietnam War metaphors, it’s now for talks or traps. Its mess prompts debate—real or hyped?—reflecting its role in struggle from bogs to bureaucracy."
+  },
+  {
+    "word": "saturate",
+    "pronunciation": "SACH-uh-rayt",
+    "short_definition": "Fill completely",
+    "meaning": "To saturate is to soak, fill, or load something to capacity, often beyond absorption, with liquid or excess.",
+    "category": "Verb",
+    "example": "Heavy rain saturated the fields, causing floods.",
+    "context": "Saturate is used in weather, markets, or media for complete filling or overwhelming presence.",
+    "did_you_know": "From Latin 'saturare,' meaning 'to fill,' via 'satur' (full), 'saturate' entered English in the 16th century. Used in alchemy for soaking, it’s now for ads or rains in news. Its fullness prompts debate—rich or too much?—reflecting its role in abundance from science to saturation."
+  },
+  {
+    "word": "undulate",
+    "pronunciation": "UN-juh-layt",
+    "short_definition": "Move in waves",
+    "meaning": "To undulate is to move with a smooth, wavelike motion, often rising and falling rhythmically.",
+    "category": "Verb",
+    "example": "The wheat fields undulated gently under the summer breeze.",
+    "context": "Undulate is used in nature, dance, or physics for flowing, wave-like movements.",
+    "did_you_know": "From Latin 'undulare,' meaning 'to wave,' via 'unda' (wave), 'undulate' entered English in the 17th century. Used in sea logs, it’s in Whitman’s rhythms and now for hills or flags. Its flow prompts debate—graceful or hypnotic?—reflecting its role in motion from water to art."
+  },
+  {
+    "word": "yearning",
+    "pronunciation": "YUR-ning",
+    "short_definition": "Strong desire",
+    "meaning": "Yearning is a deep, often tender longing or desire, typically for something unattainable or distant.",
+    "category": "Noun",
+    "example": "Her yearning for adventure drove her to travel the world.",
+    "context": "Yearning is used in love, dreams, or nostalgia for intense, heartfelt longing.",
+    "did_you_know": "From Old English 'gearnung,' via 'gearnian' (to desire), 'yearning' entered by the 9th century. Used in medieval love, it’s in Tennyson’s pines and now for homes or goals. Its ache prompts debate—sweet or sad?—reflecting its role in passion and loss across time."
+  },
+  {
+    "word": "assuage",
+    "pronunciation": "uh-SWAYJ",
+    "short_definition": "Ease or relieve",
+    "meaning": "To assuage is to lessen the intensity of something, such as pain, guilt, or fear, often soothing or calming it.",
+    "category": "Verb",
+    "example": "Kind words assuaged her anxiety before the exam.",
+    "context": "Assuage is used in emotions, diplomacy, or relief for reducing distress or tension.",
+    "did_you_know": "From Old French 'assouagier,' via Latin 'suavis' (sweet), 'assuage' entered English in the 14th century. Used in medieval comfort, it’s in Shakespeare’s balm and now for fears or hungers. Its calm prompts debate—deep or surface?—reflecting its role in solace from old to new."
+  },
+  {
+    "word": "beguiling",
+    "pronunciation": "bih-GY-ling",
+    "short_definition": "Charmingly deceptive",
+    "meaning": "Beguiling describes something charmingly deceptive or enchanting, often captivating with subtle trickery.",
+    "category": "Adjective",
+    "example": "The beguiling tale lured readers into its twisted plot.",
+    "context": "Beguiling is used in stories, looks, or charm for alluring, often misleading appeal.",
+    "did_you_know": "From Middle English 'beguilen,' via 'guile,' 'beguiling' entered in the 13th century, tied to deceit in tales. Used in Chaucer’s lures, it’s now for smiles or ads. Its charm prompts debate—sweet or sly?—reflecting its role in enchantment and trickery from medieval to modern."
+  },
+  {
+    "word": "deference",
+    "pronunciation": "DEF-uh-runs",
+    "short_definition": "Respectful yielding",
+    "meaning": "Deference is respectful submission or yielding to another’s opinion, wish, or authority, often politely.",
+    "category": "Noun",
+    "example": "He showed deference to his mentor by following her advice.",
+    "context": "Deference is used in etiquette, hierarchy, or law for courteous respect or obedience.",
+    "did_you_know": "From French 'déférer,' via Latin 'deferre' (to carry down), 'deference' entered English in the 17th century. Used in feudal bows, it’s in Austen’s manners and now for courts or elders. Its respect prompts debate—honor or grovel?—showing its role in courtesy from old ranks to now."
+  },
+  {
+    "word": "equivocal",
+    "pronunciation": "ih-KWIV-uh-kul",
+    "short_definition": "Ambiguous",
+    "meaning": "Equivocal describes something open to multiple interpretations, often uncertain or deliberately vague.",
+    "category": "Adjective",
+    "example": "Her equivocal answer left us unsure of her true stance.",
+    "context": "Equivocal is used in speech, law, or intent for unclear or dubious meanings.",
+    "did_you_know": "From Latin 'aequivocus,' via 'aequus' (equal) and 'vox' (voice), 'equivocal' entered English in the 16th century. Used in Jesuit debates, it’s now for dodges or clues in talks. Its vagueness prompts debate—shrewd or shady?—reflecting its role in ambiguity from logic to lies."
+  },
+  {
+    "word": "feckless",
+    "pronunciation": "FEK-lis",
+    "short_definition": "Irresponsible",
+    "meaning": "Feckless describes someone lacking initiative, strength, or effectiveness, often carelessly irresponsible.",
+    "category": "Adjective",
+    "example": "The feckless manager let the project fall apart.",
+    "context": "Feckless is used in work, youth, or critique for weak, aimless behavior.",
+    "did_you_know": "From Scots 'feck,' meaning 'effect,' plus '-less,' 'feckless' entered English in the 16th century, tied to weakness in ballads. Used in Burns’ loafers, it’s now for slackers or flops. Its drift prompts debate—lazy or lost?—showing its role in failure from Scots to scorn."
+  },
+  {
+    "word": "glower",
+    "pronunciation": "GLOW-ur",
+    "short_definition": "Angry stare",
+    "meaning": "To glower is to stare angrily or sullenly, often with a dark, brooding expression of displeasure.",
+    "category": "Verb",
+    "example": "He glowered at the noisy group disrupting his peace.",
+    "context": "Glower is used in confrontations, moods, or tales for scowling, resentful looks.",
+    "did_you_know": "From Middle English 'glouren,' possibly Scots for 'to stare,' 'glower' entered in the 15th century. Used in Gothic glares, it’s in Brontë’s scowls and now for grumps or foes. Its glare prompts debate—fierce or petty?—reflecting its role in anger from old looks to new."
+  },
+  {
+    "word": "harangue",
+    "pronunciation": "huh-RANG",
+    "short_definition": "Long, critical speech",
+    "meaning": "A harangue is a lengthy, aggressive speech or rant, often scolding or persuading with intensity.",
+    "category": "Noun",
+    "example": "The coach’s harangue motivated the team after a poor half.",
+    "context": "Harangue is used in sports, politics, or reprimands for loud, forceful lectures.",
+    "did_you_know": "From Old French 'arangue,' possibly Germanic 'hring' (circle), 'harangue' entered English in the 15th century, tied to crowd talks. Used in Shakespeare’s rants, it’s now for coaches or pols. Its length prompts debate—stirring or shrill?—showing its role in oratory from old to new."
+  },
+  {
+    "word": "bane",
+    "pronunciation": "BAYN",
+    "short_definition": "Cause of ruin",
+    "meaning": "Bane is something that causes misery, ruin, or death, often a persistent source of harm or annoyance.",
+    "category": "Noun",
+    "example": "Invasive species became the bane of the local ecosystem.",
+    "context": "Bane is used in ecology, tales, or personal woes for a destructive or vexing influence.",
+    "did_you_know": "From Old English 'bana,' meaning 'killer,' 'bane' entered by the 9th century, tied to poison in Anglo-Saxon lore. Used in Beowulf’s foes, it’s now for pests or habits in prose. Its curse prompts debate—dire or overblown?—showing its shift from literal slayer to metaphoric blight across time."
+  },
+  {
+    "word": "dearth",
+    "pronunciation": "DERTH",
+    "short_definition": "Scarcity or lack",
+    "meaning": "A dearth is a scarcity or lack of something, often implying an insufficient supply where more is needed.",
+    "category": "Noun",
+    "example": "A dearth of volunteers slowed the charity’s efforts.",
+    "context": "Dearth is used in resources, talent, or news for shortages that hinder progress or abundance.",
+    "did_you_know": "From Old English 'dearth,' meaning 'costliness,' it shifted by the 13th century to scarcity in famine records. Used in Chaucer’s lean times, it’s now for jobs or rain in reports. Its lack prompts debate—real or felt?—showing its evolution from price to paucity across economic and natural realms."
+  },
+  {
+    "word": "efface",
+    "pronunciation": "ih-FAYS",
+    "short_definition": "Erase or remove",
+    "meaning": "To efface is to wipe out, erase, or make something disappear, often removing traces or memory of it.",
+    "category": "Verb",
+    "example": "Time effaced the inscription on the ancient stone.",
+    "context": "Efface is used in history, art, or self for fading or obliterating marks, often subtly or deliberately.",
+    "did_you_know": "From Old French 'effacer,' via Latin 'ex' (out) and 'facies' (face), 'efface' entered English in the 15th century. Used in medieval scrubbing, it’s in Shelley’s ruins and now for scars or egos. Its erasure prompts debate—gone or hidden?—reflecting its role in loss from stone to soul."
+  },
+  {
+    "word": "furtive",
+    "pronunciation": "FUR-tiv",
+    "short_definition": "Secretive or sly",
+    "meaning": "Furtive describes something done stealthily or secretly, often with a sense of guilt or slyness.",
+    "category": "Adjective",
+    "example": "His furtive glance at the answers betrayed his cheating.",
+    "context": "Furtive is used in behavior, spying, or theft for sneaky, covert actions or looks.",
+    "did_you_know": "From Latin 'furtivus,' via 'fur' (thief), 'furtive' entered English in the 17th century. Used in Renaissance intrigue, it’s in Poe’s skulks and now for peeks or grabs. Its stealth prompts debate—clever or shady?—showing its role in secrecy from thieves to modern mischief."
+  },
+  {
+    "word": "hiatus",
+    "pronunciation": "hy-AY-tus",
+    "short_definition": "Break or gap",
+    "meaning": "A hiatus is a pause or break in continuity, often a gap in time, sequence, or activity.",
+    "category": "Noun",
+    "example": "The band took a hiatus after their exhausting tour.",
+    "context": "Hiatus is used in schedules, geology, or speech for interruptions or missing parts.",
+    "did_you_know": "From Latin 'hiatus,' meaning 'opening,' via 'hiare' (to gape), 'hiatus' entered English in the 16th century. Used in anatomy for gaps, it’s now for shows or rocks in news. Its break prompts debate—rest or loss?—reflecting its role in pauses from mouths to modern breaks."
+  },
+  {
+    "word": "ignominy",
+    "pronunciation": "IG-nuh-min-ee",
+    "short_definition": "Public shame",
+    "meaning": "Ignominy is deep personal disgrace or dishonor, often publicly humiliating or shameful.",
+    "category": "Noun",
+    "example": "The ignominy of defeat stung worse than the loss itself.",
+    "context": "Ignominy is used in scandals, battles, or falls for profound, lasting shame.",
+    "did_you_know": "From Latin 'ignominia,' via 'in-' (not) and 'nomen' (name), 'ignominy' entered English in the 16th century. Used in Roman shaming, it’s in Milton’s falls and now for flops or cheats. Its disgrace prompts debate—earned or harsh?—showing its role in honor’s ruin over time."
+  },
+  {
+    "word": "jocular",
+    "pronunciation": "JOK-yuh-lur",
+    "short_definition": "Playfully humorous",
+    "meaning": "Jocular describes something characterized by humor or jest, often in a lighthearted or playful way.",
+    "category": "Adjective",
+    "example": "His jocular tone eased the tension at the serious meeting.",
+    "context": "Jocular is used in conversations, moods, or writings for cheerful, joking vibes.",
+    "did_you_know": "From Latin 'jocularis,' via 'jocus' (joke), 'jocular' entered English in the 17th century. Used in Restoration comedies for wit, it’s now for quips or hosts in media. Its humor prompts debate—fun or silly?—reflecting its role in levity from old plays to modern banter."
+  },
+  {
+    "word": "labyrinthine",
+    "pronunciation": "lab-uh-RIN-theen",
+    "short_definition": "Complex or maze-like",
+    "meaning": "Labyrinthine describes something intricate, complicated, or maze-like, often confusing to navigate.",
+    "category": "Adjective",
+    "example": "The labyrinthine rules frustrated new employees.",
+    "context": "Labyrinthine is used in systems, buildings, or plots for tangled, perplexing designs.",
+    "did_you_know": "From Greek 'labyrinthos,' the Minotaur’s maze, 'labyrinthine' entered English in the 17th century. Used in myth retellings, it’s in Poe’s twists and now for laws or halls. Its maze prompts debate—intriguing or lost?—reflecting its role in complexity from Crete to current conundrums."
+  },
+  {
+    "word": "modicum",
+    "pronunciation": "MOD-i-kum",
+    "short_definition": "Small amount",
+    "meaning": "A modicum is a small portion or limited quantity of something, often just enough to notice.",
+    "category": "Noun",
+    "example": "He showed a modicum of respect by arriving on time.",
+    "context": "Modicum is used in effort, traits, or resources for a minimal but perceptible measure.",
+    "did_you_know": "From Latin 'modicus,' meaning 'moderate,' via 'modus' (measure), 'modicum' entered English in the 15th century. Used in medieval rations, it’s now for hints or skills in prose. Its smallness prompts debate—enough or scant?—showing its role in restraint from old scales to new."
+  },
+  {
+    "word": "nominal",
+    "pronunciation": "NOM-uh-nul",
+    "short_definition": "In name only",
+    "meaning": "Nominal describes something existing in name only, minimal, or insignificant, often contrasted with real value.",
+    "category": "Adjective",
+    "example": "She held a nominal title with no real authority.",
+    "context": "Nominal is used in titles, fees, or stats for superficial or token roles.",
+    "did_you_know": "From Latin 'nomen,' meaning 'name,' 'nominal' entered English in the 15th century, tied to labels in law. Used in feudal roles, it’s now for costs or heads in reports. Its name prompts debate—formal or hollow?—reflecting its role in superficiality from old titles to now."
+  },
+  {
+    "word": "obfuscate",
+    "pronunciation": "OB-fuh-skayt",
+    "short_definition": "Confuse or obscure",
+    "meaning": "To obfuscate is to confuse, bewilder, or make something unclear, often deliberately hiding the truth.",
+    "category": "Verb",
+    "example": "The jargon obfuscated the report’s main findings.",
+    "context": "Obfuscate is used in speech, law, or tech for muddying clarity, often intentionally.",
+    "did_you_know": "From Latin 'obfuscare,' via 'ob-' (over) and 'fuscus' (dark), 'obfuscate' entered English in the 16th century. Used in alchemical riddles, it’s now for legalese or code in news. Its murk prompts debate—tricky or murky?—showing its role in confusion from old secrets to new."
+  },
+  {
+    "word": "panacea",
+    "pronunciation": "pan-uh-SEE-uh",
+    "short_definition": "Cure-all solution",
+    "meaning": "A panacea is a remedy or solution supposed to cure all problems or ills, often idealized or unrealistic.",
+    "category": "Noun",
+    "example": "Education isn’t a panacea for every social issue.",
+    "context": "Panacea is used in medicine, policy, or hope for universal fixes, often skeptically.",
+    "did_you_know": "From Greek 'panakeia,' meaning 'all-healing,' via 'pan' (all) and 'akos' (cure), 'panacea' entered English in the 16th century. Tied to goddess Panacea, it’s in Renaissance cures and now for quick fixes in talks. Its cure prompts debate—hope or hype?—reflecting its mythic to modern role."
+  },
+  {
+    "word": "quell",
+    "pronunciation": "KWEL",
+    "short_definition": "Suppress or calm",
+    "meaning": "To quell is to put an end to something, often by suppressing or calming unrest, fear, or opposition.",
+    "category": "Verb",
+    "example": "The leader quelled the crowd’s panic with a firm speech.",
+    "context": "Quell is used in riots, emotions, or doubts for restoring peace or control.",
+    "did_you_know": "From Old English 'cwellan,' meaning 'to kill,' 'quell' entered by the 9th century, softening to suppress in medieval use. Used in Saxon battles, it’s now for nerves or riots in news. Its calm prompts debate—peace or force?—showing its shift from death to pacification over time."
+  },
+  {
+    "word": "upbraid",
+    "pronunciation": "up-BRAYD",
+    "short_definition": "Scold or criticize",
+    "meaning": "To upbraid is to scold or reproach someone sharply, often for a fault or wrongdoing.",
+    "category": "Verb",
+    "example": "She upbraided him for forgetting their anniversary again.",
+    "context": "Upbraid is used in personal, parental, or moral settings for stern, verbal rebuke.",
+    "did_you_know": "From Old English 'upbregdan,' meaning 'to reproach,' 'upbraid' entered by the 13th century. Used in medieval chides, it’s in Austen’s lectures and now for nags or bosses. Its scold prompts debate—fair or harsh?—reflecting its role in correction from old braids to new blame."
+  },
+  {
+    "word": "vacuous",
+    "pronunciation": "VAK-yoo-us",
+    "short_definition": "Empty or mindless",
+    "meaning": "Vacuous describes something empty, lacking content, or showing a lack of intelligence or thought.",
+    "category": "Adjective",
+    "example": "His vacuous stare suggested he hadn’t grasped the lecture.",
+    "context": "Vacuous is used in looks, speech, or works for hollow or mindless qualities.",
+    "did_you_know": "From Latin 'vacuus,' meaning 'empty,' 'vacuous' entered English in the 17th century. Used in philosophy for voids, it’s in Swift’s blanks and now for grins or chats. Its void prompts debate—dumb or blank?—showing its role in emptiness from old spaces to new minds."
+  },
+  {
+    "word": "accede",
+    "pronunciation": "ak-SEED",
+    "short_definition": "Agree or yield",
+    "meaning": "To accede is to agree to a request or demand, or to assume a position, often with consent or submission.",
+    "category": "Verb",
+    "example": "She acceded to their pleas and extended the deadline.",
+    "context": "Accede is used in diplomacy, roles, or talks for yielding or taking up duties.",
+    "did_you_know": "From Latin 'accedere,' via 'ad' (to) and 'cedere' (go), 'accede' entered English in the 15th century. Used in treaties, it’s now for thrones or deals in news. Its yield prompts debate—wise or weak?—showing its role in agreement from old pacts to modern nods."
+  },
+  {
+    "word": "balk",
+    "pronunciation": "BAWK",
+    "short_definition": "Hesitate or refuse",
+    "meaning": "To balk is to hesitate, refuse, or stop short, often due to reluctance or an obstacle.",
+    "category": "Verb",
+    "example": "He balked at the idea of working overtime without pay.",
+    "context": "Balk is used in decisions, sports, or plans for pulling back or resisting.",
+    "did_you_know": "From Old English 'balca,' meaning 'ridge,' 'balk' entered by the 14th century, tied to plowing stumbles. Used in Shakespeare’s halts, it’s now for sports or fears in talk. Its pause prompts debate—prudent or weak?—reflecting its role in resistance from fields to choices."
+  },
+  {
+    "word": "dour",
+    "pronunciation": "DOOR",
+    "short_definition": "Gloomy or stern",
+    "meaning": "Dour describes someone or something relentlessly stern, gloomy, or stubbornly unyielding.",
+    "category": "Adjective",
+    "example": "His dour expression warned others to stay away.",
+    "context": "Dour is used in moods, Scots, or looks for bleak, unrelenting severity.",
+    "did_you_know": "From Scots 'dour,' possibly Latin 'durus' (hard), 'dour' entered English in the 14th century. Used in Burns’ grumps, it’s now for faces or days in prose. Its gloom prompts debate—tough or sour?—reflecting its role in sternness from Scottish moors to modern moods."
+  },
+  {
+    "word": "exult",
+    "pronunciation": "ig-ZULT",
+    "short_definition": "Rejoice greatly",
+    "meaning": "To exult is to rejoice or feel triumphant joy, often with lively enthusiasm or pride.",
+    "category": "Verb",
+    "example": "The team exulted in their hard-fought victory.",
+    "context": "Exult is used in wins, faith, or joy for exuberant celebration or elation.",
+    "did_you_know": "From Latin 'exsultare,' via 'ex-' (out) and 'saltare' (to leap), 'exult' entered English in the 16th century. Used in psalms for praise, it’s now for goals or news in cheers. Its joy prompts debate—pure or proud?—reflecting its role in triumph from old leaps to new."
+  },
+  {
+    "word": "flout",
+    "pronunciation": "FLOWT",
+    "short_definition": "Defy openly",
+    "meaning": "To flout is to openly disregard or mock something, often rules or conventions, with scorn.",
+    "category": "Verb",
+    "example": "They flouted the dress code by wearing jeans to the gala.",
+    "context": "Flout is used in rebellion, norms, or law for bold, contemptuous defiance.",
+    "did_you_know": "From Middle English 'flouten,' meaning 'to play the flute' (mock), 'flout' entered in the 14th century. Used in jests, it’s in Shakespeare’s scorns and now for rules or trends. Its defiance prompts debate—brave or rude?—showing its role in scorn from flutes to flouting."
+  },
+  {
+    "word": "glean",
+    "pronunciation": "GLEEN",
+    "short_definition": "Gather bit by bit",
+    "meaning": "To glean is to collect information or resources slowly and carefully, often from scattered sources.",
+    "category": "Verb",
+    "example": "She gleaned details from old letters to write the history.",
+    "context": "Glean is used in research, farming, or learning for picking up bits over time.",
+    "did_you_know": "From Old French 'glener,' via Latin 'glennare' (to gather), 'glean' entered English in the 14th century, tied to harvest scraps. Used in biblical charity, it’s now for facts or crops in prose. Its bits prompt debate—thorough or thin?—reflecting its role in collection over time."
+  },
+  {
+    "word": "hinder",
+    "pronunciation": "HIN-der",
+    "short_definition": "Impede or delay",
+    "meaning": "To hinder is to obstruct or delay progress, often making something more difficult or slow.",
+    "category": "Verb",
+    "example": "Rain hindered the construction of the new bridge.",
+    "context": "Hinder is used in work, travel, or goals for slowing or blocking advancement.",
+    "did_you_know": "From Old English 'hindrian,' meaning 'to hold back,' 'hinder' entered by the 9th century. Used in Saxon blocks, it’s in Austen’s delays and now for tasks or storms in news. Its block prompts debate—stop or slow?—showing its role in obstruction from old to new barriers."
+  },
+  {
+    "word": "inundate",
+    "pronunciation": "IN-un-dayt",
+    "short_definition": "Flood or overwhelm",
+    "meaning": "To inundate is to flood or overwhelm with an abundance, often of water, tasks, or information.",
+    "category": "Verb",
+    "example": "Emails inundated her inbox after the announcement.",
+    "context": "Inundate is used in floods, work, or news for being swamped or overloaded.",
+    "did_you_know": "From Latin 'inundare,' via 'in-' (in) and 'unda' (wave), 'inundate' entered English in the 16th century. Used in flood tales, it’s now for calls or rains in reports. Its rush prompts debate—drown or drench?—reflecting its role in excess from old waves to new floods."
+  },
+  {
+    "word": "acrimony",
+    "pronunciation": "AK-ri-moh-nee",
+    "short_definition": "Bitter hostility",
+    "meaning": "Acrimony is sharp bitterness or harsh animosity, often expressed in speech or behavior during conflict.",
+    "category": "Noun",
+    "example": "The divorce was marked by acrimony on both sides.",
+    "context": "Acrimony is used in disputes, divorces, or debates to describe intense, rancorous ill will.",
+    "did_you_know": "From Latin 'acrimonia,' meaning 'sharpness,' via 'acer' (sharp), 'acrimony' entered English in the 16th century. Used in ecclesiastical spats during the Reformation, it’s now for legal feuds or politics in news. Its sting prompts debate—raw emotion or petty spite?—reflecting its role in hostility from ancient barbs to modern venom."
+  },
+  {
+    "word": "desolate",
+    "pronunciation": "DES-uh-lit",
+    "short_definition": "Barren or lonely",
+    "meaning": "Desolate describes something bleak, barren, or abandoned, or a feeling of utter loneliness and despair.",
+    "category": "Adjective",
+    "example": "The desolate landscape stretched endlessly before them.",
+    "context": "Desolate is used in places, emotions, or ruins for empty, forlorn states.",
+    "did_you_know": "From Latin 'desolatus,' via 'de-' (completely) and 'solus' (alone), 'desolate' entered English in the 14th century. Used in biblical wastelands, it’s in Shelley’s voids and now for towns or hearts in prose. Its bleakness prompts debate—stark or sad?—reflecting its role in isolation from old to new."
+  },
+  {
+    "word": "ebullience",
+    "pronunciation": "ih-BUHL-yuns",
+    "short_definition": "Lively enthusiasm",
+    "meaning": "Ebullience is overflowing enthusiasm or excitement, often expressed with high spirits and energy.",
+    "category": "Noun",
+    "example": "Her ebullience at the party lifted everyone’s mood.",
+    "context": "Ebullience is used in celebrations, personalities, or events for bubbly, unrestrained joy.",
+    "did_you_know": "From Latin 'ebullire,' meaning 'to boil up,' via 'ex-' (out) and 'bullire' (to boil), 'ebullience' entered English in the 17th century. Used in alchemy for fizz, it’s in Dickens’ cheer and now for rallies or kids in tales. Its bubble prompts debate—genuine or loud?—showing its role in exuberance from old vats to new."
+  },
+  {
+    "word": "fallacy",
+    "pronunciation": "FAL-uh-see",
+    "short_definition": "False belief",
+    "meaning": "A fallacy is a mistaken belief or flawed reasoning, often based on unsound logic or deception.",
+    "category": "Noun",
+    "example": "The idea that money buys happiness is a common fallacy.",
+    "context": "Fallacy is used in arguments, philosophy, or myths for errors in thought or false notions.",
+    "did_you_know": "From Latin 'fallacia,' meaning 'deception,' via 'fallere' (to deceive), 'fallacy' entered English in the 15th century. Used in medieval logic by Aquinas, it’s now for ads or debates in texts. Its flaw prompts debate—trick or trap?—reflecting its role in reasoning from old sophistry to new."
+  },
+  {
+    "word": "gauche",
+    "pronunciation": "GOHSH",
+    "short_definition": "Socially awkward",
+    "meaning": "Gauche describes someone lacking social grace or tact, often awkwardly clumsy or unsophisticated.",
+    "category": "Adjective",
+    "example": "His gauche comment at the dinner party stunned the guests.",
+    "context": "Gauche is used in etiquette, youth, or blunders for socially inept or crude behavior.",
+    "did_you_know": "From French 'gauche,' meaning 'left' (awkward), 'gauche' entered English in the 18th century. Used in Regency faux pas, it’s now for teens or gaffes in prose. Its clumsiness prompts debate—crude or green?—showing its role in social missteps from French hands to modern manners."
+  },
+  {
+    "word": "histrionics",
+    "pronunciation": "his-tree-ON-iks",
+    "short_definition": "Dramatic behavior",
+    "meaning": "Histrionics refers to exaggerated, theatrical behavior or emotional displays, often for attention.",
+    "category": "Noun",
+    "example": "Her histrionics during the argument embarrassed everyone.",
+    "context": "Histrionics is used in quarrels, theater, or psychology for over-the-top, dramatic acts.",
+    "did_you_know": "From Latin 'histrionicus,' via 'histrio' (actor), 'histrionics' entered English in the 19th century. Used in Victorian melodrama, it’s now for tantrums or scenes in news. Its flair prompts debate—art or farce?—reflecting its role in drama from old stages to new outbursts."
+  },
+  {
+    "word": "indolent",
+    "pronunciation": "IN-duh-lunt",
+    "short_definition": "Lazy or idle",
+    "meaning": "Indolent describes someone habitually lazy or idle, often avoiding effort or work.",
+    "category": "Adjective",
+    "example": "The indolent student skipped classes to nap all day.",
+    "context": "Indolent is used in habits, youth, or medicine for sluggish or pain-free states.",
+    "did_you_know": "From Latin 'indolens,' via 'in-' (not) and 'dolens' (paining), 'indolent' entered English in the 17th century, meaning 'painless' in medical texts. Used in sloth critiques, it’s now for loafers or tumors. Its ease prompts debate—rest or sloth?—showing its shift from painless to idle."
+  },
+  {
+    "word": "jubilee",
+    "pronunciation": "JOO-buh-lee",
+    "short_definition": "Joyful celebration",
+    "meaning": "A jubilee is a special anniversary or celebration, often marked by joy, festivity, or liberation.",
+    "category": "Noun",
+    "example": "The town held a jubilee for its 100th founding year.",
+    "context": "Jubilee is used in anniversaries, faith, or freedom for grand, happy occasions.",
+    "did_you_know": "From Hebrew 'yobel' (ram’s horn), via Latin 'jubilaeus,' 'jubilee' entered English in the 14th century, tied to biblical 50-year frees. Used in Victorian reigns, it’s now for fetes or debt relief in news. Its joy prompts debate—grand or gaudy?—reflecting its role in festivity from horns to now."
+  },
+  {
+    "word": "knack",
+    "pronunciation": "NAK",
+    "short_definition": "Natural skill",
+    "meaning": "A knack is a natural talent or skill for doing something well, often gained through practice or aptitude.",
+    "category": "Noun",
+    "example": "She had a knack for solving tricky math problems.",
+    "context": "Knack is used in talents, crafts, or tasks for an easy, inherent ability.",
+    "did_you_know": "From Middle English 'knak,' meaning 'trick,' 'knack' entered in the 14th century, tied to clever snaps. Used in artisan skills, it’s now for fixes or flair in talk. Its gift prompts debate—born or honed?—reflecting its role in aptitude from old tricks to new talents."
+  },
+  {
+    "word": "lithe",
+    "pronunciation": "LYTH",
+    "short_definition": "Flexible or graceful",
+    "meaning": "Lithe describes someone or something slender, flexible, and gracefully agile, often in movement.",
+    "category": "Adjective",
+    "example": "The lithe dancer moved effortlessly across the stage.",
+    "context": "Lithe is used in dance, sports, or bodies for supple, elegant motion.",
+    "did_you_know": "From Old English 'lithe,' meaning 'gentle,' 'lithe' entered by the 9th century, shifting to flexibility in medieval use. Used in Keats’ nymphs, it’s now for cats or athletes in prose. Its grace prompts debate—soft or strong?—showing its role in agility from old ease to new bends."
+  },
+  {
+    "word": "malign",
+    "pronunciation": "muh-LYN",
+    "short_definition": "Speak evil of",
+    "meaning": "To malign is to speak harmful falsehoods about someone, often defaming or slandering with malice.",
+    "category": "Verb",
+    "example": "Critics maligned her reputation with baseless rumors.",
+    "context": "Malign is used in gossip, reviews, or law for malicious, damaging lies.",
+    "did_you_know": "From Latin 'malignare,' via 'malus' (bad), 'malign' entered English in the 14th century, tied to curses in tales. Used in Defoe’s libels, it’s now for smears or tumors in texts. Its harm prompts debate—intent or effect?—reflecting its role in evil from old spite to new slander."
+  },
+  {
+    "word": "nadir",
+    "pronunciation": "NAY-deer",
+    "short_definition": "Lowest point",
+    "meaning": "Nadir is the lowest point of something, often a time of despair, failure, or the point below in the sky.",
+    "category": "Noun",
+    "example": "The team’s morale hit its nadir after the loss.",
+    "context": "Nadir is used in astronomy, moods, or fortunes for the deepest lows.",
+    "did_you_know": "From Arabic 'nazir,' meaning 'opposite,' 'nadir' entered English in the 14th century, via star charts for below zenith. Used in Donne’s depths, it’s now for slumps or woes in news. Its low prompts debate—rock bottom or rebound?—reflecting its role in despair from skies to souls."
+  },
+  {
+    "word": "obtuse",
+    "pronunciation": "uhb-TOOS",
+    "short_definition": "Slow to understand",
+    "meaning": "Obtuse describes someone slow to understand or insensitive, or an angle greater than 90 but less than 180 degrees.",
+    "category": "Adjective",
+    "example": "His obtuse response showed he missed the point entirely.",
+    "context": "Obtuse is used in intellect, geometry, or tact for dullness or wide angles.",
+    "did_you_know": "From Latin 'obtusus,' via 'ob-' (against) and 'tundere' (to beat), 'obtuse' entered English in the 15th century, meaning 'blunted.' Used in math by Euclid, it’s in Dickens’ dolts and now for wits or shapes. Its bluntness prompts debate—dumb or broad?—showing its role from angles to minds."
+  },
+  {
+    "word": "permeate",
+    "pronunciation": "PUR-mee-ayt",
+    "short_definition": "Spread through",
+    "meaning": "To permeate is to spread or penetrate throughout something, often gradually filling or saturating it.",
+    "category": "Verb",
+    "example": "The smell of coffee permeated the cozy café.",
+    "context": "Permeate is used in smells, ideas, or fluids for diffusing through spaces or minds.",
+    "did_you_know": "From Latin 'permeare,' via 'per' (through) and 'meare' (to pass), 'permeate' entered English in the 17th century. Used in alchemy for seeping, it’s now for culture or leaks in prose. Its spread prompts debate—subtle or strong?—reflecting its role in diffusion from old brews to new."
+  },
+  {
+    "word": "respite",
+    "pronunciation": "RES-pit",
+    "short_definition": "Temporary relief",
+    "meaning": "Respite is a temporary break or relief from something difficult, often providing rest or ease.",
+    "category": "Noun",
+    "example": "The weekend offered a respite from her hectic schedule.",
+    "context": "Respite is used in work, care, or strife for a short, welcome pause.",
+    "did_you_know": "From Latin 'respectus,' via 'respicere' (to look back), 'respite' entered English in the 13th century, tied to delays in law. Used in medieval truce, it’s now for breaks or care in news. Its rest prompts debate—brief or balm?—showing its role in relief from old stays to new."
+  },
+  {
+    "word": "stolid",
+    "pronunciation": "STOL-id",
+    "short_definition": "Unemotional",
+    "meaning": "Stolid describes someone showing little emotion or sensitivity, often calm and unexcitable.",
+    "category": "Adjective",
+    "example": "His stolid reaction to the news surprised his friends.",
+    "context": "Stolid is used in character, farmers, or stoics for dull, steady calmness.",
+    "did_you_know": "From Latin 'stolidus,' meaning 'dull,' 'stolid' entered English in the 17th century, tied to slow wits in texts. Used in Hardy’s peasants, it’s now for faces or mules in prose. Its calm prompts debate—strong or dumb?—reflecting its role in reserve from old clods to new."
+  },
+  {
+    "word": "usurp",
+    "pronunciation": "yoo-SURP",
+    "short_definition": "Seize illegally",
+    "meaning": "To usurp is to seize power, position, or rights illegally or by force, often wrongfully taking over.",
+    "category": "Verb",
+    "example": "The general usurped the throne in a swift coup.",
+    "context": "Usurp is used in kings, roles, or rights for wrongful grabs of authority.",
+    "did_you_know": "From Latin 'usurpare,' via 'usus' (use) and 'rapere' (to seize), 'usurp' entered English in the 14th century. Used in medieval coups, it’s in Shakespeare’s plots and now for power or seats in news. Its theft prompts debate—bold or bad?—reflecting its role in takeover from old to new."
+  },
+  {
+    "word": "vapid",
+    "pronunciation": "VAP-id",
+    "short_definition": "Dull or tasteless",
+    "meaning": "Vapid describes something lacking flavor, zest, or interest, often dull or insipid in tone or content.",
+    "category": "Adjective",
+    "example": "The vapid conversation bored everyone at the table.",
+    "context": "Vapid is used in talk, art, or food for flat, uninspired quality.",
+    "did_you_know": "From Latin 'vapidus,' meaning 'flat,' 'vapid' entered English in the 17th century, tied to stale wine in texts. Used in Swift’s bores, it’s now for chats or shows in critiques. Its flatness prompts debate—tame or trite?—showing its role in dullness from old drinks to new drivel."
+  },
+  {
+    "word": "yen",
+    "pronunciation": "YEN",
+    "short_definition": "Strong craving",
+    "meaning": "A yen is a strong desire or craving, often intense and persistent, for something specific.",
+    "category": "Noun",
+    "example": "She had a yen for the spicy food of her childhood.",
+    "context": "Yen is used in urges, nostalgia, or tastes for deep, personal longings.",
+    "did_you_know": "From Chinese 'yan,' meaning 'craving,' via opium slang, 'yen' entered English in the 19th century. Used in sailor tales, it’s now for wants or homes in talk. Its ache prompts debate—keen or quaint?—reflecting its role in desire from old drugs to new yearnings."
+  },
+  {
+    "word": "brazen",
+    "pronunciation": "BRAY-zun",
+    "short_definition": "Boldly shameless",
+    "meaning": "Brazen describes someone or something boldly shameless or defiant, often with audacious confidence.",
+    "category": "Adjective",
+    "example": "Her brazen lie shocked the usually calm judge.",
+    "context": "Brazen is used in acts, lies, or attitudes for unapologetic, brassy boldness.",
+    "did_you_know": "From Old English 'bræsen,' meaning 'of brass,' 'brazen' entered by the 9th century, tied to metal’s shine. Used in Shakespeare’s gall, it’s now for cheats or dares in tales. Its brass prompts debate—guts or gall?—reflecting its role in nerve from old alloys to new cheek."
+  },
+  {
+    "word": "clemency",
+    "pronunciation": "KLEM-un-see",
+    "short_definition": "Mercy or leniency",
+    "meaning": "Clemency is mercy or leniency, often shown by reducing punishment or granting forgiveness.",
+    "category": "Noun",
+    "example": "The governor granted clemency to the reformed prisoner.",
+    "context": "Clemency is used in law, weather, or pleas for compassionate sparing or easing.",
+    "did_you_know": "From Latin 'clementia,' via 'clemens' (mild), 'clemency' entered English in the 15th century, tied to Roman mercy. Used in medieval pardons, it’s now for stays or rains in news. Its grace prompts debate—fair or soft?—reflecting its role in mercy from old courts to new."
+  },
+  {
+    "word": "dismay",
+    "pronunciation": "dis-MAY",
+    "short_definition": "Sudden discouragement",
+    "meaning": "Dismay is a sudden feeling of distress or discouragement, often from unexpected trouble or fear.",
+    "category": "Noun",
+    "example": "To their dismay, the plan failed despite careful work.",
+    "context": "Dismay is used in setbacks, news, or shocks for abrupt, sinking feelings.",
+    "did_you_know": "From Old French 'desmaier,' via 'des-' (out) and 'maier' (to trouble), 'dismay' entered English in the 13th century. Used in medieval dread, it’s in Austen’s shocks and now for flops or fears in talk. Its drop prompts debate—shock or slump?—reflecting its role in upset from old to new."
+  },
+  {
+    "word": "exorcise",
+    "pronunciation": "EK-sor-syz",
+    "short_definition": "Drive out evil",
+    "meaning": "To exorcise is to drive out or expel an evil spirit, or figuratively to banish fears or troubles.",
+    "category": "Verb",
+    "example": "She tried to exorcise her doubts with meditation.",
+    "context": "Exorcise is used in rituals, therapy, or metaphors for purging bad forces or feelings.",
+    "did_you_know": "From Greek 'exorkizein,' via 'ex' (out) and 'horkos' (oath), 'exorcise' entered English in the 14th century, tied to church rites. Used in medieval demons, it’s now for ghosts or woes in prose. Its purge prompts debate—cure or chant?—reflecting its role in banishing from old oaths to new."
+  },
+  {
+    "word": "florid",
+    "pronunciation": "FLOR-id",
+    "short_definition": "Excessively ornate",
+    "meaning": "Florid describes something overly elaborate or flowery, often in style, or reddish in complexion.",
+    "category": "Adjective",
+    "example": "The florid speech was full of unnecessary flourishes.",
+    "context": "Florid is used in writing, art, or health for lavish excess or flushed looks.",
+    "did_you_know": "From Latin 'floridus,' via 'flos' (flower), 'florid' entered English in the 17th century, tied to blooms in Baroque. Used in Poe’s lush prose, it’s now for cheeks or rants in talk. Its excess prompts debate—grand or gaudy?—reflecting its role in flair from old gardens to new."
+  },
+  {
+    "word": "garish",
+    "pronunciation": "GAIR-ish",
+    "short_definition": "Tastelessly showy",
+    "meaning": "Garish describes something crudely bright or overly showy, often in a tasteless or gaudy way.",
+    "category": "Adjective",
+    "example": "The garish neon sign clashed with the quaint street.",
+    "context": "Garish is used in fashion, décor, or ads for loud, tacky displays.",
+    "did_you_know": "From Middle English 'gauren' (to stare), 'garish' entered in the 16th century, tied to gawking at glare. Used in Victorian critiques, it’s now for lights or clothes in reviews. Its flash prompts debate—bold or bad?—showing its role in taste from old stares to new glitz."
+  },
+  {
+    "word": "hapless",
+    "pronunciation": "HAP-lis",
+    "short_definition": "Unfortunate",
+    "meaning": "Hapless describes someone unfortunate or unlucky, often pitiably beset by bad fortune.",
+    "category": "Adjective",
+    "example": "The hapless traveler lost his bags and missed the train.",
+    "context": "Hapless is used in tales, news, or sports for those struck by persistent ill luck.",
+    "did_you_know": "From Old English 'hap' (luck) and '-less,' 'hapless' entered in the 14th century, meaning 'luckless.' Used in medieval woes, it’s in Dickens’ losers and now for teams or travelers in prose. Its pity prompts debate—sad or funny?—reflecting its role in fate from old to new."
+  },
+  {
+    "word": "idyllic",
+    "pronunciation": "eye-DIL-ik",
+    "short_definition": "Charmingly simple",
+    "meaning": "Idyllic describes something charmingly simple or picturesque, often an idealized, peaceful scene.",
+    "category": "Adjective",
+    "example": "The idyllic village seemed untouched by modern woes.",
+    "context": "Idyllic is used in places, memories, or art for serene, perfect settings.",
+    "did_you_know": "From Greek 'eidyllion,' meaning 'short poem,' 'idyllic' entered English in the 19th century, tied to pastoral verse. Used in Romantic scenes, it’s now for getaways or dreams in talk. Its charm prompts debate—real or fake?—reflecting its role in peace from old poems to new."
+  },
+  {
+    "word": "censure",
+    "pronunciation": "SEN-shur",
+    "short_definition": "To criticize harshly.",
+    "meaning": "To censure someone is to express strong disapproval or criticism. It’s often a formal reprimand for wrongdoing.",
+    "category": "verb",
+    "example": "The committee censured the official for his unethical conduct.",
+    "context": "Censure is often used in official settings like government or organizations, where someone’s actions are publicly condemned, carrying a weight of authority.",
+    "did_you_know": "The word 'censure' comes from the Latin 'censura,' meaning 'judgment,' linked to the Roman censor’s role in moral oversight. It entered English in the 14th century, used for church rebukes. Now, it’s common in politics or ethics, like censuring a corrupt leader. Some argue it’s a necessary check, while others see it as overly harsh, reflecting its stern history."
+  },
+  {
+    "word": "deft",
+    "pronunciation": "DEFT",
+    "short_definition": "Skillful and quick.",
+    "meaning": "Deft describes someone or something that’s skillfully quick and clever. It often highlights nimble or adept performance.",
+    "category": "adjective",
+    "example": "With deft hands, the chef prepared a meal in minutes.",
+    "context": "Deft is often used to describe physical or mental agility, like in crafts, sports, or witty responses, praising smooth efficiency.",
+    "did_you_know": "The word 'deft' comes from Old English 'dæfte,' meaning 'gentle' or 'meek,' but it shifted to skill by the 13th century. Think of medieval artisans deftly weaving tapestries. Today, it’s for quick cooks or sharp minds, with some debating if it’s pure talent or practiced ease, showing its evolution from mildness to mastery."
+  },
+  {
+    "word": "evanescent",
+    "pronunciation": "ev-uh-NES-unt",
+    "short_definition": "Fading quickly.",
+    "meaning": "Evanescent describes something that fades or vanishes quickly. It’s often used for fleeting beauty or moments.",
+    "category": "adjective",
+    "example": "The evanescent mist disappeared as the sun rose.",
+    "context": "Evanescent is often used in nature, art, or emotions to capture things that are brief and delicate, like dew or dreams.",
+    "did_you_know": "The word 'evanescent' comes from Latin 'evanescere,' meaning 'to vanish,' blending 'e' (out) and 'vanescere' (to fade). It entered English in the 18th century, tied to fleeting light in science. Poets like Shelley loved it for transient beauty. Now, it’s for fog or fads, with debates on whether its brevity makes it more precious."
+  },
+  {
+    "word": "fathom",
+    "pronunciation": "FATH-um",
+    "short_definition": "To understand deeply.",
+    "meaning": "To fathom something is to understand it thoroughly or measure its depth. It can refer to both literal and figurative depths.",
+    "category": "verb",
+    "example": "I can’t fathom why she’d abandon such a great opportunity.",
+    "context": "Fathom is often used when exploring deep thoughts, mysteries, or water depths, suggesting a probing effort to grasp what’s hidden.",
+    "did_you_know": "The word 'fathom' comes from Old English 'fæthm,' meaning 'outstretched arms,' a 6-foot measure for sea depth by the 9th century. Sailors used it literally, while Shakespeare turned it to pondering motives. Today, it’s for ocean or mind depths, with some debating if it’s about reach or revelation."
+  },
+  {
+    "word": "garrulous",
+    "pronunciation": "GAR-uh-lus",
+    "short_definition": "Very talkative.",
+    "meaning": "Garrulous describes someone who talks a lot, often about trivial things. It suggests excessive chattiness.",
+    "category": "adjective",
+    "example": "The garrulous neighbor kept us up with endless stories.",
+    "context": "Garrulous is often used for people who chatter incessantly, like in social gatherings or with overly verbose characters.",
+    "did_you_know": "The word 'garrulous' comes from Latin 'garrulus,' meaning 'talkative,' tied to 'garrire' (to chatter). It entered English in the 17th century, often for gossipy old folks in tales. Think Austen’s chatty aunts. Now, it’s for windbags at parties, with debates on whether it’s lively or just tiresome."
+  },
+  {
+    "word": "hinder",
+    "pronunciation": "HIN-der",
+    "short_definition": "To delay or block.",
+    "meaning": "To hinder something is to slow it down or block its progress. It often implies creating an obstacle or difficulty.",
+    "category": "verb",
+    "example": "Heavy traffic hindered our arrival at the concert.",
+    "context": "Hinder is often used when discussing obstacles in travel, work, or goals, focusing on what delays or prevents success.",
+    "did_you_know": "The word 'hinder' comes from Old English 'hindrian,' meaning 'to hold back.' It entered English by the 9th century, used for physical blocks in Saxon times. Today, it’s for storms or setbacks in news, with some arguing it’s about stopping versus just slowing, reflecting its old role in resistance."
+  },
+  {
+    "word": "impudent",
+    "pronunciation": "IM-pyuh-dunt",
+    "short_definition": "Boldly rude.",
+    "meaning": "Impudent describes someone who’s boldly disrespectful or rude. It often carries a sense of cheeky insolence.",
+    "category": "adjective",
+    "example": "The impudent child talked back to the teacher without hesitation.",
+    "context": "Impudent is often used for brash behavior in kids, teens, or defiant figures, highlighting shameless disrespect.",
+    "did_you_know": "The word 'impudent' comes from Latin 'impudens,' meaning 'shameless,' blending 'in' (not) and 'pudens' (modest). It entered English in the 14th century, tied to brassy medieval rogues. Think Dickens’ cheeky urchins. Now, it’s for sassy kids or bold quips, debated as gutsy or just rude."
+  },
+  {
+    "word": "jettison",
+    "pronunciation": "JET-uh-sun",
+    "short_definition": "To discard or abandon.",
+    "meaning": "To jettison something is to throw it away or abandon it. It’s often done to lighten a load or let go of excess.",
+    "category": "verb",
+    "example": "The crew jettisoned extra cargo to keep the plane aloft.",
+    "context": "Jettison is often used in aviation, shipping, or metaphors for shedding unnecessary things, like habits or plans.",
+    "did_you_know": "The word 'jettison' comes from Old French 'getaison,' meaning 'a throwing,' tied to Latin 'jactare' (to toss). It entered English in the 15th century, used for tossing goods off ships. Now, it’s for space junk or old ideas in news, with debates on whether it’s practical or wasteful shedding."
+  },
+  {
+    "word": "kudos",
+    "pronunciation": "KOO-dohs",
+    "short_definition": "Praise or acclaim.",
+    "meaning": "Kudos refers to praise or recognition given for an achievement. It’s a way to honor success or effort.",
+    "category": "noun",
+    "example": "She earned kudos from her boss for finishing the project early.",
+    "context": "Kudos is often used in workplaces, schools, or casual settings to give a nod to someone’s accomplishments.",
+    "did_you_know": "The word 'kudos' comes from Greek 'kydos,' meaning 'glory.' It entered English in the 19th century via British schools, tied to academic praise. Think of Victorian scholars cheering. Now, it’s for job wins or art in talk, with some debating if it’s singular or plural—its glory endures."
+  },
+  {
+    "word": "languid",
+    "pronunciation": "LANG-gwid",
+    "short_definition": "Slow and relaxed.",
+    "meaning": "Languid describes something slow, relaxed, or lacking energy. It often suggests a dreamy or weary state.",
+    "category": "adjective",
+    "example": "The languid summer afternoon made everyone feel drowsy.",
+    "context": "Languid is often used for weather, moods, or movements that feel sluggish or pleasantly lazy, like a hot day or a tired pace.",
+    "did_you_know": "The word 'languid' comes from Latin 'languidus,' meaning 'faint,' tied to 'languere' (to be weak). It entered English in the 16th century, used for illness in old texts. Poets like Keats turned it to dreamy sloth. Now, it’s for sultry days or slow walks, debated as restful or just lazy."
+  },
+  {
+    "word": "malleable",
+    "pronunciation": "MAL-ee-uh-bul",
+    "short_definition": "Easily shaped.",
+    "meaning": "Malleable describes something that can be shaped or molded easily. It applies to both materials and flexible minds.",
+    "category": "adjective",
+    "example": "The malleable clay was perfect for the sculptor’s hands.",
+    "context": "Malleable is often used in crafts, psychology, or education for things or people that adapt or bend without breaking.",
+    "did_you_know": "The word 'malleable' comes from Latin 'malleus,' meaning 'hammer.' It entered English in the 14th century, linked to metals in alchemy. Think blacksmiths pounding gold. Now, it’s for clay or young minds in talk, with debates on whether it’s strength or weakness to bend so easily."
+  },
+  {
+    "word": "nebulous",
+    "pronunciation": "NEB-yuh-lus",
+    "short_definition": "Vague or unclear.",
+    "meaning": "Nebulous describes something vague or unclear. It’s often used for ideas or things lacking sharp definition.",
+    "category": "adjective",
+    "example": "His nebulous plan left us unsure of the next steps.",
+    "context": "Nebulous is often used in plans, concepts, or space to describe hazy, undefined things, like fog or abstract thoughts.",
+    "did_you_know": "The word 'nebulous' comes from Latin 'nebula,' meaning 'mist.' It entered English in the 14th century, tied to cloudy skies in astronomy. Think of starry hazes in old charts. Now, it’s for vague goals or nebulae in science, with some debating if it’s mysterious or just confusing."
+  },
+  {
+    "word": "obstreperous",
+    "pronunciation": "ub-STREP-uh-rus",
+    "short_definition": "Noisy and unruly.",
+    "meaning": "Obstreperous describes someone or something noisy and hard to control. It often implies disruptive defiance.",
+    "category": "adjective",
+    "example": "The obstreperous crowd shouted over the speaker’s words.",
+    "context": "Obstreperous is often used for rowdy kids, mobs, or animals that resist order with loud rebellion.",
+    "did_you_know": "The word 'obstreperous' comes from Latin 'obstreperus,' meaning 'noisy,' blending 'ob' (against) and 'strepere' (to roar). It entered English in the 17th century, used for loud tenants in old laws. Now, it’s for protests or pups in tales, debated as spirited or just annoying."
+  },
+  {
+    "word": "perfunctory",
+    "pronunciation": "per-FUNK-tuh-ree",
+    "short_definition": "Done with little effort.",
+    "meaning": "Perfunctory describes something done with minimal effort or care. It’s often a routine task lacking enthusiasm.",
+    "category": "adjective",
+    "example": "His perfunctory apology didn’t convince anyone he was sorry.",
+    "context": "Perfunctory is often used for half-hearted acts, like quick nods or rote duties, in work or social scenes.",
+    "did_you_know": "The word 'perfunctory' comes from Latin 'perfunctus,' meaning 'done with,' tied to 'fungor' (to perform). It entered English in the 16th century, used for hasty rites in church. Now, it’s for curt thanks or tasks in talk, with debates on whether it’s efficient or just lazy."
+  },
+  {
+    "word": "resilient",
+    "pronunciation": "ri-ZIL-yunt",
+    "short_definition": "Quick to recover.",
+    "meaning": "Resilient describes something or someone able to recover quickly from difficulties. It’s about bouncing back with strength.",
+    "category": "adjective",
+    "example": "The resilient community rebuilt after the devastating storm.",
+    "context": "Resilient is often used for people, materials, or systems that endure and recover, like in disasters or psychology.",
+    "did_you_know": "The word 'resilient' comes from Latin 'resilire,' meaning 'to leap back.' It entered English in the 17th century, tied to springs in physics. Think WWII studies on bouncing back. Now, it’s for cities or spirits in news, debated as innate toughness or learned grit."
+  },
+  {
+    "word": "stalwart",
+    "pronunciation": "STAWL-wurt",
+    "short_definition": "Loyal and strong.",
+    "meaning": "Stalwart describes someone or something strong, loyal, or resolute. It often highlights steadfast reliability.",
+    "category": "adjective",
+    "example": "He was a stalwart supporter of the team through every season.",
+    "context": "Stalwart is often used for dependable people or things, like in politics, sports, or sturdy builds.",
+    "did_you_know": "The word 'stalwart' comes from Old English 'stælwiert,' meaning 'serviceable.' It entered in the 14th century, used for tough knights in sagas. Think loyal retainers in old tales. Now, it’s for fans or beams in talk, with debates on whether it’s stubborn or noble strength."
+  },
+  {
+    "word": "usurp",
+    "pronunciation": "yoo-SURP",
+    "short_definition": "To seize wrongfully.",
+    "meaning": "To usurp is to take something, like power or rights, by force or without right. It’s often an illegal grab.",
+    "category": "verb",
+    "example": "The rebel leader usurped control from the elected ruler.",
+    "context": "Usurp is often used in history, politics, or metaphors for wrongful takeovers, like thrones or roles.",
+    "did_you_know": "The word 'usurp' comes from Latin 'usurpare,' blending 'usus' (use) and 'rapere' (to seize). It entered English in the 14th century, tied to medieval coups. Think Shakespeare’s plotting kings. Now, it’s for power grabs in news, debated as daring or just dishonest theft."
+  },
+  {
+    "word": "vex",
+    "pronunciation": "VEKS",
+    "short_definition": "To annoy or puzzle.",
+    "meaning": "To vex someone is to annoy or perplex them. It often brings mild irritation or confusion.",
+    "category": "verb",
+    "example": "The tricky riddle vexed the students for hours.",
+    "context": "Vex is often used for small frustrations or puzzles, like in daily life, games, or minor woes.",
+    "did_you_know": "The word 'vex' comes from Latin 'vexare,' meaning 'to shake' or 'disturb.' It entered English in the 15th century, used for petty medieval gripes. Think Chaucer’s irked pilgrims. Now, it’s for glitchy tech or kids in talk, with debates on whether it’s minor fuss or real bother."
+  },
+  {
+    "word": "disparate",
+    "pronunciation": "DIS-puh-rit",
+    "short_definition": "Distinctly different.",
+    "meaning": "Disparate describes things that are markedly different or distinct. It often highlights variety or mismatch.",
+    "category": "adjective",
+    "example": "The team’s disparate skills made coordination a challenge.",
+    "context": "Disparate is often used for contrasting groups, ideas, or stats, like in sociology, teams, or data.",
+    "did_you_know": "The word 'disparate' comes from Latin 'disparatus,' meaning 'separated,' tied to 'parare' (to prepare). It entered English in the 15th century, used for unlike species in science. Now, it’s for odd mixes or gaps in news, with debates on whether it’s diversity or discord."
+  },
+  {
+    "word": "elucidate",
+    "pronunciation": "ih-LOO-si-dayt",
+    "short_definition": "To clarify or explain.",
+    "meaning": "To elucidate is to make something clear or easy to understand. It often involves shedding light on complex ideas.",
+    "category": "verb",
+    "example": "The teacher elucidated the theory with simple examples.",
+    "context": "Elucidate is often used in teaching, writing, or talks to unravel tricky concepts or mysteries for others.",
+    "did_you_know": "The word 'elucidate' comes from Latin 'elucidare,' meaning 'to make clear,' blending 'e' (out) and 'lucidus' (bright). It entered English in the 16th century, used for Renaissance riddles. Think scholars lighting dark ideas. Now, it’s for lessons or books in talk, debated as simplifying or overexplaining."
+  },
+  {
+    "word": "superfluous",
+    "pronunciation": "soo-PER-floo-us",
+    "short_definition": "Unnecessary or excessive; more than needed.",
+    "meaning": "Superfluous is a formal word used to describe things that exceed what is necessary or sufficient, or that are simply not needed.",
+    "category": "adjective",
+    "example": "Further discussion seems superfluous, given the thorough conversation we just had.",
+    "context": "This word is often used in formal or academic settings to describe something redundant, excessive, or unnecessary. It can refer to objects, speech, or actions.",
+    "did_you_know": "If, say, you were to go chasing waterfalls in addition to the rivers and the lakes that you’re used to, such a pursuit would be superfluous. In other words, you would be exceeding what is necessary to satisfy your need for water-based enjoyment and recreation. “You’ve already got rivers and lakes,” your friends might advise with a bit of TLC, “just stick to them!” “Extra water” is also key to understanding the history of the word superfluous, which entered Middle English from the Latin adjective superfluus, meaning literally “running over.” Superfluus, in turn, comes from the verb superfluere (“to overflow”), which combines the prefix super- (meaning “over”) and fluere, “to flow.” In addition to influencing superfluous, fluere also flowed into the English words affluent, influence, and fluid, among others."
+  },
+  {
+    "word": "tousle",
+    "pronunciation": "TOW-zul",
+    "short_definition": "To make untidy, especially hair, by rough handling.",
+    "meaning": "To tousle something is to dishevel it—that is, to make it untidy or unkempt. Tousle is usually, though not always, used specifically when a person’s hair is being so treated.",
+    "category": "verb",
+    "example": "Vic stood in front of the mirror and tousled his hair, trying to get a cool, disheveled look.",
+    "context": "Tousle is most commonly used when referring to ruffling someone’s hair, whether in a playful, affectionate, or stylishly messy way.",
+    "did_you_know": "The verb tousle today is typically used for the action of mussing someone’s hair playfully ('tousling the toddler’s hair') or fussily ('tousling her tresses for that just-woke-up look'), but the word’s history is a bit edgier. Tousle and its synonym touse come from -tousen ('to pull or handle roughly'), a frequentative of the Middle English verb touselen. (A frequentative indicates repeated or recurrent action; sniffle, for example, is a frequentative of sniff.) Both tousle and touse have older meanings having to do with rough handling in general; before hair was tousled, people were—ouch. It’s no coincidence that another frequentative of -tousen, the Scots word tussillen, is the ancestor of the English verb tussle, meaning 'to scuffle' or 'to fight or struggle with someone by grabbing or pushing.'"
+  },
+  {
+    "word": "astute",
+    "pronunciation": "uh-STOOT",
+    "short_definition": "Clever, perceptive, or shrewd.",
+    "meaning": "Someone or something described as astute has or shows an ability to notice and understand things clearly. In other words, they are mentally sharp or clever. Astute can also describe someone who is crafty or wily.",
+    "category": "adjective",
+    "example": "They made some astute observations about the movie industry.",
+    "context": "The word astute is often used to describe keen judgment, sharp thinking, or strategic decision-making, often in business or politics.",
+    "did_you_know": "Road Runner always bests Wile E. Coyote in the famous Looney Tunes cartoon series, but both characters help demonstrate meanings of the word astute. Astute comes from the Latin adjective astutus, meaning 'cunning, crafty, or clever,' which in turn comes from the noun astus, meaning 'craft.' The English adjective, accordingly, can describe both the crafty and the wily. It’s easy to see how this applies to Wile E. Coyote: in each episode, Road Runner races along the highways of the American Southwest while the coyote sets an elaborate trap for the bird, usually with the aid of some goofy product ordered from the fictitious Acme company. But alas, Road Runner is astute, as in 'mentally sharp or clever.' In other words, he is not only quick on his feet, but quick on the uptake. He usually catches wind of the schemes, which ultimately backfire due to either the products’ chronic unreliability or Coyote’s own ineptitude. Road Runner, never captured or damaged, responds with a characteristic 'Beep! Beep!' and runs off."
+  },
+  {
+    "word": "jabberwocky",
+    "pronunciation": "JAB-er-wah-kee",
+    "short_definition": "Nonsensical speech or writing.",
+    "meaning": "Jabberwocky refers to meaningless speech or writing.",
+    "category": "noun",
+    "example": "When the character gets angry or flustered, she talks in a sort of agitated jabberwocky that is really quite comical.",
+    "context": "This term is often used to describe speech or text that lacks clear meaning, especially when it sounds complex or exaggerated.",
+    "did_you_know": "In his poem titled 'Jabberwocky,' from Through the Looking-Glass, Lewis Carroll warned readers about a frightful beast: 'Beware the Jabberwock, my son! / The jaws that bite, the claws that catch! / Beware the Jubjub bird, and shun / The frumious Bandersnatch!' This nonsensical poem caught the public's fancy upon its publication in late 1871, and by the turn of the 20th century jabberwocky was being used as a generic term for meaningless speech or writing. The word bandersnatch has also seen some use as a general noun, with the meaning 'a wildly grotesque or bizarre individual.' It's a much rarer word than jabberwocky, though, and is entered only in the Merriam-Webster Unabridged Dictionary."
+  },
+  {
+    "word": "superfluous",
+    "pronunciation": "soo-PER-floo-us",
+    "short_definition": "Unnecessary or excessive; more than needed.",
+    "meaning": "Superfluous is a formal word used to describe things that exceed what is necessary or sufficient, or that are simply not needed.",
+    "category": "adjective",
+    "example": "Further discussion seems superfluous, given the thorough conversation we just had.",
+    "context": "This word is often used in formal or academic settings to describe something redundant, excessive, or unnecessary. It can refer to objects, speech, or actions.",
+    "did_you_know": "If, say, you were to go chasing waterfalls in addition to the rivers and the lakes that you’re used to, such a pursuit would be superfluous. In other words, you would be exceeding what is necessary to satisfy your need for water-based enjoyment and recreation. 'You’ve already got rivers and lakes,' your friends might advise with a bit of TLC, 'just stick to them!' 'Extra water' is also key to understanding the history of the word superfluous, which entered Middle English from the Latin adjective superfluus, meaning literally 'running over.' Superfluus, in turn, comes from the verb superfluere ('to overflow'), which combines the prefix super- (meaning 'over') and fluere, 'to flow.' In addition to influencing superfluous, fluere also flowed into the English words affluent, influence, and fluid, among others."
+  },
+  {
+    "word": "tousle",
+    "pronunciation": "TOW-zul",
+    "short_definition": "To make untidy, especially hair, by rough handling.",
+    "meaning": "To tousle something is to dishevel it—that is, to make it untidy or unkempt. Tousle is usually, though not always, used specifically when a person’s hair is being so treated.",
+    "category": "verb",
+    "example": "Vic stood in front of the mirror and tousled his hair, trying to get a cool, disheveled look.",
+    "context": "Tousle is most commonly used when referring to ruffling someone’s hair, whether in a playful, affectionate, or stylishly messy way.",
+    "did_you_know": "The verb tousle today is typically used for the action of mussing someone’s hair playfully ('tousling the toddler’s hair') or fussily ('tousling her tresses for that just-woke-up look'), but the word’s history is a bit edgier. Tousle and its synonym touse come from -tousen ('to pull or handle roughly'), a frequentative of the Middle English verb touselen. (A frequentative indicates repeated or recurrent action; sniffle, for example, is a frequentative of sniff.) Both tousle and touse have older meanings having to do with rough handling in general; before hair was tousled, people were—ouch. It’s no coincidence that another frequentative of -tousen, the Scots word tussillen, is the ancestor of the English verb tussle, meaning 'to scuffle' or 'to fight or struggle with someone by grabbing or pushing.'"
+  },
+  {
+    "word": "astute",
+    "pronunciation": "uh-STOOT",
+    "short_definition": "Clever, perceptive, or shrewd.",
+    "meaning": "Someone or something described as astute has or shows an ability to notice and understand things clearly. In other words, they are mentally sharp or clever. Astute can also describe someone who is crafty or wily.",
+    "category": "adjective",
+    "example": "They made some astute observations about the movie industry.",
+    "context": "The word astute is often used to describe keen judgment, sharp thinking, or strategic decision-making, often in business or politics.",
+    "did_you_know": "Road Runner always bests Wile E. Coyote in the famous Looney Tunes cartoon series, but both characters help demonstrate meanings of the word astute. Astute comes from the Latin adjective astutus, meaning 'cunning, crafty, or clever,' which in turn comes from the noun astus, meaning 'craft.' The English adjective, accordingly, can describe both the crafty and the wily. It’s easy to see how this applies to Wile E. Coyote: in each episode, Road Runner races along the highways of the American Southwest while the coyote sets an elaborate trap for the bird, usually with the aid of some goofy product ordered from the fictitious Acme company. But alas, Road Runner is astute, as in 'mentally sharp or clever.' In other words, he is not only quick on his feet, but quick on the uptake. He usually catches wind of the schemes, which ultimately backfire due to either the products’ chronic unreliability or Coyote’s own ineptitude. Road Runner, never captured or damaged, responds with a characteristic 'Beep! Beep!' and runs off."
+  },
+  {
+    "word": "jabberwocky",
+    "pronunciation": "JAB-er-wah-kee",
+    "short_definition": "Nonsensical speech or writing.",
+    "meaning": "Jabberwocky refers to meaningless speech or writing.",
+    "category": "noun",
+    "example": "When the character gets angry or flustered, she talks in a sort of agitated jabberwocky that is really quite comical.",
+    "context": "This term is often used to describe speech or text that lacks clear meaning, especially when it sounds complex or exaggerated.",
+    "did_you_know": "In his poem titled 'Jabberwocky,' from Through the Looking-Glass, Lewis Carroll warned readers about a frightful beast: 'Beware the Jabberwock, my son! / The jaws that bite, the claws that catch! / Beware the Jubjub bird, and shun / The frumious Bandersnatch!' This nonsensical poem caught the public's fancy upon its publication in late 1871, and by the turn of the 20th century jabberwocky was being used as a generic term for meaningless speech or writing. The word bandersnatch has also seen some use as a general noun, with the meaning 'a wildly grotesque or bizarre individual.' It's a much rarer word than jabberwocky, though, and is entered only in the Merriam-Webster Unabridged Dictionary."
+  },
+  {
+    "word": "obfuscate",
+    "pronunciation": "OB-fuh-skayt",
+    "short_definition": "To make something unclear or confusing.",
+    "meaning": "To obfuscate is to deliberately make something more difficult to understand, often by being vague or complex.",
+    "category": "verb",
+    "example": "The lawyer's response only served to obfuscate the issue further.",
+    "context": "Often used when discussing communication, writing, or arguments that intentionally obscure meaning.",
+    "did_you_know": "The word obfuscate comes from the Latin obfuscatus, meaning 'darkened' or 'clouded.' It’s often used critically to describe excessive jargon or deliberate deception in speech. Politicians, legal experts, and academics have been accused of obfuscation when they use convoluted language to avoid direct answers or hide uncomfortable truths."
+  },
+  {
+    "word": "lugubrious",
+    "pronunciation": "loo-GOO-bree-us",
+    "short_definition": "Excessively mournful or gloomy.",
+    "meaning": "Lugubrious describes someone or something that is overly sad, gloomy, or dramatic about their sorrow.",
+    "category": "adjective",
+    "example": "The play’s lugubrious tone left the audience feeling heavy-hearted.",
+    "context": "Often used to describe exaggerated sadness in literature, theater, or everyday conversation.",
+    "did_you_know": "Lugubrious comes from the Latin lugere, meaning 'to mourn.' The word is often used with a hint of irony to describe melodramatic or exaggerated sorrow. It’s the kind of mood you’d expect from a heartbroken poet sitting in the rain, sighing heavily while writing about lost love."
+  },
+  {
+    "word": "perfunctory",
+    "pronunciation": "per-FUNK-tuh-ree",
+    "short_definition": "Done without enthusiasm or effort.",
+    "meaning": "A perfunctory action is done quickly and without much thought, usually out of routine or obligation.",
+    "category": "adjective",
+    "example": "She gave a perfunctory nod before walking away.",
+    "context": "Often describes actions in customer service, social interactions, or chores that lack genuine engagement.",
+    "did_you_know": "The word perfunctory comes from the Latin perfungi, meaning 'to get through with.' It suggests doing something just to get it over with, like shaking hands out of habit or responding 'fine' when someone asks how you are—even if you aren’t fine at all."
+  },
+  {
+    "word": "sesquipedalian",
+    "pronunciation": "ses-kwi-puh-DAY-lee-un",
+    "short_definition": "Given to using long words.",
+    "meaning": "Sesquipedalian can describe a person who uses unnecessarily long words or refer to the long words themselves.",
+    "category": "adjective / noun",
+    "example": "His sesquipedalian speech confused more than impressed.",
+    "context": "Often used humorously or critically to describe overly complex language in writing or speech.",
+    "did_you_know": "Sesquipedalian comes from the Latin sesquipedalis, meaning 'a foot and a half long.' The term was originally used (ironically) by the Roman poet Horace to criticize writers who use unnecessarily long words. If someone says 'utilize' instead of 'use,' they might be guilty of sesquipedalian tendencies!"
+  },
+  {
+    "word": "defenestration",
+    "pronunciation": "dee-fehn-uh-STRAY-shun",
+    "short_definition": "The act of throwing someone or something out a window.",
+    "meaning": "Defenestration is a rare but vivid word that refers to throwing someone or something out of a window, often with dramatic or historical significance.",
+    "category": "noun",
+    "example": "The defenestration of Prague was a key event in European history.",
+    "context": "The word is mostly used in historical, humorous, or exaggerated contexts rather than everyday speech.",
+    "did_you_know": "The term originated from Latin (de- ‘out of’ + fenestra ‘window’) and gained fame from historical events where political figures were thrown out of windows—most notably the Defenestrations of Prague, which contributed to the Thirty Years' War. While not a common crime today, defenestration remains a wonderfully specific word for a dramatic act!"
+  },
+  {
+    "word": "eldritch",
+    "pronunciation": "EL-dritch",
+    "short_definition": "Eerie, supernatural, or otherworldly.",
+    "meaning": "Eldritch describes something eerie, ghostly, or seemingly supernatural—especially in a creepy, unnatural way.",
+    "category": "adjective",
+    "example": "The eldritch glow from the cave entrance sent a chill down her spine.",
+    "context": "Frequently used in gothic literature, horror fiction, and fantasy to describe unsettling, unnatural things.",
+    "did_you_know": "Eldritch is an old Scottish word that means 'strange' or 'weird,' and it often appears in the works of H.P. Lovecraft and other horror writers. If something has an eldritch quality, it’s the kind of thing you wouldn’t want to encounter alone at night—think eerie lights, whispering shadows, or ancient secrets best left undiscovered."
+  },
+  {
+    "word": "pusillanimous",
+    "pronunciation": "pyoo-suh-LAN-uh-mus",
+    "short_definition": "Cowardly or lacking courage.",
+    "meaning": "A pusillanimous person is timid, spineless, or too afraid to take risks.",
+    "category": "adjective",
+    "example": "His pusillanimous refusal to confront the issue frustrated his colleagues.",
+    "context": "Often used in literature and speeches to describe weak or timid behavior, especially in leadership.",
+    "did_you_know": "Pusillanimous comes from the Latin pusillus ('very small') and animus ('spirit'), literally meaning 'small spirit.' It’s the kind of word that might be used to insult someone for being too timid or passive, like a politician who avoids taking a stand or a character in a novel who flees at the first sign of trouble."
+  },
+  {
+    "word": "lachrymose",
+    "pronunciation": "LAK-ruh-mose",
+    "short_definition": "Tearful or prone to weeping.",
+    "meaning": "Lachrymose describes someone who cries easily or something that induces tears.",
+    "category": "adjective",
+    "example": "The movie’s lachrymose ending left the audience in tears.",
+    "context": "Used in literature and speech to describe emotional states, often with a poetic or dramatic tone.",
+    "did_you_know": "Lachrymose comes from the Latin lacrimosus, meaning 'full of tears.' It’s often used in literature to describe sorrowful characters or melodramatic situations. If you cry during every sad movie, you might be a lachrymose person!"
+  },
+  {
+    "word": "susurrus",
+    "pronunciation": "soo-SUR-us",
+    "short_definition": "A soft murmuring or rustling sound.",
+    "meaning": "Susurrus refers to a gentle whispering, rustling, or murmuring sound, often associated with nature.",
+    "category": "noun",
+    "example": "The susurrus of the wind through the trees was soothing.",
+    "context": "Often used in poetic or descriptive writing to evoke peaceful natural sounds.",
+    "did_you_know": "This word comes from Latin and is itself a whispery-sounding word. Writers love it for its onomatopoeic quality—just saying ‘susurrus’ sounds like a hushed breeze!"
+  },
+  {
+    "word": "ephemeral",
+    "pronunciation": "ih-FEM-uh-rul",
+    "short_definition": "Lasting a very short time.",
+    "meaning": "Ephemeral describes something that exists briefly, like a fleeting moment or a temporary trend.",
+    "category": "adjective",
+    "example": "The beauty of a sunset is ephemeral, lasting only minutes.",
+    "context": "Often used to describe temporary things in nature, emotions, or trends.",
+    "did_you_know": "The word comes from Greek and originally referred to things lasting a single day, like mayflies. It’s often used poetically to capture the fleeting nature of beauty, life, and even internet trends."
+  },
+  {
+    "word": "crepuscular",
+    "pronunciation": "kri-PUS-kyuh-lur",
+    "short_definition": "Relating to twilight or dim light.",
+    "meaning": "Crepuscular describes things active at twilight or occurring in dim light, like certain animals.",
+    "category": "adjective",
+    "example": "The crepuscular glow of dusk gave the landscape a dreamlike quality.",
+    "context": "Used in scientific and poetic descriptions of light conditions or animal behavior.",
+    "did_you_know": "From the Latin word crepusculum ('twilight'), crepuscular is used in zoology to describe animals active at dawn or dusk, like deer and fireflies."
+  },
+  {
+    "word": "oneiric",
+    "pronunciation": "oh-NYE-rik",
+    "short_definition": "Relating to dreams.",
+    "meaning": "Oneiric describes things that are dreamlike or related to dreams in some way.",
+    "category": "adjective",
+    "example": "His paintings have an oneiric quality, as if pulled from a dream.",
+    "context": "Used in literary and artistic discussions to describe surreal or dreamlike states.",
+    "did_you_know": "This word comes from the Greek oneiros ('dream'). It’s often used in discussions about surrealism, dream analysis, or anything that feels hazy and unreal."
+  },
+  {
+    "word": "ululate",
+    "pronunciation": "YOO-lyoo-layt",
+    "short_definition": "To howl or wail loudly.",
+    "meaning": "Ululate means to emit a loud, wailing cry, often in grief or celebration.",
+    "category": "verb",
+    "example": "The mourners ululated in sorrow at the funeral.",
+    "context": "Common in descriptions of grief in various cultures or in poetic language.",
+    "did_you_know": "The word comes from Latin ululare, which mimics the sound of howling. Many cultures use ululation in mourning, celebration, or religious rituals."
+  },
+  {
+    "word": "mellifluous",
+    "pronunciation": "muh-LIF-loo-us",
+    "short_definition": "Sweet and smooth sounding.",
+    "meaning": "Mellifluous describes a sound that is pleasingly smooth and musical.",
+    "category": "adjective",
+    "example": "The singer's mellifluous voice captivated the audience.",
+    "context": "Often used for music, speech, or any pleasing sound.",
+    "did_you_know": "From Latin mellifluus (‘flowing like honey’), this word is often used to describe voices or melodies that sound rich and soothing."
+  },
+  {
+    "word": "chiaroscuro",
+    "pronunciation": "kee-ah-roh-SKYOOR-oh",
+    "short_definition": "The contrast of light and shadow.",
+    "meaning": "Chiaroscuro is a visual effect created by strong contrasts between light and dark.",
+    "category": "noun",
+    "example": "The artist used chiaroscuro to add drama to his painting.",
+    "context": "Used in art, photography, and literature to describe dramatic contrasts.",
+    "did_you_know": "This term comes from Italian and literally means 'light-dark.' It was popularized by Renaissance artists like Caravaggio and Rembrandt to create dramatic depth in paintings."
+  },
+  {
+    "word": "petrichor",
+    "pronunciation": "PET-rih-kor",
+    "short_definition": "The smell of earth after rain.",
+    "meaning": "Petrichor refers to the pleasant, earthy scent that arises when rain falls on dry soil.",
+    "category": "noun",
+    "example": "The petrichor after the storm was refreshing and nostalgic.",
+    "context": "Often used in poetic or descriptive writing about nature and weather.",
+    "did_you_know": "The word was coined by scientists in 1964, combining Greek petra ('stone') and ichor ('fluid of the gods'). It comes from oils released by soil-dwelling bacteria when rain hits the ground."
+  },
+  {
+    "word": "lugubrious",
+    "pronunciation": "loo-GOO-bree-us",
+    "short_definition": "Excessively mournful.",
+    "meaning": "Lugubrious describes something overly sad, gloomy, or mournful, often exaggeratedly so.",
+    "category": "adjective",
+    "example": "He gave a lugubrious speech about his lost sandwich.",
+    "context": "Used to describe overly dramatic sadness in people, literature, or situations.",
+    "did_you_know": "From Latin lugere ('to mourn'), lugubrious can be serious or humorous. Think of Eeyore from Winnie-the-Pooh—his endless gloominess is a perfect example of lugubriousness."
+  },
+  {
+    "word": "obfuscate",
+    "pronunciation": "OB-fuh-skayt",
+    "short_definition": "To confuse or obscure.",
+    "meaning": "To obfuscate means to make something unclear or difficult to understand, often deliberately.",
+    "category": "verb",
+    "example": "The politician obfuscated the details of the policy.",
+    "context": "Used in discussions about language, politics, and deception.",
+    "did_you_know": "From Latin obfuscare ('to darken'), this word is often used when people make things confusing on purpose—like legal jargon or cryptic instructions."
+  },
+  {
+    "word": "sibilant",
+    "pronunciation": "SIB-uh-lent",
+    "short_definition": "Producing a hissing sound.",
+    "meaning": "Sibilant describes speech sounds made with a hissing effect, like 's' and 'sh'.",
+    "category": "adjective",
+    "example": "The snake’s sibilant hiss echoed in the cave.",
+    "context": "Commonly used in linguistics and poetry to describe hissing sounds.",
+    "did_you_know": "From Latin sibilare ('to hiss'), sibilant words mimic the sound they describe. Poets use sibilance for dramatic effect, like the whispering ‘s’ sounds in ‘And the silken sad uncertain rustling of each purple curtain…’ from Poe’s The Raven."
+  },
+  {
+    "word": "halcyon",
+    "pronunciation": "HAL-see-uhn",
+    "short_definition": "Calm and peaceful.",
+    "meaning": "Halcyon describes a peaceful, idyllic time, often nostalgically.",
+    "category": "adjective",
+    "example": "She longed for the halcyon days of childhood.",
+    "context": "Often used to describe serene memories, times, or places.",
+    "did_you_know": "The word comes from a Greek myth about the halcyon bird, which was believed to calm the sea during winter solstice. Now, it’s used to describe peaceful, golden times in life."
+  },
+  {
+    "word": "somnolent",
+    "pronunciation": "SOM-nuh-lent",
+    "short_definition": "Sleepy or drowsy.",
+    "meaning": "Somnolent means feeling sleepy or causing drowsiness.",
+    "category": "adjective",
+    "example": "The somnolent lecture nearly put him to sleep.",
+    "context": "Used to describe people, speeches, or atmospheres that induce sleep.",
+    "did_you_know": "From Latin somnus ('sleep'), somnolent is related to words like insomnia and hypnotic. A somnolent afternoon is one where you just can’t keep your eyes open!"
+  },
+  {
+    "word": "pulchritudinous",
+    "pronunciation": "pul-kruh-TOO-di-nus",
+    "short_definition": "Physically beautiful.",
+    "meaning": "Pulchritudinous is a fancy way to describe someone as beautiful or attractive.",
+    "category": "adjective",
+    "example": "Her pulchritudinous smile lit up the room.",
+    "context": "Rarely used in casual conversation but sometimes seen in literature.",
+    "did_you_know": "Despite its ugly sound, pulchritudinous means beautiful! It comes from Latin pulchritudo ('beauty'). But be careful—calling someone ‘pulchritudinous’ might just confuse them."
+  },
+  {
+    "word": "apoplectic",
+    "pronunciation": "ap-uh-PLEK-tik",
+    "short_definition": "Furiously angry.",
+    "meaning": "Apoplectic describes someone so enraged that they seem on the verge of having a stroke.",
+    "category": "adjective",
+    "example": "He was apoplectic when he saw the dent in his car.",
+    "context": "Often used in exaggerated descriptions of extreme anger.",
+    "did_you_know": "From Greek apoplexia ('a stroke'), apoplectic originally described medical strokes but now mainly means ‘furiously red-faced’—think of a cartoon character steaming from the ears!"
+  },
+  {
+    "word": "ineffable",
+    "pronunciation": "in-EF-uh-bul",
+    "short_definition": "Beyond words.",
+    "meaning": "Ineffable describes something so amazing or sacred that words fail to capture it.",
+    "category": "adjective",
+    "example": "The view from the mountain was ineffable.",
+    "context": "Often used in spiritual, emotional, or awe-inspiring descriptions.",
+    "did_you_know": "From Latin ineffabilis ('unspeakable'), ineffable is often used for things so profound—like deep love or religious experiences—that they defy description."
+  },
+  {
+    "word": "ephemeral",
+    "pronunciation": "ih-FEM-er-uhl",
+    "short_definition": "Short-lived.",
+    "meaning": "Ephemeral describes something that lasts for a very short time.",
+    "category": "adjective",
+    "example": "The beauty of a sunset is ephemeral.",
+    "context": "Often used in discussions about fleeting experiences, beauty, or trends.",
+    "did_you_know": "From Greek ephemeros ('lasting one day'), ephemeral is often used for short-lived natural events, like the bloom of cherry blossoms or the flight of a mayfly."
+  },
+  {
+    "word": "labyrinthine",
+    "pronunciation": "lab-uh-RIN-thine",
+    "short_definition": "Complicated and twisting.",
+    "meaning": "Labyrinthine means highly complex, confusing, or resembling a maze.",
+    "category": "adjective",
+    "example": "The labyrinthine streets of the old city were easy to get lost in.",
+    "context": "Used to describe literal and figurative mazes, including bureaucracy or storytelling.",
+    "did_you_know": "From Greek labyrinthos, referring to the mythical maze of the Minotaur. Something labyrinthine is not just complicated—it’s downright baffling."
+  },
+  {
+    "word": "vociferous",
+    "pronunciation": "vo-SIF-er-us",
+    "short_definition": "Loud and forceful.",
+    "meaning": "Vociferous describes someone who speaks loudly and passionately, often in protest.",
+    "category": "adjective",
+    "example": "The protesters were vociferous in their demands for justice.",
+    "context": "Used to describe vocal opposition, strong opinions, or loud arguments.",
+    "did_you_know": "From Latin vox ('voice') and ferre ('to carry'), vociferous describes a voice that carries far. A vociferous person makes sure they’re heard—whether you like it or not."
+  },
+  {
+    "word": "inchoate",
+    "pronunciation": "in-KOH-it",
+    "short_definition": "Not fully formed.",
+    "meaning": "Inchoate describes something that is just beginning to develop or is incomplete.",
+    "category": "adjective",
+    "example": "His inchoate idea needed more refinement before presenting it.",
+    "context": "Often used to describe early-stage ideas, movements, or projects.",
+    "did_you_know": "From Latin inchoare ('to begin'), inchoate is the perfect word for something still taking shape—like a rough draft, a startup company, or an evolving plan."
+  },
+  {
+    "word": "mellifluous",
+    "pronunciation": "muh-LIF-loo-us",
+    "short_definition": "Pleasantly smooth and musical.",
+    "meaning": "Mellifluous describes something that sounds sweet and pleasant, like a voice or melody.",
+    "category": "adjective",
+    "example": "Her mellifluous singing captivated the audience.",
+    "context": "Often used to describe voices, music, or speech that is soothing or lyrical.",
+    "did_you_know": "From Latin mel ('honey') and fluere ('to flow'), mellifluous describes speech or music that flows as sweetly as honey. Think of a singer with a voice like silk!"
+  },
+  {
+    "word": "desultory",
+    "pronunciation": "DES-ul-tor-ee",
+    "short_definition": "Lacking a clear plan or purpose.",
+    "meaning": "Desultory describes something that is random, unfocused, or lacking a definite purpose.",
+    "category": "adjective",
+    "example": "His desultory study habits led to poor exam results.",
+    "context": "Used to describe conversations, efforts, or behavior that is aimless or disconnected.",
+    "did_you_know": "From Latin desultor ('leaper'), desultory originally referred to circus performers who jumped between horses. Now, it describes anything that jumps from one thing to another with no direction."
+  },
+  {
+    "word": "sesquipedalian",
+    "pronunciation": "ses-kwi-puh-DAY-lee-un",
+    "short_definition": "Given to using long words.",
+    "meaning": "Sesquipedalian describes someone who uses long or complex words, often excessively.",
+    "category": "adjective",
+    "example": "His sesquipedalian speech left the audience baffled.",
+    "context": "Often used humorously to describe verbose or pretentious language.",
+    "did_you_know": "From Latin sesquipedalis ('a foot and a half long'), sesquipedalian is itself a long word about long words. Shakespeare even mocked sesquipedalian speech in his plays!"
+  },
+  {
+    "word": "diaphanous",
+    "pronunciation": "dy-AF-uh-nus",
+    "short_definition": "Light and almost transparent.",
+    "meaning": "Diaphanous describes delicate, sheer fabric that is nearly see-through.",
+    "category": "adjective",
+    "example": "She wore a diaphanous scarf that fluttered in the wind.",
+    "context": "Often used in fashion or descriptions of delicate materials.",
+    "did_you_know": "From Greek diaphanes ('to show through'), diaphanous describes fabrics like gauze or silk that are airy and light. It can also describe a dreamy, delicate quality in poetry."
+  },
+  {
+    "word": "perspicacious",
+    "pronunciation": "per-spuh-KAY-shus",
+    "short_definition": "Keenly perceptive.",
+    "meaning": "Perspicacious describes someone who has sharp insight and discernment.",
+    "category": "adjective",
+    "example": "The detective's perspicacious mind quickly solved the case.",
+    "context": "Often used to describe intelligence, intuition, or perceptiveness.",
+    "did_you_know": "From Latin perspicax ('sharp-sighted'), perspicacious people don’t just see things—they see through them. It’s a quality essential for great detectives, critics, and strategists."
+  },
+  {
+    "word": "obstreperous",
+    "pronunciation": "uhb-STREP-er-us",
+    "short_definition": "Noisy and difficult to control.",
+    "meaning": "Obstreperous describes someone who is loud, unruly, and resistant to control.",
+    "category": "adjective",
+    "example": "The obstreperous crowd refused to settle down.",
+    "context": "Often used to describe rowdy behavior, rebellious people, or noisy situations.",
+    "did_you_know": "From Latin obstrepere ('to make a loud noise'), obstreperous isn’t just about being loud—it’s about being loud in defiance, like a toddler throwing a tantrum in a store."
+  },
+  {
+    "word": "pernicious",
+    "pronunciation": "per-NISH-us",
+    "short_definition": "Harmful in a gradual way.",
+    "meaning": "Pernicious describes something that causes great harm in a subtle or gradual way.",
+    "category": "adjective",
+    "example": "Misinformation can have pernicious effects on public opinion.",
+    "context": "Often used for destructive ideas, habits, or influences.",
+    "did_you_know": "From Latin perniciosus ('destructive'), pernicious things don’t strike suddenly—they creep in and do damage over time, like toxic relationships or slow-working poisons."
+  },
+  {
+    "word": "lachrymose",
+    "pronunciation": "LAK-ruh-mose",
+    "short_definition": "Tearful or prone to weeping.",
+    "meaning": "Lachrymose describes someone who cries easily or something that induces tears.",
+    "category": "adjective",
+    "example": "The lachrymose widow sobbed throughout the ceremony.",
+    "context": "Used in literature, emotions, and dramatic storytelling.",
+    "did_you_know": "From Latin lacrima ('tear'), lachrymose can describe a tearjerking movie, an emotional speech, or simply someone who always seems on the verge of crying."
+  },
+  {
+    "word": "jejune",
+    "pronunciation": "jih-JOON",
+    "short_definition": "Naive or dull.",
+    "meaning": "Jejune describes something that is simplistic, uninteresting, or lacking depth.",
+    "category": "adjective",
+    "example": "The critic called the novel jejune and uninspired.",
+    "context": "Often used in literary critiques, education, or intellectual discussions.",
+    "did_you_know": "From Latin jejunus ('empty' or 'hungry'), jejune originally meant 'fasting' before evolving to mean 'lacking substance'—perfect for dull lectures and shallow arguments."
+  },
+  {
+    "word": "effulgent",
+    "pronunciation": "ih-FUL-jent",
+    "short_definition": "Radiant and shining.",
+    "meaning": "Effulgent describes something that is brilliantly radiant or glowing.",
+    "category": "adjective",
+    "example": "Her effulgent smile lit up the room.",
+    "context": "Often used to describe light, beauty, or metaphorical brilliance.",
+    "did_you_know": "From Latin effulgere ('to shine forth'), effulgent can describe literal brightness or a dazzling personality that commands attention like a shining star."
+  },
+  {
+    "word": "adumbrate",
+    "pronunciation": "AD-um-brayt",
+    "short_definition": "To foreshadow vaguely.",
+    "meaning": "Adumbrate means to suggest or outline something in a vague or shadowy way.",
+    "category": "verb",
+    "example": "The author adumbrated the novel’s tragic ending early on.",
+    "context": "Used in storytelling, analysis, or strategic discussions.",
+    "did_you_know": "From Latin adumbrare ('to cast a shadow'), adumbrate suggests a faint outline—like the way a film hints at its climax long before it happens."
+  },
+  {
+    "word": "apotheosis",
+    "pronunciation": "uh-poth-ee-OH-sis",
+    "short_definition": "The highest point of something.",
+    "meaning": "Apotheosis describes the peak or ideal form of something, often to divine status.",
+    "category": "noun",
+    "example": "The painting was the apotheosis of Renaissance art.",
+    "context": "Used in art, culture, or describing someone's ultimate success.",
+    "did_you_know": "From Greek apotheoun ('to deify'), apotheosis was once literal—referring to turning a person into a god. Now, it’s used for any peak achievement."
+  },
+  {
+    "word": "pellucid",
+    "pronunciation": "puh-LOO-sid",
+    "short_definition": "Crystal clear.",
+    "meaning": "Pellucid describes something that is exceptionally clear, whether literally or figuratively.",
+    "category": "adjective",
+    "example": "His pellucid explanation made even the hardest topic easy to understand.",
+    "context": "Used to describe water, writing, or speech that is clear and easy to grasp.",
+    "did_you_know": "From Latin pellucidus ('transparent'), pellucid can describe a pristine lake or an explanation so clear that even the most confused student gets it instantly."
+  },
+  {
+    "word": "insouciant",
+    "pronunciation": "in-SOO-see-uhnt",
+    "short_definition": "Casually unconcerned.",
+    "meaning": "Insouciant describes someone who is carefree and unconcerned, often in a positive way.",
+    "category": "adjective",
+    "example": "He strolled into the exam with an insouciant attitude.",
+    "context": "Used to describe a relaxed or nonchalant demeanor.",
+    "did_you_know": "From French insouciance ('carelessness'), an insouciant person might be charmingly laid-back—or frustratingly indifferent, depending on the situation."
+  },
+  {
+    "word": "quotidian",
+    "pronunciation": "kwoh-TID-ee-uhn",
+    "short_definition": "Ordinary or everyday.",
+    "meaning": "Quotidian describes something that happens daily or is unremarkably common.",
+    "category": "adjective",
+    "example": "His quotidian routine never changed: coffee, work, sleep.",
+    "context": "Used to describe the mundane aspects of daily life.",
+    "did_you_know": "From Latin quotidianus ('daily'), quotidian things might be boring, but they shape our lives—like brushing teeth, checking emails, or complaining about traffic."
+  },
+  {
+    "word": "bucolic",
+    "pronunciation": "byoo-KOL-ik",
+    "short_definition": "Rustic and pastoral.",
+    "meaning": "Bucolic describes things related to the countryside, particularly its charm and simplicity.",
+    "category": "adjective",
+    "example": "The bucolic scenery was a welcome escape from city life.",
+    "context": "Often used in poetry, literature, or travel writing.",
+    "did_you_know": "From Greek boukolos ('herdsman'), bucolic conjures up images of rolling hills, grazing sheep, and peaceful farm life—the idealized countryside dream."
+  },
+  {
+    "word": "perspicacious",
+    "pronunciation": "per-spuh-KAY-shus",
+    "short_definition": "Keenly perceptive.",
+    "meaning": "Perspicacious describes someone who has sharp insight and quickly grasps complex ideas. It often refers to intellectual sharpness and the ability to see through deception or subtle details.",
+    "category": "adjective",
+    "example": "The perspicacious lawyer immediately spotted the flaw in the contract.",
+    "context": "Perspicacious is commonly used to describe intelligent and observant people, such as detectives, analysts, and critics.",
+    "did_you_know": "The word 'perspicacious' comes from the Latin 'perspicax,' meaning 'sharp-sighted.' It suggests not just seeing something but understanding it deeply, making it a useful trait for strategists and problem-solvers."
+  },
+  {
+    "word": "obstreperous",
+    "pronunciation": "uhb-STREP-er-us",
+    "short_definition": "Noisy and difficult to control.",
+    "meaning": "Obstreperous describes someone who is loud, unruly, and resistant to authority, often in a disruptive or defiant way.",
+    "category": "adjective",
+    "example": "The teacher struggled to maintain order in the obstreperous classroom.",
+    "context": "This word is frequently used to describe rowdy crowds, misbehaving children, or people who refuse to follow rules.",
+    "did_you_know": "The word 'obstreperous' comes from the Latin 'obstrepere,' meaning 'to make a loud noise.' It suggests more than just being loud—it implies active resistance and defiance."
+  },
+  {
+    "word": "pernicious",
+    "pronunciation": "per-NISH-us",
+    "short_definition": "Harmful in a gradual way.",
+    "meaning": "Pernicious describes something that causes slow but serious harm, often in a subtle or unnoticed manner.",
+    "category": "adjective",
+    "example": "The pernicious effects of misinformation can damage public trust over time.",
+    "context": "This word is often used to describe negative influences, such as toxic relationships, dangerous ideologies, or slow-acting poisons.",
+    "did_you_know": "The word 'pernicious' comes from the Latin 'perniciosus,' meaning 'destructive.' Unlike sudden dangers, pernicious threats work quietly over time, making them even more insidious."
+  },
+  {
+    "word": "lachrymose",
+    "pronunciation": "LAK-ruh-mose",
+    "short_definition": "Tearful or prone to weeping.",
+    "meaning": "Lachrymose describes someone who cries easily or something that is deeply emotional and likely to cause tears.",
+    "category": "adjective",
+    "example": "She became lachrymose every time she heard their old song.",
+    "context": "This word is often used in emotional contexts, such as literature, films, or sentimental moments.",
+    "did_you_know": "The word 'lachrymose' comes from the Latin 'lacrima,' meaning 'tear.' It captures the essence of sorrowful expressions, whether in people or art."
+  },
+  {
+    "word": "jejune",
+    "pronunciation": "jih-JOON",
+    "short_definition": "Naive or dull.",
+    "meaning": "Jejune describes something that is simplistic, uninteresting, or lacking depth. It can also refer to ideas that are immature or uninformed.",
+    "category": "adjective",
+    "example": "His jejune arguments failed to impress the experienced debaters.",
+    "context": "This word is commonly used in academic and intellectual discussions to critique superficial reasoning or unoriginal ideas.",
+    "did_you_know": "The word 'jejune' comes from the Latin 'jejunus,' meaning 'empty' or 'fasting.' It originally referred to being physically hungry but later evolved to describe intellectual emptiness."
+  },
+  {
+    "word": "effulgent",
+    "pronunciation": "ih-FUL-jent",
+    "short_definition": "Radiant and shining.",
+    "meaning": "Effulgent describes something that is brilliantly radiant, whether literally glowing with light or metaphorically bright with joy or inspiration.",
+    "category": "adjective",
+    "example": "Her effulgent smile lit up the entire room.",
+    "context": "This word is often used in poetic or artistic descriptions of beauty, light, or happiness.",
+    "did_you_know": "The word 'effulgent' comes from the Latin 'effulgere,' meaning 'to shine forth.' It perfectly describes things that gleam with an intense brilliance."
+  },
+  {
+    "word": "adumbrate",
+    "pronunciation": "AD-um-brayt",
+    "short_definition": "To foreshadow vaguely.",
+    "meaning": "To adumbrate something is to give a hint or an outline of it without full clarity or detail.",
+    "category": "verb",
+    "example": "The novel’s opening chapters adumbrate its tragic conclusion.",
+    "context": "This word is often used in storytelling, philosophy, and strategic discussions to indicate vague suggestions or early hints.",
+    "did_you_know": "The word 'adumbrate' comes from the Latin 'adumbrare,' meaning 'to cast a shadow.' It suggests the presence of something without revealing it completely."
+  },
+  {
+    "word": "apotheosis",
+    "pronunciation": "uh-poth-ee-OH-sis",
+    "short_definition": "The highest point of something.",
+    "meaning": "Apotheosis describes the ultimate or perfect example of something, often in an almost divine sense.",
+    "category": "noun",
+    "example": "The athlete's victory was the apotheosis of his career.",
+    "context": "This word is often used to describe peak achievements in art, careers, or cultural movements.",
+    "did_you_know": "The word 'apotheosis' comes from the Greek 'apotheoun,' meaning 'to deify.' It originally referred to the elevation of someone to godlike status, but now it refers to reaching the highest possible level of success."
+  },
+  {
+    "word": "pellucid",
+    "pronunciation": "puh-LOO-sid",
+    "short_definition": "Crystal clear.",
+    "meaning": "Pellucid describes something that is exceptionally clear, both literally and metaphorically.",
+    "category": "adjective",
+    "example": "His pellucid writing style made even complex topics easy to understand.",
+    "context": "This word is often used to describe transparency in water, speech, or thought.",
+    "did_you_know": "The word 'pellucid' comes from the Latin 'pellucidus,' meaning 'transparent.' It captures the quality of clarity, whether in a pristine lake or an eloquent explanation."
+  },
+  {
+    "word": "perspicacious",
+    "pronunciation": "per-spuh-KAY-shus",
+    "short_definition": "Keenly perceptive.",
+    "meaning": "Perspicacious describes someone who has sharp insight and quickly grasps complex ideas. It often refers to intellectual sharpness and the ability to see through deception or subtle details.",
+    "category": "adjective",
+    "example": "The perspicacious lawyer immediately spotted the flaw in the contract.",
+    "context": "Perspicacious is commonly used to describe intelligent and observant people, such as detectives, analysts, and critics.",
+    "did_you_know": "The word 'perspicacious' comes from the Latin 'perspicax,' which means 'sharp-sighted' and is derived from 'perspicere,' meaning 'to look through.' The term initially referred to literal keen eyesight but evolved to describe mental acuity. A perspicacious person isn’t just intelligent; they can detect patterns, anticipate problems, and understand complex systems before others do. This quality is often praised in leaders, strategists, and scholars. Sherlock Holmes, for example, is the embodiment of perspicacity—spotting details others overlook and making profound deductions."
+  },
+  {
+    "word": "obstreperous",
+    "pronunciation": "uhb-STREP-er-us",
+    "short_definition": "Noisy and difficult to control.",
+    "meaning": "Obstreperous describes someone who is loud, unruly, and resistant to authority, often in a disruptive or defiant way.",
+    "category": "adjective",
+    "example": "The teacher struggled to maintain order in the obstreperous classroom.",
+    "context": "This word is frequently used to describe rowdy crowds, misbehaving children, or people who refuse to follow rules.",
+    "did_you_know": "The word 'obstreperous' comes from the Latin 'obstrepere,' which means 'to make a loud noise against.' It combines 'ob-' (against) and 'strepere' (to make noise), painting an image of someone who refuses to be quiet or controlled. While the word can apply to anyone loud and rebellious, it often suggests an element of defiance. A political protest, a group of teenagers resisting authority, or a sports crowd heckling referees might all be described as obstreperous. Historically, it has been used in legal and social contexts to describe individuals who are particularly difficult to manage."
+  },
+  {
+    "word": "apotheosis",
+    "pronunciation": "uh-poth-ee-OH-sis",
+    "short_definition": "The highest point of something.",
+    "meaning": "Apotheosis describes the ultimate or perfect example of something, often in an almost divine sense.",
+    "category": "noun",
+    "example": "The athlete's victory was the apotheosis of his career.",
+    "context": "This word is often used to describe peak achievements in art, careers, or cultural movements.",
+    "did_you_know": "The word 'apotheosis' originates from the Greek 'apotheoun,' meaning 'to deify' or 'to make a god.' In ancient times, it referred to the literal elevation of a person—often an emperor or ruler—to divine status. The Romans, for example, would declare deceased emperors as gods. Over time, the meaning broadened to signify any person, work, or achievement that reaches an unparalleled level of greatness. When something is described as the apotheosis of its kind, it means it represents the peak—the absolute best example. It can apply to artists at the height of their craft, legendary sports performances, or even a masterpiece of literature or cinema."
+  },
+  {
+    "word": "pellucid",
+    "pronunciation": "puh-LOO-sid",
+    "short_definition": "Crystal clear.",
+    "meaning": "Pellucid describes something that is exceptionally clear, both literally and metaphorically.",
+    "category": "adjective",
+    "example": "His pellucid writing style made even complex topics easy to understand.",
+    "context": "This word is often used to describe transparency in water, speech, or thought.",
+    "did_you_know": "The word 'pellucid' comes from the Latin 'pellucidus,' meaning 'transparent' or 'bright.' It shares roots with 'lucid,' another word that denotes clarity. While 'pellucid' can refer to physical clarity—like a pristine mountain lake—it is also frequently used metaphorically to describe clear writing, straightforward reasoning, or an articulate speech. Philosophers and great thinkers are often praised for their pellucid arguments, meaning they present ideas in a way that is easily understood without ambiguity. In literature, a pellucid prose style is one that is elegant yet simple, avoiding unnecessary complexity while still conveying deep ideas."
+  },
+  {
+    "word": "ephemeral",
+    "pronunciation": "ih-FEM-er-uhl",
+    "short_definition": "Lasting a very short time.",
+    "meaning": "Ephemeral describes something that is fleeting or short-lived, existing only briefly before disappearing.",
+    "category": "adjective",
+    "example": "The beauty of a sunset is ephemeral, lasting only minutes before darkness falls.",
+    "context": "This word is often used to describe temporary experiences, trends, emotions, or natural phenomena.",
+    "did_you_know": "The word 'ephemeral' comes from the Greek 'ephemeros,' meaning 'lasting only a day.' Originally, it was used to describe short-lived creatures or events, such as mayflies, which live for just 24 hours. Over time, the meaning expanded to include anything transient—moments, feelings, or even cultural movements. Ephemeral things are often bittersweet because their impermanence makes them more precious. A fleeting romance, a viral internet trend, or the cherry blossoms of spring are all examples of ephemeral beauty. The concept has deep roots in literature and philosophy, often tied to the idea of appreciating the present because it won’t last forever."
+  },
+  {
+    "word": "pulchritudinous",
+    "pronunciation": "pul-kri-TOO-di-nus",
+    "short_definition": "Physically beautiful.",
+    "meaning": "Pulchritudinous describes someone or something that is exceptionally beautiful, particularly in physical appearance.",
+    "category": "adjective",
+    "example": "The pulchritudinous landscape left the hikers in awe.",
+    "context": "This word is often used in literary or poetic contexts to describe breathtaking beauty.",
+    "did_you_know": "Despite its meaning, 'pulchritudinous' is not widely used in everyday speech because its clunky, unappealing sound contrasts with the elegance it describes. It comes from the Latin 'pulchritudo,' meaning 'beauty,' which in turn derives from 'pulcher,' meaning 'beautiful.' While the word is technically a synonym for 'gorgeous' or 'stunning,' it’s often employed humorously or with irony due to its awkward pronunciation. You might hear it in literature, where writers seek a more dramatic or elaborate way to express admiration. Still, most English speakers prefer simpler words like 'lovely' or 'radiant' to describe beauty without the tongue-twisting complexity."
+  },
+  {
+    "word": "mellifluous",
+    "pronunciation": "muh-LIF-loo-us",
+    "short_definition": "Pleasantly flowing and musical.",
+    "meaning": "Mellifluous describes something—especially sound—that is smooth, rich, and pleasing to the ear.",
+    "category": "adjective",
+    "example": "The singer’s mellifluous voice captivated the audience.",
+    "context": "This word is often used to describe voices, music, or speech that is exceptionally harmonious or soothing.",
+    "did_you_know": "The word 'mellifluous' comes from the Latin 'mellifluus,' meaning 'flowing like honey.' It combines 'mel' (honey) and 'fluere' (to flow), evoking an image of something sweet and smooth. While often used to describe a beautiful voice, it can also apply to any sound that is pleasant and rich, such as a gentle melody or a well-spoken speech. Historically, the term was associated with poets and orators whose words seemed to flow effortlessly. Today, it’s used to praise everything from a radio announcer’s velvety tone to the elegant phrasing of a skilled writer."
+  },
+  {
+    "word": "serendipitous",
+    "pronunciation": "ser-en-DIP-it-us",
+    "short_definition": "Happening by chance in a happy way.",
+    "meaning": "Serendipitous describes something fortunate that happens unexpectedly or by chance.",
+    "category": "adjective",
+    "example": "Their meeting at the airport was completely serendipitous.",
+    "context": "This word is often used to describe lucky discoveries, chance encounters, or happy accidents.",
+    "did_you_know": "The word 'serendipitous' comes from 'serendipity,' which was coined by Horace Walpole in 1754. He based it on the Persian fairy tale 'The Three Princes of Serendip,' in which the characters constantly make fortunate discoveries by accident. 'Serendip' was an old name for Sri Lanka, and the story's message was that unexpected luck can lead to great fortune. The concept of serendipity plays a major role in scientific discoveries—many groundbreaking inventions, from penicillin to microwave ovens, were found by accident. In everyday life, a serendipitous moment might be stumbling upon a hidden bookstore, meeting a future friend by chance, or discovering a new favorite song while browsing randomly."
+  },
+  {
+    "word": "superfluous",
+    "pronunciation": "soo-PER-floo-us",
+    "short_definition": "Exceeding what is necessary.",
+    "meaning": "Superfluous is a formal word used to describe things that exceed what is necessary or sufficient, or that are simply not needed. It often implies excess or redundancy.",
+    "category": "adjective",
+    "example": "Further discussion seems superfluous, given the thorough conversation we just had.",
+    "context": "In professional settings, superfluous details can distract from the main point. For instance, adding unnecessary data to a report might confuse readers rather than inform them.",
+    "did_you_know": "The word 'superfluous' comes from the Latin 'superfluus,' meaning 'running over.' It combines 'super-' (over) and 'fluere' (to flow). This etymology reflects the idea of something overflowing beyond what is needed. Interestingly, 'fluere' also gave us words like 'affluent' and 'fluid,' which share the theme of flowing or abundance."
+  },
+  {
+    "word": "tousle",
+    "pronunciation": "TOW-zul",
+    "short_definition": "To make something untidy.",
+    "meaning": "To tousle something is to dishevel it—that is, to make it untidy or unkempt. Tousle is usually, though not always, used specifically when a person’s hair is being so treated.",
+    "category": "verb",
+    "example": "Vic stood in front of the mirror and tousled his hair, trying to get a cool, disheveled look.",
+    "context": "Tousling is often associated with playful or casual actions, like ruffling a child’s hair or creating a messy hairstyle for a relaxed, carefree appearance.",
+    "did_you_know": "The verb 'tousle' has a history of rough handling. It comes from the Middle English '-tousen,' meaning 'to pull or handle roughly.' Over time, it softened to describe playful or gentle disheveling, particularly of hair. Its cousin, 'tussle,' retains the rougher connotation, often referring to physical struggles or fights."
+  },
+  {
+    "word": "astute",
+    "pronunciation": "uh-STOOT",
+    "short_definition": "Mentally sharp or clever.",
+    "meaning": "Someone or something described as astute has or shows an ability to notice and understand things clearly. In other words, they are mentally sharp or clever. Astute can also describe someone who is crafty or wily.",
+    "category": "adjective",
+    "example": "They made some astute observations about the movie industry.",
+    "context": "Astute individuals are often praised for their keen insights, whether in business, politics, or everyday life. Their ability to read situations and people gives them an edge in decision-making.",
+    "did_you_know": "The word 'astute' comes from the Latin 'astutus,' meaning 'cunning' or 'clever,' which itself derives from 'astus,' meaning 'craft.' This origin reflects the dual nature of astuteness: it can describe both cleverness and craftiness. For example, Wile E. Coyote’s elaborate schemes in Looney Tunes demonstrate astuteness, though they often backfire due to his own ineptitude."
+  },
+  {
+    "word": "jabberwocky",
+    "pronunciation": "JAB-er-wah-kee",
+    "short_definition": "Meaningless speech or writing.",
+    "meaning": "Jabberwocky refers to meaningless speech or writing. It is often used to describe language that is nonsensical or difficult to understand.",
+    "category": "noun",
+    "example": "When the character gets angry or flustered, she talks in a sort of agitated jabberwocky that is really quite comical.",
+    "context": "Jabberwocky is often used in literary or humorous contexts to describe language that sounds like it should make sense but doesn’t. It can also refer to overly complex or jargon-filled writing.",
+    "did_you_know": "The term 'jabberwocky' comes from Lewis Carroll’s poem of the same name in 'Through the Looking-Glass.' The poem is filled with invented words and nonsensical phrases, which caught the public’s imagination. Over time, 'jabberwocky' became a generic term for meaningless or incomprehensible language. Carroll’s playful use of language has influenced writers and linguists ever since."
+  },
+  {
+    "word": "effervescent",
+    "pronunciation": "ef-er-VES-ent",
+    "short_definition": "Bubbly or lively.",
+    "meaning": "Effervescent describes something that is bubbly, lively, or vivacious. It can refer to both physical qualities, like carbonated drinks, and personality traits, like someone who is enthusiastic and high-spirited.",
+    "category": "adjective",
+    "example": "Her effervescent personality made her the life of the party.",
+    "context": "Effervescent is often used to describe people who are naturally cheerful and energetic, or situations that are lively and exciting. It can also describe fizzy drinks like soda or champagne.",
+    "did_you_know": "The word 'effervescent' comes from the Latin 'effervescere,' meaning 'to boil up' or 'to foam.' This reflects its dual use for both physical bubbling and metaphorical liveliness. The term is often associated with positivity and energy, making it a favorite for describing sparkling personalities or celebratory moments."
+  },
+  {
+    "word": "obfuscate",
+    "pronunciation": "OB-fuh-skayt",
+    "short_definition": "To confuse or obscure.",
+    "meaning": "To obfuscate is to deliberately make something unclear or difficult to understand. It often involves using complex language or convoluted explanations to confuse others.",
+    "category": "verb",
+    "example": "The politician’s speech was designed to obfuscate the real issues.",
+    "context": "Obfuscation is common in legal, political, and technical fields, where complex language can be used to hide the truth or avoid giving a straightforward answer.",
+    "did_you_know": "The word 'obfuscate' comes from the Latin 'obfuscare,' meaning 'to darken' or 'to obscure.' This etymology reflects its use in making things unclear or hard to understand. Interestingly, obfuscation is sometimes used as a security measure in computer programming, where code is deliberately made difficult to read to protect intellectual property."
+  },
+  {
+    "word": "pernicious",
+    "pronunciation": "per-NISH-us",
+    "short_definition": "Harmful or destructive.",
+    "meaning": "Pernicious describes something that is highly harmful or destructive, often in a subtle or gradual way. It is frequently used to describe influences, behaviors, or substances that cause serious damage over time.",
+    "category": "adjective",
+    "example": "The pernicious effects of smoking are well-documented.",
+    "context": "Pernicious is often used in discussions about health, society, or environments where something is causing long-term harm, even if it isn’t immediately obvious.",
+    "did_you_know": "The word 'pernicious' comes from the Latin 'perniciosus,' meaning 'destructive,' which itself derives from 'pernicies,' meaning 'ruin.' This reflects its use in describing things that cause serious harm, often in a way that is not immediately apparent. For example, pernicious anemia is a type of anemia that develops slowly and can have severe consequences if untreated."
+  },
+  {
+    "word": "sycophant",
+    "pronunciation": "SIK-uh-fant",
+    "short_definition": "A flatterer or yes-person.",
+    "meaning": "A sycophant is someone who flatters powerful people in order to gain favor or advantage. They are often seen as insincere or obsequious.",
+    "category": "noun",
+    "example": "The CEO surrounded himself with sycophants who never challenged his decisions.",
+    "context": "Sycophants are common in hierarchical environments, such as workplaces or politics, where people seek to curry favor with those in power. Their behavior is often viewed negatively.",
+    "did_you_know": "The word 'sycophant' has ancient Greek origins. It comes from 'sykophantes,' which originally referred to someone who informed against others for exporting figs illegally. Over time, it evolved to describe someone who seeks favor through flattery. The term carries a strong negative connotation, implying insincerity and self-serving behavior."
+  },
+  {
+    "word": "ephemeral",
+    "pronunciation": "ih-FEM-er-ul",
+    "short_definition": "Lasting for a very short time.",
+    "meaning": "Ephemeral describes something that is short-lived or fleeting. It often refers to things that are transient, such as emotions, trends, or natural phenomena.",
+    "category": "adjective",
+    "example": "The beauty of the sunset was ephemeral, fading within minutes.",
+    "context": "Ephemeral is often used in discussions about art, nature, or emotions, where the focus is on the temporary nature of experiences.",
+    "did_you_know": "The word 'ephemeral' comes from the Greek 'ephemeros,' meaning 'lasting a day.' It was originally used to describe short-lived insects, like mayflies, which live only for a day. Over time, it expanded to describe anything fleeting or transient, capturing the bittersweet nature of impermanence."
+  },
+  {
+    "word": "languid",
+    "pronunciation": "LAN-gwid",
+    "short_definition": "Lacking energy or vitality.",
+    "meaning": "Languid describes someone or something that is slow, relaxed, or lacking energy. It often conveys a sense of lethargy or listlessness.",
+    "category": "adjective",
+    "example": "The hot summer afternoon made everyone feel languid and unmotivated.",
+    "context": "Languid is often used to describe physical states, such as a slow-moving river or a person lying lazily in the sun. It can also describe moods or atmospheres.",
+    "did_you_know": "The word 'languid' comes from the Latin 'languere,' meaning 'to be weak or faint.' It shares roots with 'languish,' which means to lose vitality or grow weak. Both words evoke a sense of slow, almost poetic decline, often associated with heat or exhaustion."
+  },
+  {
+    "word": "mellifluous",
+    "pronunciation": "muh-LIF-loo-us",
+    "short_definition": "Sweet-sounding or smooth.",
+    "meaning": "Mellifluous describes something that is sweetly or smoothly flowing, especially in reference to sound. It is often used to describe voices, music, or speech.",
+    "category": "adjective",
+    "example": "Her mellifluous voice made the audiobook a pleasure to listen to.",
+    "context": "Mellifluous is commonly used in artistic or literary contexts to describe sounds that are pleasing to the ear, such as a singer’s voice or a flowing melody.",
+    "did_you_know": "The word 'mellifluous' comes from the Latin 'mellifluus,' which combines 'mel' (honey) and 'fluere' (to flow). Literally meaning 'flowing with honey,' it perfectly captures the idea of something sweet and smooth, like honey pouring from a jar."
+  },
+  {
+    "word": "obstreperous",
+    "pronunciation": "uhb-STREP-er-us",
+    "short_definition": "Noisy and difficult to control.",
+    "meaning": "Obstreperous describes someone or something that is unruly, noisy, and difficult to manage. It often refers to people, especially children, who are loud and disruptive.",
+    "category": "adjective",
+    "example": "The obstreperous crowd refused to quiet down, even after repeated warnings.",
+    "context": "Obstreperous is often used in situations where discipline or order is needed, such as classrooms, meetings, or public events.",
+    "did_you_know": "The word 'obstreperous' comes from the Latin 'obstrepere,' meaning 'to make a noise against.' It combines 'ob-' (against) and 'strepere' (to make a noise). This etymology reflects its use in describing loud, disruptive behavior that opposes order or authority."
+  },
+  {
+    "word": "perfunctory",
+    "pronunciation": "per-FUNK-tuh-ree",
+    "short_definition": "Done without enthusiasm.",
+    "meaning": "Perfunctory describes something done as a routine or duty, but without real interest or effort. It often implies a lack of care or attention.",
+    "category": "adjective",
+    "example": "His perfunctory apology did little to mend the relationship.",
+    "context": "Perfunctory is often used to describe actions or gestures that are done out of obligation rather than genuine feeling, such as a half-hearted handshake or a rushed thank-you note.",
+    "did_you_know": "The word 'perfunctory' comes from the Latin 'perfunctorius,' meaning 'careless' or 'indifferent.' It derives from 'perfungi,' which means 'to get through with.' This reflects the idea of doing something just to get it over with, rather than putting in real effort."
+  },
+  {
+    "word": "quagmire",
+    "pronunciation": "KWAG-myre",
+    "short_definition": "A difficult or complex situation.",
+    "meaning": "Quagmire refers to a situation that is difficult to navigate or escape from, often because it is complicated or messy. It can also literally mean a swampy or boggy area.",
+    "category": "noun",
+    "example": "The company found itself in a legal quagmire after the scandal.",
+    "context": "Quagmire is often used metaphorically to describe political, legal, or personal situations that are hard to resolve due to their complexity.",
+    "did_you_know": "The word 'quagmire' comes from the combination of 'quag' (a marshy or boggy area) and 'mire' (a stretch of swampy ground). Its literal meaning reflects its metaphorical use, as both describe situations that are hard to escape from once you’re stuck."
+  },
+  {
+    "word": "voracious",
+    "pronunciation": "vuh-RAY-shus",
+    "short_definition": "Having a huge appetite.",
+    "meaning": "Voracious describes someone or something that has an insatiable appetite, whether for food, knowledge, or other pursuits. It often implies eagerness and intensity.",
+    "category": "adjective",
+    "example": "She was a voracious reader, finishing several books a week.",
+    "context": "Voracious is often used to describe people who are highly enthusiastic or driven, such as readers, learners, or even consumers.",
+    "did_you_know": "The word 'voracious' comes from the Latin 'vorax,' meaning 'greedy' or 'devouring.' It shares roots with 'devour,' emphasizing the idea of consuming something eagerly and in large quantities. This word is often used metaphorically, such as describing a 'voracious appetite for knowledge.'"
+  },
+  {
+    "word": "bucolic",
+    "pronunciation": "byoo-KOL-ik",
+    "short_definition": "Relating to the countryside.",
+    "meaning": "Bucolic describes something that is related to the countryside or rural life. It often evokes images of peaceful, pastoral settings.",
+    "category": "adjective",
+    "example": "The bucolic landscape was filled with rolling hills and grazing sheep.",
+    "context": "Bucolic is often used in literature or art to describe idyllic rural scenes, emphasizing simplicity and natural beauty.",
+    "did_you_know": "The word 'bucolic' comes from the Greek 'boukolos,' meaning 'cowherd' or 'herdsman.' It reflects the pastoral traditions of ancient poetry, which celebrated rural life and the beauty of nature."
+  },
+  {
+    "word": "dearth",
+    "pronunciation": "DURTH",
+    "short_definition": "A lack or scarcity.",
+    "meaning": "Dearth refers to a lack or scarcity of something, often something important or necessary. It implies an insufficiency or shortage.",
+    "category": "noun",
+    "example": "There was a dearth of fresh produce at the market during the winter.",
+    "context": "Dearth is often used in discussions about resources, such as food, water, or skilled workers, where scarcity is a concern.",
+    "did_you_know": "The word 'dearth' comes from the Middle English 'derth,' meaning 'dearness' or 'costliness.' Over time, it evolved to mean 'scarcity,' reflecting the idea that something is valuable because it is rare."
+  },
+  {
+    "word": "ebullient",
+    "pronunciation": "ih-BUL-yent",
+    "short_definition": "Cheerful and full of energy.",
+    "meaning": "Ebullient describes someone who is exuberantly cheerful and full of energy. It often conveys a sense of enthusiasm and liveliness.",
+    "category": "adjective",
+    "example": "Her ebullient personality made her a favorite among her colleagues.",
+    "context": "Ebullient is often used to describe people who are naturally lively and enthusiastic, especially in social or professional settings.",
+    "did_you_know": "The word 'ebullient' comes from the Latin 'ebullire,' meaning 'to boil over.' It reflects the idea of someone whose energy and enthusiasm seem to overflow, much like boiling water."
+  },
+  {
+    "word": "facetious",
+    "pronunciation": "fuh-SEE-shus",
+    "short_definition": "Treating serious issues with humor.",
+    "meaning": "Facetious describes someone who treats serious issues with inappropriate humor or flippancy. It often implies a lack of seriousness or respect.",
+    "category": "adjective",
+    "example": "His facetious remarks during the meeting annoyed his coworkers.",
+    "context": "Facetious is often used to describe comments or behavior that are humorous but out of place, especially in formal or serious situations.",
+    "did_you_know": "The word 'facetious' comes from the Latin 'facetus,' meaning 'witty' or 'humorous.' While it originally described clever humor, its modern usage often carries a negative connotation, implying a lack of seriousness."
+  },
+  {
+    "word": "garrulous",
+    "pronunciation": "GAIR-uh-lus",
+    "short_definition": "Excessively talkative.",
+    "meaning": "Garrulous describes someone who is excessively talkative, especially about trivial matters. It often implies a lack of focus or conciseness.",
+    "category": "adjective",
+    "example": "The garrulous tour guide spent more time chatting than explaining the exhibits.",
+    "context": "Garrulous is often used to describe people who dominate conversations with unnecessary or repetitive details.",
+    "did_you_know": "The word 'garrulous' comes from the Latin 'garrulus,' meaning 'chattering' or 'talkative.' It shares roots with 'gargle,' reflecting the idea of continuous, often meaningless speech."
+  },
+  {
+    "word": "harangue",
+    "pronunciation": "huh-RANG",
+    "short_definition": "A lengthy and aggressive speech.",
+    "meaning": "A harangue is a lengthy and aggressive speech, often delivered in a critical or confrontational manner. It can also refer to the act of delivering such a speech.",
+    "category": "noun",
+    "example": "The coach delivered a harangue to the team after their poor performance.",
+    "context": "Harangue is often used in contexts where someone is passionately criticizing or lecturing others, such as politics, sports, or workplaces.",
+    "did_you_know": "The word 'harangue' comes from the Old French 'harangue,' meaning 'public speech.' It originally referred to formal orations but evolved to describe aggressive or critical speeches."
+  },
+  {
+    "word": "iconoclast",
+    "pronunciation": "eye-KON-uh-klast",
+    "short_definition": "A person who challenges traditions.",
+    "meaning": "An iconoclast is someone who challenges or attacks widely accepted beliefs, traditions, or institutions. It often implies a rebellious or revolutionary spirit.",
+    "category": "noun",
+    "example": "The artist was an iconoclast, rejecting conventional styles and techniques.",
+    "context": "Iconoclast is often used to describe individuals who disrupt the status quo, whether in art, politics, or religion.",
+    "did_you_know": "The word 'iconoclast' comes from the Greek 'eikonoklastes,' meaning 'image breaker.' It originally referred to people who destroyed religious icons, but it now describes anyone who challenges established norms."
+  },
+  {
+    "word": "jubilation",
+    "pronunciation": "joo-buh-LAY-shun",
+    "short_definition": "A feeling of great happiness.",
+    "meaning": "Jubilation refers to a feeling of great happiness or triumph, often expressed through celebration or excitement.",
+    "category": "noun",
+    "example": "There was jubilation in the streets after the team won the championship.",
+    "context": "Jubilation is often used to describe collective joy, such as celebrations after a victory or achievement.",
+    "did_you_know": "The word 'jubilation' comes from the Latin 'jubilatio,' meaning 'shouting for joy.' It shares roots with 'jubilee,' which refers to a time of celebration or rejoicing."
+  },
+  {
+    "word": "kaleidoscopic",
+    "pronunciation": "kuh-LYE-duh-SKOP-ik",
+    "short_definition": "Marked by complex patterns.",
+    "meaning": "Kaleidoscopic describes something that is marked by complex, colorful, and constantly changing patterns or elements. It often evokes a sense of beauty and diversity.",
+    "category": "adjective",
+    "example": "The kaleidoscopic display of lights mesmerized the audience.",
+    "context": "Kaleidoscopic is often used to describe visual experiences, such as art, nature, or performances, that are vibrant and dynamic.",
+    "did_you_know": "The word 'kaleidoscopic' comes from 'kaleidoscope,' a device that creates colorful patterns through mirrors and glass. It reflects the idea of constant change and variety, much like the shifting patterns in a kaleidoscope."
+  },
+  {
+    "word": "labyrinthine",
+    "pronunciation": "lab-uh-RIN-theen",
+    "short_definition": "Complex and confusing.",
+    "meaning": "Labyrinthine describes something that is complex, intricate, and confusing, like a maze. It often implies difficulty in navigating or understanding.",
+    "category": "adjective",
+    "example": "The labyrinthine bureaucracy made it hard to get a permit.",
+    "context": "Labyrinthine is often used to describe systems, processes, or structures that are overly complicated or hard to follow.",
+    "did_you_know": "The word 'labyrinthine' comes from 'labyrinth,' a structure with a complex network of passages. It reflects the idea of something that is as confusing and intricate as a maze."
+  },
+  {
+    "word": "maelstrom",
+    "pronunciation": "MAYL-strom",
+    "short_definition": "A powerful whirlpool or situation.",
+    "meaning": "Maelstrom refers to a powerful whirlpool or a situation that is chaotic and overwhelming. It often implies a sense of being pulled into chaos.",
+    "category": "noun",
+    "example": "The company was caught in a maelstrom of legal and financial troubles.",
+    "context": "Maelstrom is often used metaphorically to describe turbulent or chaotic situations, such as political crises or emotional turmoil.",
+    "did_you_know": "The word 'maelstrom' comes from the Dutch 'maalstroom,' meaning 'grinding stream.' It originally referred to a powerful whirlpool off the coast of Norway but now describes any chaotic or overwhelming situation."
+  },
+  {
+    "word": "nadir",
+    "pronunciation": "NAY-deer",
+    "short_definition": "The lowest point.",
+    "meaning": "Nadir refers to the lowest point in a situation or the lowest point in the sky directly below an observer. It often implies a moment of great difficulty or despair.",
+    "category": "noun",
+    "example": "After losing his job, he felt he had reached the nadir of his life.",
+    "context": "Nadir is often used in discussions about personal or professional lows, as well as in astronomy to describe celestial positions.",
+    "did_you_know": "The word 'nadir' comes from the Arabic 'nadir,' meaning 'opposite.' In astronomy, it is the point directly below an observer, opposite the zenith (the highest point)."
+  },
+  {
+    "word": "obfuscate",
+    "pronunciation": "OB-fuh-skayt",
+    "short_definition": "To confuse or obscure.",
+    "meaning": "To obfuscate is to deliberately make something unclear or difficult to understand. It often involves using complex language or convoluted explanations to confuse others.",
+    "category": "verb",
+    "example": "The politician’s speech was designed to obfuscate the real issues.",
+    "context": "Obfuscation is common in legal, political, and technical fields, where complex language can be used to hide the truth or avoid giving a straightforward answer.",
+    "did_you_know": "The word 'obfuscate' comes from the Latin 'obfuscare,' meaning 'to darken' or 'to obscure.' This etymology reflects its use in making things unclear or hard to understand. Interestingly, obfuscation is sometimes used as a security measure in computer programming, where code is deliberately made difficult to read to protect intellectual property."
+  },
+  {
+    "word": "palisade",
+    "pronunciation": "pal-uh-SAYD",
+    "short_definition": "A fence of wooden stakes.",
+    "meaning": "A palisade is a fence or wall made of wooden stakes or iron rails, often used for defense or enclosure. It can also refer to a line of cliffs.",
+    "category": "noun",
+    "example": "The settlers built a palisade around their village for protection.",
+    "context": "Palisades are often associated with historical fortifications or natural formations, such as cliffs along a river.",
+    "did_you_know": "The word 'palisade' comes from the French 'palissade,' which derives from 'pale,' meaning 'stake.' It reflects the idea of a barrier made of sharpened stakes, commonly used in medieval fortifications."
+  },
+  {
+    "word": "recumbent",
+    "pronunciation": "rih-KUM-bent",
+    "short_definition": "Lying down or reclining.",
+    "meaning": "Recumbent describes someone or something that is lying down or reclining, often in a relaxed or resting position.",
+    "category": "adjective",
+    "example": "The recumbent figure on the couch was fast asleep.",
+    "context": "Recumbent is often used to describe people or objects in a resting position, such as a person lying on a bed or a recumbent bicycle.",
+    "did_you_know": "The word 'recumbent' comes from the Latin 'recumbere,' meaning 'to lie back' or 'to recline.' It reflects the idea of a relaxed, horizontal position, often associated with rest or leisure."
+  },
+  {
+    "word": "sartorial",
+    "pronunciation": "sar-TOR-ee-ul",
+    "short_definition": "Relating to clothing or style.",
+    "meaning": "Sartorial describes something related to clothing, tailoring, or personal style. It often implies a focus on elegance or fashion.",
+    "category": "adjective",
+    "example": "His sartorial choices always turned heads at formal events.",
+    "context": "Sartorial is often used in discussions about fashion, tailoring, or personal appearance, emphasizing attention to detail and style.",
+    "did_you_know": "The word 'sartorial' comes from the Latin 'sartor,' meaning 'tailor.' It reflects the craftsmanship and artistry involved in creating well-fitted and stylish clothing."
+  },
+  {
+    "word": "tacit",
+    "pronunciation": "TAS-it",
+    "short_definition": "Understood without being stated.",
+    "meaning": "Tacit describes something that is understood or implied without being directly stated. It often refers to agreements, knowledge, or feelings.",
+    "category": "adjective",
+    "example": "There was a tacit understanding between the two friends to never discuss the incident.",
+    "context": "Tacit is often used in discussions about unspoken agreements or shared understandings, such as social norms or workplace dynamics.",
+    "did_you_know": "The word 'tacit' comes from the Latin 'tacitus,' meaning 'silent' or 'unspoken.' It reflects the idea of communication that happens without words, relying instead on shared understanding or context."
+  },
+  {
+    "word": "venerable",
+    "pronunciation": "VEN-er-uh-bul",
+    "short_definition": "Deserving respect due to age.",
+    "meaning": "Venerable describes someone or something that is respected or revered, often because of age, wisdom, or historical significance.",
+    "category": "adjective",
+    "example": "The venerable professor had taught at the university for over 50 years.",
+    "context": "Venerable is often used to describe institutions, individuals, or traditions that are highly respected due to their long history or contributions.",
+    "did_you_know": "The word 'venerable' comes from the Latin 'venerabilis,' meaning 'worthy of respect.' It reflects the idea of something or someone being honored for their age, wisdom, or achievements."
+  },
+  {
+    "word": "whet",
+    "pronunciation": "WET",
+    "short_definition": "To sharpen or stimulate.",
+    "meaning": "To whet something is to sharpen it, such as a knife, or to stimulate it, such as an appetite or curiosity. It often implies preparation or anticipation.",
+    "category": "verb",
+    "example": "The preview whetted my appetite for the upcoming movie.",
+    "context": "Whet is often used in contexts where something is being prepared or stimulated, such as sharpening a blade or building excitement for an event.",
+    "did_you_know": "The word 'whet' comes from the Old English 'hwettan,' meaning 'to sharpen.' It reflects the idea of making something ready or more effective, whether it’s a physical object or a mental state."
+  },
+  {
+    "word": "xenophobia",
+    "pronunciation": "zen-uh-FOH-bee-uh",
+    "short_definition": "Fear or hatred of foreigners.",
+    "meaning": "Xenophobia refers to a fear or hatred of foreigners or strangers. It often manifests as prejudice or discrimination against people from other countries or cultures.",
+    "category": "noun",
+    "example": "The rise of xenophobia in the region led to increased tensions between communities.",
+    "context": "Xenophobia is often discussed in the context of social or political issues, such as immigration, globalization, or cultural diversity.",
+    "did_you_know": "The word 'xenophobia' comes from the Greek 'xenos' (stranger) and 'phobos' (fear). It reflects the fear or distrust of people who are perceived as different or foreign, a phenomenon that has existed throughout human history."
+  }
+]

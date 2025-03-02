@@ -10,6 +10,7 @@ data class Word(
         val word: String,
         val definition: String,
         val exampleSentence: String = "", // Example sentence for the main word
+        val category: String = "", // Added category field (noun, verb, adjective)
 
         // First synonym set
         val synonym1: String,

@@ -41,6 +41,11 @@ fun QuizContent(
     val currentWord = remember { mutableStateOf<Word?>(null) }
     val lives = remember { mutableStateOf(3) }
     val coroutineScope = rememberCoroutineScope()
+    
+    // Add hint-related state variables
+    val hintsRemaining = remember { mutableStateOf(3) }
+    var selectedAnswer by remember { mutableStateOf<String?>(null) }
+    var hintUsedForCurrentQuestion by remember { mutableStateOf(false) }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -59,7 +64,24 @@ fun QuizContent(
                         currentWord.value = word.copy(isBookmarked = !word.isBookmarked)
                     }
                 },
-                lives = lives.value
+                lives = lives.value,
+                hintsRemaining = hintsRemaining.value,
+                hintUsedForCurrentQuestion = hintUsedForCurrentQuestion,
+                selectedAnswer = selectedAnswer,
+                onHintClick = {
+                    // Only allow hint if:
+                    // 1. Hints are remaining
+                    // 2. We have a current word
+                    // 3. Hint hasn't been used for this question
+                    // 4. User hasn't answered yet
+                    if (hintsRemaining.value > 0 && 
+                        currentWord.value != null && 
+                        !hintUsedForCurrentQuestion &&
+                        selectedAnswer == null) {
+                        hintsRemaining.value--
+                        hintUsedForCurrentQuestion = true
+                    }
+                }
             )
         }
     ) { innerPadding ->

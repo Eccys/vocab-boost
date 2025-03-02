@@ -110,6 +110,12 @@ class MainActivity : ComponentActivity() { // Calendar Card
 
         // Start session
         appUsageManager.startSession()
+        
+        // Update categories from JSON
+        lifecycleScope.launch {
+            val wordRepository = xyz.ecys.vocab.data.WordRepository.getInstance(this@MainActivity)
+            wordRepository.updateCategoriesFromJson()
+        }
 
         enableEdgeToEdge()
         setContent {
@@ -212,6 +218,7 @@ class MainActivity : ComponentActivity() { // Calendar Card
                 // Add these state variables alongside the playCardPressed state
                 var isKeepGoingPressed by remember { mutableStateOf(false) }
                 var isBookmarksPressed by remember { mutableStateOf(false) }
+                var isDailyWordCardPressed by remember { mutableStateOf(false) }
 
                 // Add these animations alongside the playCardScale animation
                 val keepGoingScale by animateFloatAsState(
@@ -224,6 +231,14 @@ class MainActivity : ComponentActivity() { // Calendar Card
 
                 val bookmarksScale by animateFloatAsState(
                     targetValue = if (isBookmarksPressed) 0.97f else 1f,
+                    animationSpec = spring(
+                        dampingRatio = 0.75f,
+                        stiffness = 300f
+                    )
+                )
+                
+                val dailyWordCardScale by animateFloatAsState(
+                    targetValue = if (isDailyWordCardPressed) 0.97f else 1f,
                     animationSpec = spring(
                         dampingRatio = 0.75f,
                         stiffness = 300f
@@ -413,6 +428,71 @@ class MainActivity : ComponentActivity() { // Calendar Card
                                             }
                                         }
                                     }
+                                }
+                            }
+                        }
+
+                        // Daily Word Card
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(120.dp)
+                                .graphicsLayer {
+                                    scaleX = dailyWordCardScale
+                                    scaleY = dailyWordCardScale
+                                }
+                                .background(
+                                    color = Color(0xFF18191E),
+                                    shape = RoundedCornerShape(20.dp)
+                                )
+                                .padding(16.dp)
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() }
+                                        .also { interactionSource ->
+                                            LaunchedEffect(interactionSource) {
+                                                interactionSource.interactions.collect { interaction ->
+                                                    when (interaction) {
+                                                        is PressInteraction.Press -> isDailyWordCardPressed = true
+                                                        is PressInteraction.Release -> isDailyWordCardPressed = false
+                                                        is PressInteraction.Cancel -> isDailyWordCardPressed = false
+                                                    }
+                                                }
+                                            }
+                                        },
+                                    indication = null,  // Remove default ripple
+                                    onClick = { }  // Empty click handler - just for the animation
+                                )
+
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxSize(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                // Left column
+                                Column(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .fillMaxHeight(),
+                                    verticalArrangement = Arrangement.Center
+                                ) {
+                                    Text(
+                                        text = "Daily Word",
+                                        style = MaterialTheme.typography.titleSmall,
+                                        fontWeight = FontWeight.ExtraBold,
+                                        color = Color.Gray
+                                    )
+                                    // Left column content will go here
+                                }
+                                
+                                // Right column
+                                Column(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .fillMaxHeight(),
+                                    verticalArrangement = Arrangement.Center
+                                ) {
+                                    // Right column content will go here
                                 }
                             }
                         }

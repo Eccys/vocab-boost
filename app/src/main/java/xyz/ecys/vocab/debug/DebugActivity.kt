@@ -164,13 +164,25 @@ class DebugActivity : ComponentActivity() {
                                         horizontalArrangement = Arrangement.SpaceBetween,
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        Text(
-                                            text = word.word.lowercase(),
-                                            style = MaterialTheme.typography.titleMedium.copy(
-                                                color = Color(0xFFFCFCFC)
-                                            ),
-                                            modifier = Modifier.weight(1f)
-                                        )
+                                        Column(modifier = Modifier.weight(1f)) {
+                                            Text(
+                                                text = word.word.lowercase(),
+                                                style = MaterialTheme.typography.titleMedium.copy(
+                                                    color = Color(0xFFFCFCFC)
+                                                )
+                                            )
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                            ) {
+                                                Text(
+                                                    text = "ID: ${word.id}",
+                                                    style = MaterialTheme.typography.labelSmall.copy(
+                                                        color = Color(0xFFFCFCFC).copy(alpha = 0.5f)
+                                                    )
+                                                )
+                                            }
+                                        }
                                         IconButton(
                                             onClick = {
                                                 coroutineScope.launch {
@@ -222,6 +234,7 @@ class DebugActivity : ComponentActivity() {
                                         Ease Factor: ${String.format("%.2f", word.easeFactor)}
                                         Interval: ${word.interval} days
                                         Repetition Count: ${word.repetitionCount}
+                                        Category: ${if (word.category.isNotEmpty()) word.category else "None"}
                                         """.trimIndent(),
                                         fontFamily = FontFamily.Monospace,
                                         style = MaterialTheme.typography.bodySmall.copy(

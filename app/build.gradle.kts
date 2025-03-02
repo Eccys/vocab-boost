@@ -74,6 +74,7 @@ dependencies {
 
     implementation("androidx.core:core-ktx:1.12.0")
     implementation(platform("org.jetbrains.kotlin:kotlin-bom:1.9.22")) // Match Kotlin version
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.9.22") // Add explicit Kotlin standard library
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
     implementation("androidx.activity:activity-compose:1.8.2")
@@ -105,6 +106,10 @@ dependencies {
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-firestore-ktx")
     implementation("com.google.android.gms:play-services-auth:20.7.0")
+    
+    // Add Play Integrity API for reCAPTCHA verification
+    implementation("com.google.android.play:integrity:1.3.0")
+    implementation("com.google.firebase:firebase-appcheck-playintegrity")
 
     implementation("com.google.accompanist:accompanist-systemuicontroller:0.32.0")
 

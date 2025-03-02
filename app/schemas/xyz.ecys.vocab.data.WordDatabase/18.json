@@ -1,12 +1,12 @@
 {
   "formatVersion": 1,
   "database": {
-    "version": 17,
+    "version": 18,
     "identityHash": "490c9ceba1e49ae1067e2a31b48abd19",
     "entities": [
       {
         "tableName": "words",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `word` TEXT NOT NULL, `definition` TEXT NOT NULL, `exampleSentence` TEXT NOT NULL, `synonym1` TEXT NOT NULL, `synonym1Definition` TEXT NOT NULL, `synonym1ExampleSentence` TEXT NOT NULL, `synonym2` TEXT NOT NULL, `synonym2Definition` TEXT NOT NULL, `synonym2ExampleSentence` TEXT NOT NULL, `synonym3` TEXT NOT NULL, `synonym3Definition` TEXT NOT NULL, `synonym3ExampleSentence` TEXT NOT NULL, `isBookmarked` INTEGER NOT NULL, `timesReviewed` INTEGER NOT NULL, `timesCorrect` INTEGER NOT NULL, `lastReviewed` INTEGER NOT NULL, `easeFactor` REAL NOT NULL, `interval` INTEGER NOT NULL, `repetitionCount` INTEGER NOT NULL, `nextReviewDate` INTEGER NOT NULL, `quality` INTEGER NOT NULL, `category` TEXT NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `word` TEXT NOT NULL, `definition` TEXT NOT NULL, `exampleSentence` TEXT NOT NULL, `category` TEXT NOT NULL, `synonym1` TEXT NOT NULL, `synonym1Definition` TEXT NOT NULL, `synonym1ExampleSentence` TEXT NOT NULL, `synonym2` TEXT NOT NULL, `synonym2Definition` TEXT NOT NULL, `synonym2ExampleSentence` TEXT NOT NULL, `synonym3` TEXT NOT NULL, `synonym3Definition` TEXT NOT NULL, `synonym3ExampleSentence` TEXT NOT NULL, `isBookmarked` INTEGER NOT NULL, `timesReviewed` INTEGER NOT NULL, `timesCorrect` INTEGER NOT NULL, `lastReviewed` INTEGER NOT NULL, `easeFactor` REAL NOT NULL, `interval` INTEGER NOT NULL, `repetitionCount` INTEGER NOT NULL, `nextReviewDate` INTEGER NOT NULL, `quality` INTEGER NOT NULL)",
         "fields": [
           {
             "fieldPath": "id",
@@ -29,6 +29,12 @@
           {
             "fieldPath": "exampleSentence",
             "columnName": "exampleSentence",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "category",
+            "columnName": "category",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -138,12 +144,6 @@
             "fieldPath": "quality",
             "columnName": "quality",
             "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "category",
-            "columnName": "category",
-            "affinity": "TEXT",
             "notNull": true
           }
         ],

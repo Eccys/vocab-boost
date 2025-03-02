@@ -151,4 +151,19 @@ object AppIcons {
     fun plusSolid(): Painter {
         return painterResource(id = R.drawable.plus_solid)
     }
+
+    @Composable
+    fun lightbulbSolid(): Painter {
+        return painterResource(id = R.drawable.lightbulb_solid)
+    }
+
+    @Composable
+    fun starSolid(): Painter {
+        return painterResource(id = R.drawable.star_solid)
+    }
+
+    @Composable
+    fun starOutline(): Painter {
+        return painterResource(id = R.drawable.star_regular)
+    }
 } 
