@@ -5,6 +5,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -43,6 +45,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.graphicsLayer
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -55,6 +58,8 @@ import xyz.ecys.vocab.ui.theme.AppIcons
 import xyz.ecys.vocab.ui.theme.VocabularyBoosterTheme
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.PressInteraction
 
 @OptIn(ExperimentalMaterial3Api::class)
 class PreviousWordsActivity : ComponentActivity() {
@@ -238,11 +243,44 @@ fun WordItem(
     date: LocalDate,
     onClick: (LocalDate) -> Unit
 ) {
+    // Add press state tracking and animation
+    var isPressed by remember { mutableStateOf(false) }
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.97f else 1f,
+        animationSpec = spring(
+            dampingRatio = 0.75f,
+            stiffness = 300f
+        )
+    )
+
     Surface(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
-            .clickable(onClick = { onClick(date) }),
+            // Apply scale transformation using graphicsLayer
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            }
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() }
+                    .also { interactionSource ->
+                        LaunchedEffect(interactionSource) {
+                            interactionSource.interactions.collect { interaction ->
+                                when (interaction) {
+                                    is PressInteraction.Press -> isPressed = true
+                                    is PressInteraction.Release -> {
+                                        isPressed = false
+                                        onClick(date)
+                                    }
+                                    is PressInteraction.Cancel -> isPressed = false
+                                }
+                            }
+                        }
+                    },
+                indication = null,  // Remove default ripple
+                onClick = { }  // Empty click handler - handled in the interaction collector
+            ),
         color = Color(0xFF18191E)
     ) {
         Row(
