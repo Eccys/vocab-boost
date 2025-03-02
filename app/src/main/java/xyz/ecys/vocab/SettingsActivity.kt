@@ -111,7 +111,9 @@ class SettingsActivity : ComponentActivity() {
                 var showRefreshConfirmation by remember { mutableStateOf(false) }
                 var showAuthSheet by remember { mutableStateOf(authSheetVisible) }
                 var showGoalDialog by remember { mutableStateOf(false) }
-                var goalInput by remember { mutableStateOf("20") }
+                // Get the current daily goal from preferences
+                val currentDailyGoal = prefs.getInt("daily_goal", 20)
+                var goalInput by remember { mutableStateOf(currentDailyGoal.toString()) }
                 
                 // Title click counter state
                 var titleClickCount by remember { mutableStateOf(0) }
