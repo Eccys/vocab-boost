@@ -92,6 +92,10 @@ import java.time.ZoneOffset
 import java.time.format.TextStyle
 import java.util.Locale
 import androidx.lifecycle.DefaultLifecycleObserver
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancelChildren
+import kotlinx.coroutines.rememberCoroutineScope
 
 data class CalendarDay(
     val date: LocalDate,
@@ -133,54 +137,78 @@ class MainActivity : ComponentActivity() { // Calendar Card
                 // Move loading activity data to a composable effect that can be triggered on resume
                 val refreshTrigger = remember { mutableStateOf(0) }
                 
-                // Regenerate calendar days when refresh trigger changes
+                // Create a coroutine scope tied to the composable's lifecycle
+                val coroutineScope = rememberCoroutineScope()
+                
+                // Track job for calendar generation to ensure proper cancellation
+                val calendarJob = remember { mutableStateOf<Job?>(null) }
+                val wordLoadJob = remember { mutableStateOf<Job?>(null) }
+                val activityDataJob = remember { mutableStateOf<Job?>(null) }
+                
+                // Regenerate calendar days when refresh trigger changes - using safer approach
                 LaunchedEffect(refreshTrigger.value) {
-                    // Generate new calendar days with today's date
-                    val today = LocalDate.now()
-                    val days = mutableListOf<CalendarDay>()
-                    
-                    // Past 15 days
-                    for (i in 15 downTo 1) {
-                        days.add(CalendarDay(
-                            date = today.minusDays(i.toLong()),
-                            isActive = false, // Will be updated from database
-                            isToday = false
-                        ))
+                    try {
+                        // Cancel previous job if it exists
+                        calendarJob.value?.cancel()
+                        // Create new job
+                        calendarJob.value = coroutineScope.launch {
+                            // Generate new calendar days with today's date
+                            val today = LocalDate.now()
+                            val days = mutableListOf<CalendarDay>()
+                            
+                            // Past 15 days
+                            for (i in 15 downTo 1) {
+                                days.add(CalendarDay(
+                                    date = today.minusDays(i.toLong()),
+                                    isActive = false, // Will be updated from database
+                                    isToday = false
+                                ))
+                            }
+                            
+                            // Today
+                            days.add(CalendarDay(
+                                date = today,
+                                isActive = true,
+                                isToday = true
+                            ))
+                            
+                            // Next 15 days
+                            for (i in 1..15) {
+                                days.add(CalendarDay(
+                                    date = today.plusDays(i.toLong()),
+                                    isActive = false,
+                                    isToday = false
+                                ))
+                            }
+                            
+                            // Update the state with the new days
+                            activityDays.value = days
+                        }
+                    } catch (e: Exception) {
+                        if (e is kotlinx.coroutines.CancellationException) throw e
+                        println("Error generating calendar days: ${e.message}")
                     }
-                    
-                    // Today
-                    days.add(CalendarDay(
-                        date = today,
-                        isActive = true,
-                        isToday = true
-                    ))
-                    
-                    // Next 15 days
-                    for (i in 1..15) {
-                        days.add(CalendarDay(
-                            date = today.plusDays(i.toLong()),
-                            isActive = false,
-                            isToday = false
-                        ))
-                    }
-                    
-                    // Update the state with the new days
-                    activityDays.value = days
                 }
                 
                 // Load word preview in a separate effect to ensure it's refreshed on resume
                 LaunchedEffect(refreshTrigger.value) {
                     try {
-                        // Force refresh the word preview from the manager
-                        // Clear the cache first to ensure we get the latest word
-                        withContext(Dispatchers.IO) {
-                            // This explicitly gets the latest word and clears any cache
-                            val wordPreview = dailyWordManager.getTodaysWord()
-                            withContext(Dispatchers.Main) {
-                                simplifiedWord.value = wordPreview
+                        // Cancel previous job if it exists
+                        wordLoadJob.value?.cancel()
+                        // Create new job
+                        wordLoadJob.value = coroutineScope.launch {
+                            // Force refresh the word preview from the manager
+                            // Clear the cache first to ensure we get the latest word
+                            withContext(Dispatchers.IO) {
+                                // This explicitly gets the latest word and clears any cache
+                                val wordPreview = dailyWordManager.getTodaysWord()
+                                withContext(Dispatchers.Main) {
+                                    simplifiedWord.value = wordPreview
+                                }
                             }
                         }
                     } catch (e: Exception) {
+                        if (e is kotlinx.coroutines.CancellationException) throw e
                         println("Error loading today's word: ${e.message}")
                     }
                 }
@@ -189,26 +217,48 @@ class MainActivity : ComponentActivity() { // Calendar Card
                 LaunchedEffect(refreshTrigger.value, activityDays.value) {
                     try {
                         if (activityDays.value.isNotEmpty()) {
-                            val startDate = activityDays.value.first().date.atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli()
-                            val endDate = activityDays.value.last().date.atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli()
-                            
-                            wordDatabase.appUsageDao().getUsageBetweenDates(startDate, endDate)
-                                .collect { usages ->
-                                    val usageDates = usages.map { usage ->
-                                        LocalDate.ofInstant(
-                                            Instant.ofEpochMilli(usage.date),
-                                            ZoneOffset.UTC
-                                        )
-                                    }.toSet()
-                                    
-                                    val updatedDays = activityDays.value.map { day ->
-                                        day.copy(isActive = usageDates.contains(day.date) || day.isToday)
-                                    }
-                                    activityDays.value = updatedDays.toMutableList()
+                            // Cancel previous job if it exists
+                            activityDataJob.value?.cancel()
+                            // Create new job with safer flow collection
+                            activityDataJob.value = coroutineScope.launch {
+                                val startDate = activityDays.value.first().date.atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli()
+                                val endDate = activityDays.value.last().date.atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli()
+                                
+                                try {
+                                    // Use collectLatest instead of collect for better cancellation behavior
+                                    wordDatabase.appUsageDao().getUsageBetweenDates(startDate, endDate)
+                                        .collectLatest { usages ->
+                                            val usageDates = usages.map { usage ->
+                                                LocalDate.ofInstant(
+                                                    Instant.ofEpochMilli(usage.date),
+                                                    ZoneOffset.UTC
+                                                )
+                                            }.toSet()
+                                            
+                                            val updatedDays = activityDays.value.map { day ->
+                                                day.copy(isActive = usageDates.contains(day.date) || day.isToday)
+                                            }
+                                            activityDays.value = updatedDays.toMutableList()
+                                        }
+                                } catch (e: Exception) {
+                                    if (e is kotlinx.coroutines.CancellationException) throw e
+                                    println("Error collecting activity data: ${e.message}")
                                 }
+                            }
                         }
                     } catch (e: Exception) {
-                        println("Error loading activity data: ${e.message}")
+                        if (e is kotlinx.coroutines.CancellationException) throw e
+                        println("Error starting activity data load: ${e.message}")
+                    }
+                }
+
+                // Clean up coroutines when composition changes
+                DisposableEffect(Unit) {
+                    onDispose {
+                        // Cancel all running jobs when leaving the composition
+                        calendarJob.value?.cancel()
+                        wordLoadJob.value?.cancel()
+                        activityDataJob.value?.cancel()
                     }
                 }
 
@@ -219,6 +269,13 @@ class MainActivity : ComponentActivity() { // Calendar Card
                             println("MainActivity resumed - triggering refresh")
                             // Increment the trigger to force LaunchedEffect to run again
                             refreshTrigger.value++
+                        }
+                        
+                        override fun onPause(owner: androidx.lifecycle.LifecycleOwner) {
+                            // Cancel any running jobs when activity pauses
+                            calendarJob.value?.cancel()
+                            wordLoadJob.value?.cancel()
+                            activityDataJob.value?.cancel()
                         }
                     }
                     
