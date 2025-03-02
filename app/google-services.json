@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "399691916210",
+    "project_id": "vocabulary-boost",
+    "storage_bucket": "vocabulary-boost.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:399691916210:android:3772621ec42cd9b6bfbaab",
+        "android_client_info": {
+          "package_name": "xyz.ecys.vocab"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "399691916210-h3fshsl82qr4e32jg4hsrugvmk82702h.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "xyz.ecys.vocab",
+            "certificate_hash": "03605222a42e2bc57ee19caaf0ced9984fd084fc"
+          }
+        },
+        {
+          "client_id": "399691916210-noncg27kuq2ot13c9anp2rj94h74irou.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAxfuOo8DaQCR9kVBkFfjl6gr7NgH_ygaQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "399691916210-noncg27kuq2ot13c9anp2rj94h74irou.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
