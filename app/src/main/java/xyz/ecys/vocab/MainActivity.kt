@@ -54,6 +54,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -90,6 +91,7 @@ import java.time.LocalDate
 import java.time.ZoneOffset
 import java.time.format.TextStyle
 import java.util.Locale
+import androidx.lifecycle.DefaultLifecycleObserver
 
 data class CalendarDay(
     val date: LocalDate,
@@ -118,68 +120,114 @@ class MainActivity : ComponentActivity() { // Calendar Card
         // Start session
         appUsageManager.startSession()
 
-        // Load today's word
-        todayWord.value = dailyWordManager.getTodaysWord()
-
         enableEdgeToEdge()
         setContent {
             VocabularyBoosterTheme {
-                // Generate activity days
-                val activityDays = remember {
-                    mutableStateOf(mutableListOf<CalendarDay>()).apply {
-                        val today = LocalDate.now()
-                        val days = mutableListOf<CalendarDay>()
-                        
-                        // Past 15 days
-                        for (i in 15 downTo 1) {
-                            days.add(CalendarDay(
-                                date = today.minusDays(i.toLong()),
-                                isActive = false, // Will be updated from database
-                                isToday = false
-                            ))
-                        }
-                        
-                        // Today
+                // Move the calendar day generation logic outside the remember block
+                // so we can update it when the refreshTrigger changes
+                val activityDays = remember { mutableStateOf(mutableListOf<CalendarDay>()) }
+                
+                // Use a mutable state for the simplified word to allow updating it from lifecycle methods
+                val simplifiedWord = remember { mutableStateOf<DailyWord?>(null) }
+
+                // Move loading activity data to a composable effect that can be triggered on resume
+                val refreshTrigger = remember { mutableStateOf(0) }
+                
+                // Regenerate calendar days when refresh trigger changes
+                LaunchedEffect(refreshTrigger.value) {
+                    // Generate new calendar days with today's date
+                    val today = LocalDate.now()
+                    val days = mutableListOf<CalendarDay>()
+                    
+                    // Past 15 days
+                    for (i in 15 downTo 1) {
                         days.add(CalendarDay(
-                            date = today,
-                            isActive = true,
-                            isToday = true
+                            date = today.minusDays(i.toLong()),
+                            isActive = false, // Will be updated from database
+                            isToday = false
                         ))
-                        
-                        // Next 15 days
-                        for (i in 1..15) {
-                            days.add(CalendarDay(
-                                date = today.plusDays(i.toLong()),
-                                isActive = false,
-                                isToday = false
-                            ))
+                    }
+                    
+                    // Today
+                    days.add(CalendarDay(
+                        date = today,
+                        isActive = true,
+                        isToday = true
+                    ))
+                    
+                    // Next 15 days
+                    for (i in 1..15) {
+                        days.add(CalendarDay(
+                            date = today.plusDays(i.toLong()),
+                            isActive = false,
+                            isToday = false
+                        ))
+                    }
+                    
+                    // Update the state with the new days
+                    activityDays.value = days
+                }
+                
+                // Load word preview in a separate effect to ensure it's refreshed on resume
+                LaunchedEffect(refreshTrigger.value) {
+                    try {
+                        // Force refresh the word preview from the manager
+                        // Clear the cache first to ensure we get the latest word
+                        withContext(Dispatchers.IO) {
+                            // This explicitly gets the latest word and clears any cache
+                            val wordPreview = dailyWordManager.getTodaysWord()
+                            withContext(Dispatchers.Main) {
+                                simplifiedWord.value = wordPreview
+                            }
                         }
-                        value = days
+                    } catch (e: Exception) {
+                        println("Error loading today's word: ${e.message}")
+                    }
+                }
+                
+                // Load activity data in a separate effect
+                LaunchedEffect(refreshTrigger.value, activityDays.value) {
+                    try {
+                        if (activityDays.value.isNotEmpty()) {
+                            val startDate = activityDays.value.first().date.atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli()
+                            val endDate = activityDays.value.last().date.atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli()
+                            
+                            wordDatabase.appUsageDao().getUsageBetweenDates(startDate, endDate)
+                                .collect { usages ->
+                                    val usageDates = usages.map { usage ->
+                                        LocalDate.ofInstant(
+                                            Instant.ofEpochMilli(usage.date),
+                                            ZoneOffset.UTC
+                                        )
+                                    }.toSet()
+                                    
+                                    val updatedDays = activityDays.value.map { day ->
+                                        day.copy(isActive = usageDates.contains(day.date) || day.isToday)
+                                    }
+                                    activityDays.value = updatedDays.toMutableList()
+                                }
+                        }
+                    } catch (e: Exception) {
+                        println("Error loading activity data: ${e.message}")
                     }
                 }
 
-                // Load activity data
-                LaunchedEffect(Unit) {
-                    try {
-                        val startDate = activityDays.value.first().date.atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli()
-                        val endDate = activityDays.value.last().date.atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli()
-                        
-                        wordDatabase.appUsageDao().getUsageBetweenDates(startDate, endDate)
-                            .collect { usages ->
-                                val usageDates = usages.map { usage ->
-                                    LocalDate.ofInstant(
-                                        Instant.ofEpochMilli(usage.date),
-                                        ZoneOffset.UTC
-                                    )
-                                }.toSet()
-                                
-                                val updatedDays = activityDays.value.map { day ->
-                                    day.copy(isActive = usageDates.contains(day.date) || day.isToday)
-                                }
-                                activityDays.value = updatedDays.toMutableList()
-                            }
-                    } catch (e: Exception) {
-                        println("Error loading activity data: ${e.message}")
+                // Register a lifecycle observer to refresh data on resume
+                DisposableEffect(Unit) {
+                    val lifecycleObserver = object : DefaultLifecycleObserver {
+                        override fun onResume(owner: androidx.lifecycle.LifecycleOwner) {
+                            println("MainActivity resumed - triggering refresh")
+                            // Increment the trigger to force LaunchedEffect to run again
+                            refreshTrigger.value++
+                        }
+                    }
+                    
+                    // Add the observer to the lifecycle
+                    this@MainActivity.lifecycle.addObserver(lifecycleObserver)
+                    
+                    // Remove the observer when the composable is disposed
+                    onDispose {
+                        this@MainActivity.lifecycle.removeObserver(lifecycleObserver)
                     }
                 }
 
@@ -196,7 +244,7 @@ class MainActivity : ComponentActivity() { // Calendar Card
                 var bestStreak by remember { mutableStateOf(0) }
 
                 // Load statistics
-                LaunchedEffect(Unit) {
+                LaunchedEffect(refreshTrigger.value) {
                     try {
                         updateStatistics()
                     } catch (e: Exception) {
@@ -500,21 +548,7 @@ class MainActivity : ComponentActivity() { // Calendar Card
                                         color = Color.Gray
                                     )
                                     
-                                    // Use a simple loading state to display just enough information without loading the full word
-                                    // We'll only load the actual word data when the user clicks the card
-                                    val simplifiedWord = remember { mutableStateOf<DailyWord?>(null) }
-                                    
-                                    LaunchedEffect(Unit) {
-                                        // Load just a minimal version of the word on a background thread to show a preview
-                                        // This makes the UI feel responsive while not doing heavy work upfront
-                                        launch(Dispatchers.IO) {
-                                            val wordPreview = dailyWordManager.getWordPreview()
-                                            withContext(Dispatchers.Main) {
-                                                simplifiedWord.value = wordPreview
-                                            }
-                                        }
-                                    }
-                                    
+                                    // Use the simplifiedWord state that is refreshed through our observer
                                     Text(
                                         text = simplifiedWord.value?.word ?: "Loading...",
                                         style = MaterialTheme.typography.headlineMedium,
@@ -779,7 +813,10 @@ class MainActivity : ComponentActivity() { // Calendar Card
         super.onResume()
         appUsageManager.startSession()
         
-        // Update statistics when returning to the activity
+        // Force clear any cached word to ensure fresh data
+        dailyWordManager.getWordPreview() // This will refresh the word
+        
+        // The updateStatistics call is still needed for non-composable updates
         lifecycleScope.launch {
             updateStatistics()
         }
