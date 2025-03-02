@@ -8,6 +8,7 @@ import java.time.ZoneOffset
 import java.time.ZoneId
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import java.util.*
 
 class AppUsageManager private constructor(
     private val appUsageDao: AppUsageDao,
@@ -33,11 +34,13 @@ class AppUsageManager private constructor(
         }
 
         private fun getStartOfDayTimestamp(): Long {
-            return LocalDateTime.now()
-                .toLocalDate()
-                .atStartOfDay(ZoneId.systemDefault())
-                .toInstant()
-                .toEpochMilli()
+            // Use Calendar API which is compatible with API level 24
+            val calendar = Calendar.getInstance()
+            calendar.set(Calendar.HOUR_OF_DAY, 0)
+            calendar.set(Calendar.MINUTE, 0)
+            calendar.set(Calendar.SECOND, 0)
+            calendar.set(Calendar.MILLISECOND, 0)
+            return calendar.timeInMillis
         }
     }
 
@@ -66,6 +69,8 @@ class AppUsageManager private constructor(
         // If this was a quiz session, increment the session count
         if (isQuizSession) {
             appUsageDao.incrementSessionCount(today)
+            // Update quiz duration separately
+            appUsageDao.updateQuizDuration(today, duration)
         }
         
         sessionStartTime = 0
@@ -81,6 +86,16 @@ class AppUsageManager private constructor(
         appUsageDao.getTimeSpentSince(today)
     }
 
+    // New methods to track quiz time specifically
+    suspend fun getTotalQuizTimeSpent(): Long = withContext(Dispatchers.IO) {
+        appUsageDao.getTotalQuizTimeSpent()
+    }
+
+    suspend fun getQuizTimeSpentToday(): Long = withContext(Dispatchers.IO) {
+        val today = getStartOfDayTimestamp()
+        appUsageDao.getQuizTimeSpentSince(today)
+    }
+
     suspend fun getTotalCorrectAnswers() = correctAnswerTracker.getTotalCorrectAnswers()
 
     suspend fun getCorrectAnswersToday() = correctAnswerTracker.getCorrectAnswersToday()
@@ -90,59 +105,45 @@ class AppUsageManager private constructor(
     }
 
     suspend fun getCurrentStreak(): Int = withContext(Dispatchers.IO) {
-        // Checks consecutive days with activity
-        // Returns the current streak count
         try {
-            android.util.Log.d("StreakDebug", "Starting getCurrentStreak calculation...")
+            val usages = appUsageDao.getUsageBetweenDates(0, System.currentTimeMillis()).first()
+            
+            // Sort by date and get active dates
+            val activeDates = usages
+                .filter { usage -> usage.correctAnswers > 0 }
+                .map { usage -> usage.date }
+                .sorted()
+                .toList()
+            
+            if (activeDates.isEmpty()) return@withContext 0
+            
+            val dayInMillis = 24 * 60 * 60 * 1000
             val today = getStartOfDayTimestamp()
-            val yesterday = today - (24 * 60 * 60 * 1000)
             
-            android.util.Log.d("StreakDebug", "Today's timestamp: $today")
-            android.util.Log.d("StreakDebug", "Yesterday's timestamp: $yesterday")
+            // Check if last active date was today or yesterday
+            val lastActiveDate = activeDates.last()
+            val dayDiff = (today - lastActiveDate) / dayInMillis
             
-            // Get answers for today and yesterday
-            val todayAnswers = correctAnswerTracker.getCorrectAnswersForDate(today)
-            val yesterdayAnswers = correctAnswerTracker.getCorrectAnswersForDate(yesterday)
+            if (dayDiff > 1) return@withContext 0 // Streak broken if last activity was before yesterday
             
-            android.util.Log.d("StreakDebug", "Today's answers: $todayAnswers")
-            android.util.Log.d("StreakDebug", "Yesterday's answers: $yesterdayAnswers")
+            // Count consecutive days backward from today/yesterday
+            var streak = 1 // Start with 1 for today/yesterday
+            var prevDate = lastActiveDate
             
-            // If no activity in the last two days, no streak
-            if (todayAnswers == 0 && yesterdayAnswers == 0) {
-                android.util.Log.d("StreakDebug", "No activity in last two days, returning 0")
-                return@withContext 0
-            }
-            
-            var streak = 0
-            var checkDay = if (todayAnswers > 0) {
-                android.util.Log.d("StreakDebug", "Starting streak check from today")
-                today
-            } else {
-                android.util.Log.d("StreakDebug", "Starting streak check from yesterday")
-                yesterday
-            }
-            
-            // Count consecutive days with activity
-            while (true) {
-                val answers = correctAnswerTracker.getCorrectAnswersForDate(checkDay)
-                android.util.Log.d("StreakDebug", "Checking day: ${checkDay}, answers: $answers")
+            for (i in activeDates.size - 2 downTo 0) {
+                val currentDate = activeDates[i]
+                val consecutiveDayDiff = (prevDate - currentDate) / dayInMillis
                 
-                if (answers > 0) {
+                if (consecutiveDayDiff == 1L) {
                     streak++
-                    android.util.Log.d("StreakDebug", "Found active day, streak now: $streak")
-                    checkDay -= 24 * 60 * 60 * 1000
-                } else {
-                    android.util.Log.d("StreakDebug", "Found inactive day, breaking loop")
-                    break
+                    prevDate = currentDate
+                } else if (consecutiveDayDiff > 1L) {
+                    break // Break on gap in streak
                 }
             }
             
-            android.util.Log.d("StreakDebug", "Final streak count: $streak")
             return@withContext streak
-            
         } catch (e: Exception) {
-            android.util.Log.e("StreakDebug", "Error calculating streak", e)
-            android.util.Log.e("StreakDebug", "Stack trace: ${e.stackTraceToString()}")
             return@withContext 0
         }
     }

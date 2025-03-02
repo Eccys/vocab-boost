@@ -11,6 +11,9 @@ interface AppUsageDao {
     @Query("UPDATE app_usage SET duration = duration + :additionalDuration WHERE date = :date")
     suspend fun updateSessionDuration(date: Long, additionalDuration: Long)
 
+    @Query("UPDATE app_usage SET quizDuration = quizDuration + :additionalDuration WHERE date = :date")
+    suspend fun updateQuizDuration(date: Long, additionalDuration: Long)
+
     @Query("UPDATE app_usage SET sessionCount = sessionCount + 1 WHERE date = :date")
     suspend fun incrementSessionCount(date: Long)
 
@@ -20,8 +23,14 @@ interface AppUsageDao {
     @Query("SELECT COALESCE(SUM(duration), 0) FROM app_usage")
     suspend fun getTotalTimeSpent(): Long
 
+    @Query("SELECT COALESCE(SUM(quizDuration), 0) FROM app_usage")
+    suspend fun getTotalQuizTimeSpent(): Long
+
     @Query("SELECT COALESCE(SUM(duration), 0) FROM app_usage WHERE date >= :startDate")
     suspend fun getTimeSpentSince(startDate: Long): Long
+
+    @Query("SELECT COALESCE(SUM(quizDuration), 0) FROM app_usage WHERE date >= :startDate")
+    suspend fun getQuizTimeSpentSince(startDate: Long): Long
 
     @Query("SELECT COALESCE(SUM(correctAnswers), 0) FROM app_usage")
     suspend fun getTotalCorrectAnswers(): Int
@@ -41,11 +50,12 @@ interface AppUsageDao {
     @Query("""
         UPDATE app_usage 
         SET duration = :duration,
+            quizDuration = :quizDuration,
             sessionCount = :sessionCount,
             correctAnswers = :correctAnswers
         WHERE date = :date
     """)
-    suspend fun updateUsage(date: Long, duration: Long, sessionCount: Int, correctAnswers: Int)
+    suspend fun updateUsage(date: Long, duration: Long, quizDuration: Long = 0, sessionCount: Int, correctAnswers: Int)
 
     @Query("DELETE FROM app_usage")
     suspend fun deleteAllUsageData()
