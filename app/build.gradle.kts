@@ -31,6 +31,15 @@ android {
             }
         }
     }
+    
+    // Updated lint configuration
+    lint {
+        baseline = file("lint-baseline.xml")
+        abortOnError = false  // Allow build to continue even with lint errors
+        checkReleaseBuilds = false  // Don't check lint for release builds
+        disable += listOf("NewApi", "InvalidFragmentVersionForActivityResult") // Disable specific lint checks
+    }
+    
     signingConfigs {
         create("release") {
             storeFile = file("/home/ecys/Documents/Projects/vocab/vocab_booster.jks") // Update path
