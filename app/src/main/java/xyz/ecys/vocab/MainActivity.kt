@@ -542,52 +542,48 @@ class MainActivity : ComponentActivity() { // Calendar Card
                         }
 
                         // Daily Word Card
-                        Box(
+                        Card(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(120.dp)
                                 .graphicsLayer {
                                     scaleX = dailyWordCardScale
                                     scaleY = dailyWordCardScale
+                                },
+                            colors = CardDefaults.cardColors(
+                                containerColor = Color(0xFF18191E),
+                                // Setting contentColor to transparent to prevent default ripple
+                                contentColor = Color.Transparent
+                            ),
+                            shape = RoundedCornerShape(20.dp),
+                            onClick = {
+                                // Launch DailyWordActivity using coroutines for better performance
+                                lifecycleScope.launch(Dispatchers.IO) {
+                                    // Ensure the word is preloaded before navigating
+                                    dailyWordManager.getTodaysWord()
+                                    
+                                    withContext(Dispatchers.Main) {
+                                        startActivity(Intent(this@MainActivity, DailyWordActivity::class.java))
+                                    }
                                 }
-                                .background(
-                                    color = Color(0xFF18191E),
-                                    shape = RoundedCornerShape(20.dp)
-                                )
-                                .padding(16.dp)
-                                .clickable(
-                                    interactionSource = remember { MutableInteractionSource() }
-                                        .also { interactionSource ->
-                                            LaunchedEffect(interactionSource) {
-                                                interactionSource.interactions.collect { interaction ->
-                                                    when (interaction) {
-                                                        is PressInteraction.Press -> isDailyWordCardPressed = true
-                                                        is PressInteraction.Release -> {
-                                                            isDailyWordCardPressed = false
-                                                            
-                                                            // Launch DailyWordActivity using coroutines for better performance
-                                                            lifecycleScope.launch(Dispatchers.IO) {
-                                                                // Ensure the word is preloaded before navigating
-                                                                // This line doesn't block UI thread because we're in Dispatchers.IO
-                                                                dailyWordManager.getTodaysWord()
-                                                                
-                                                                withContext(Dispatchers.Main) {
-                                                                    startActivity(Intent(this@MainActivity, DailyWordActivity::class.java))
-                                                                }
-                                                            }
-                                                        }
-                                                        is PressInteraction.Cancel -> isDailyWordCardPressed = false
-                                                    }
-                                                }
+                            },
+                            interactionSource = remember { MutableInteractionSource() }
+                                .also { interactionSource ->
+                                    LaunchedEffect(interactionSource) {
+                                        interactionSource.interactions.collect { interaction ->
+                                            when (interaction) {
+                                                is PressInteraction.Press -> isDailyWordCardPressed = true
+                                                is PressInteraction.Release -> isDailyWordCardPressed = false
+                                                is PressInteraction.Cancel -> isDailyWordCardPressed = false
                                             }
-                                        },
-                                    indication = null,  // Remove default ripple
-                                    onClick = { }  // Empty click handler - just for the animation
-                                )
-
+                                        }
+                                    }
+                                }
                         ) {
                             Row(
-                                modifier = Modifier.fillMaxSize(),
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(16.dp),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
@@ -641,40 +637,40 @@ class MainActivity : ComponentActivity() { // Calendar Card
                         }
 
                         // Play Card
-                        Box(
+                        Card(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .graphicsLayer {
                                     scaleX = playCardScale
                                     scaleY = playCardScale
-                                }
-                                .background(
-                                    color = Color(0xFFFCFCFC),
-                                    shape = RoundedCornerShape(20.dp)
-                                )
-                                .clickable(
-                                    interactionSource = remember { MutableInteractionSource() }
-                                        .also { interactionSource ->
-                                            LaunchedEffect(interactionSource) {
-                                                interactionSource.interactions.collect { interaction ->
-                                                    when (interaction) {
-                                                        is PressInteraction.Press -> isPlayCardPressed = true
-                                                        is PressInteraction.Release -> {
-                                                            isPlayCardPressed = false
-                                                            // No action here as the button below handles the actual click
-                                                        }
-                                                        is PressInteraction.Cancel -> isPlayCardPressed = false
-                                                    }
-                                                }
+                                },
+                            colors = CardDefaults.cardColors(
+                                containerColor = Color(0xFFFCFCFC),
+                                // Setting contentColor to transparent to prevent default ripple
+                                contentColor = Color.Transparent
+                            ),
+                            shape = RoundedCornerShape(20.dp),
+                            onClick = { 
+                                // Card click will just show the animation
+                                // The actual navigation is handled by the button inside
+                            },
+                            interactionSource = remember { MutableInteractionSource() }
+                                .also { interactionSource ->
+                                    LaunchedEffect(interactionSource) {
+                                        interactionSource.interactions.collect { interaction ->
+                                            when (interaction) {
+                                                is PressInteraction.Press -> isPlayCardPressed = true
+                                                is PressInteraction.Release -> isPlayCardPressed = false
+                                                is PressInteraction.Cancel -> isPlayCardPressed = false
                                             }
-                                        },
-                                    indication = rememberRipple(color = Color(0xFF1A1A1A).copy(alpha = 0.1f)),
-                                    onClick = { }  // Empty click handler - keep empty as the button below handles the actual click
-                                )
-                                .padding(16.dp)
+                                        }
+                                    }
+                                }
                         ) {
                             Column(
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
                                 verticalArrangement = Arrangement.spacedBy(16.dp)
                             ) {
                                 // Row #1: Content

@@ -9,6 +9,7 @@ class SettingsManager private constructor(context: Context) {
     )
     
     companion object {
+        private const val KEY_SPACED_REPETITION = "spaced_repetition"
         private const val KEY_MULTIPLE_CHOICE_OPTIONS = "multiple_choice_options"
         private const val DEFAULT_OPTIONS_COUNT = 4
         
@@ -24,11 +25,11 @@ class SettingsManager private constructor(context: Context) {
         }
     }
     
-    fun getMultipleChoiceOptionsCount(): Int {
-        return sharedPreferences.getInt(KEY_MULTIPLE_CHOICE_OPTIONS, DEFAULT_OPTIONS_COUNT)
+    fun isSpacedRepetitionEnabled(): Boolean {
+        return sharedPreferences.getBoolean(KEY_SPACED_REPETITION, true)
     }
     
-    fun setMultipleChoiceOptionsCount(count: Int) {
-        sharedPreferences.edit().putInt(KEY_MULTIPLE_CHOICE_OPTIONS, count).apply()
+    fun getMultipleChoiceOptionsCount(): Int {
+        return sharedPreferences.getInt(KEY_MULTIPLE_CHOICE_OPTIONS, DEFAULT_OPTIONS_COUNT)
     }
 } 
