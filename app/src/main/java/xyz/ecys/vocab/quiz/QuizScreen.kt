@@ -50,9 +50,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import xyz.ecys.vocab.data.SettingsManager
 import xyz.ecys.vocab.quiz.QuizResult
@@ -135,42 +132,59 @@ fun QuizScreen(
 
     // Function to create and save a FirestoreQuizResult 
     fun createAndSaveFirestoreQuizResult() {
-        if (quizResults.isEmpty()) return
+        android.util.Log.d("QuizResult", "createAndSaveFirestoreQuizResult called with ${quizResults.size} results")
         
-        // Count correct answers
-        val correctCount = quizResults.count { it.isCorrect }
-        
-        // Create a list of QuizQuestion objects from the legacy QuizResult objects
-        val questions = quizResults.map { result ->
-            QuizQuestion(
-                word = result.word,
-                correctDefinition = result.definition,
-                userAnswer = result.userChoice,
-                isCorrect = result.isCorrect
-            )
+        if (quizResults.isEmpty()) {
+            android.util.Log.w("QuizResult", "No quiz results to save")
+            return
         }
         
-        // Calculate total quiz duration
-        val quizDuration = (System.currentTimeMillis() - quizStartTime) / 1000
-        
-        // Create a Firestore QuizResult with all questions
-        val firestoreQuizResult = FirestoreQuizResult(
-            timestamp = Date(),
-            correctAnswers = correctCount,
-            totalQuestions = quizResults.size,
-            questions = questions,
-            score = if (quizResults.isNotEmpty()) correctCount.toFloat() / quizResults.size else 0f,
-            durationInSeconds = quizDuration
-        )
-        
-        // Save to Firestore using the existing coroutineScope
-        coroutineScope.launch {
-            try {
-                quizResultRepository.saveQuizResult(firestoreQuizResult)
-                android.util.Log.d("QuizResult", "Saved quiz result to Firestore")
-            } catch (e: Exception) {
-                android.util.Log.e("QuizResult", "Error saving quiz result: ${e.message}")
+        try {
+            // Count correct answers
+            val correctCount = quizResults.count { it.isCorrect }
+            
+            // Create a list of QuizQuestion objects from the legacy QuizResult objects
+            val questions = quizResults.map { result ->
+                QuizQuestion(
+                    word = result.word,
+                    correctDefinition = result.definition,
+                    userAnswer = result.userChoice,
+                    isCorrect = result.isCorrect
+                )
             }
+            
+            // Log all the questions to verify data
+            questions.forEachIndexed { index, question ->
+                android.util.Log.d("QuizResult", "Question $index: ${question.word}, User answer: ${question.userAnswer}, Correct: ${question.isCorrect}")
+            }
+            
+            // Calculate total quiz duration
+            val quizDuration = (System.currentTimeMillis() - quizStartTime) / 1000
+            
+            // Create a Firestore QuizResult with all questions
+            val firestoreQuizResult = FirestoreQuizResult(
+                timestamp = Date(),
+                correctAnswers = correctCount,
+                totalQuestions = quizResults.size,
+                questions = questions,
+                score = if (quizResults.isNotEmpty()) correctCount.toFloat() / quizResults.size else 0f,
+                durationInSeconds = quizDuration
+            )
+            
+            android.util.Log.d("QuizResult", "Created FirestoreQuizResult: ${firestoreQuizResult}")
+            
+            // Save to Firestore using the existing coroutineScope
+            coroutineScope.launch {
+                try {
+                    // Save the quiz result
+                    val documentId = quizResultRepository.saveQuizResult(firestoreQuizResult)
+                    android.util.Log.d("QuizResult", "Successfully saved quiz result to Firestore with ID: $documentId")
+                } catch (e: Exception) {
+                    android.util.Log.e("QuizResult", "Error saving quiz result", e)
+                }
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("QuizResult", "Error preparing quiz result for saving", e)
         }
     }
 
@@ -267,8 +281,8 @@ fun QuizScreen(
 
     // Function to advance to next question
     fun advanceToNextQuestion() {
-        // If we have enough questions in our history, save the results
-        if (quizResults.size >= 5) {
+        // Always save quiz results when advancing to next question, regardless of count
+        if (quizResults.isNotEmpty()) {
             createAndSaveFirestoreQuizResult()
         }
         
@@ -923,8 +937,8 @@ fun QuizScreen(
                     showNextButton = false
                     expandedExamples = emptySet()
                     
-                    // If the user has completed at least 5 questions, save to history before moving on
-                    if (quizResults.size >= 5) {
+                    // Always save quiz results when moving to next question
+                    if (quizResults.isNotEmpty()) {
                         createAndSaveFirestoreQuizResult()
                     }
                     

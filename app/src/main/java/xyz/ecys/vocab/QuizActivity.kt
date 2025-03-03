@@ -71,7 +71,7 @@ import xyz.ecys.vocab.ui.theme.Surface
 import xyz.ecys.vocab.ui.theme.White
 import xyz.ecys.vocab.ui.theme.Success
 import xyz.ecys.vocab.ui.theme.Error
-import xyz.ecys.vocab.data.QuizResult
+import xyz.ecys.vocab.data.QuizResult as FirestoreQuizResult
 import xyz.ecys.vocab.data.SettingsManager
 import xyz.ecys.vocab.quiz.generateOptions
 import androidx.compose.foundation.rememberScrollState
@@ -82,20 +82,28 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
+import xyz.ecys.vocab.data.QuizResultRepository
+import xyz.ecys.vocab.data.QuizQuestion
+import java.util.Date
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+import xyz.ecys.vocab.quiz.QuizResult
 
 class QuizActivity : ComponentActivity() {
     private lateinit var wordRepository: WordRepository
     private lateinit var appUsageManager: AppUsageManager
     private lateinit var correctAnswerTracker: CorrectAnswerTracker
     private lateinit var settingsManager: SettingsManager
+    private lateinit var quizResultRepository: QuizResultRepository
     private var isBookmarkMode = false
-
+    
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         wordRepository = WordRepository.getInstance(this)
         appUsageManager = AppUsageManager.getInstance(this)
         correctAnswerTracker = CorrectAnswerTracker.getInstance(this)
         settingsManager = SettingsManager.getInstance(this)
+        quizResultRepository = QuizResultRepository.getInstance()
         isBookmarkMode = intent.getStringExtra("mode") == "bookmarks"
 
         // Start tracking quiz session
@@ -127,9 +135,12 @@ class QuizActivity : ComponentActivity() {
                     topBar = {
                         QuizTopBar(
                             onBackClick = { 
+                                // End the session
                                 lifecycleScope.launch {
                                     appUsageManager.endSession()
                                 }
+                                
+                                // Close the activity
                                 finish() 
                             },
                             currentWord = currentWord.value,
@@ -177,7 +188,8 @@ class QuizActivity : ComponentActivity() {
                                 appUsageManager.endSession()
                             }
                         },
-                        settingsManager = settingsManager
+                        settingsManager = settingsManager,
+                        quizResultRepository = quizResultRepository
                     )
                 }
             }
@@ -305,7 +317,8 @@ fun QuizScreen(
     hintUsedForCurrentQuestion: Boolean,
     setHintUsedForCurrentQuestion: (Boolean) -> Unit,
     onGameOver: () -> Unit,
-    settingsManager: SettingsManager
+    settingsManager: SettingsManager,
+    quizResultRepository: QuizResultRepository
 ) {
     val context = LocalContext.current
     val view = LocalView.current
@@ -382,13 +395,23 @@ fun QuizScreen(
                 )
             }
             
-            quizResults = quizResults + QuizResult(
+            // Create a QuizQuestion object for the current question
+            val newQuizQuestion = QuizQuestion(
+                word = currentWord.value!!.word,
+                correctDefinition = currentWord.value!!.definition,
+                userAnswer = selectedSynonym,
+                isCorrect = isCorrect
+            )
+            
+            // Add to the legacy results list for backwards compatibility
+            val legacyResult = QuizResult(
                 word = currentWord.value!!.word,
                 definition = currentWord.value!!.definition,
                 userChoice = selectedSynonym,
                 correctChoice = correctSynonym,
                 isCorrect = isCorrect
             )
+            quizResults = quizResults + legacyResult
 
             showNextButton = true
             showHint = false // Reset hint when answering
@@ -396,6 +419,41 @@ fun QuizScreen(
             if (lives.value <= 0) {
                 // Game over, show results
                 onGameOver()
+                
+                // Count correct answers
+                val correctCount = quizResults.count { it.isCorrect }
+                
+                // Create a list of QuizQuestion objects from the legacy QuizResult objects
+                val questions = quizResults.map { result ->
+                    QuizQuestion(
+                        word = result.word,
+                        correctDefinition = result.definition,
+                        userAnswer = result.userChoice,
+                        isCorrect = result.isCorrect
+                    )
+                }
+                
+                // Create a Firestore QuizResult with all questions
+                val firestoreQuizResult = FirestoreQuizResult(
+                    timestamp = Date(),
+                    correctAnswers = correctCount,
+                    totalQuestions = quizResults.size,
+                    questions = questions,
+                    score = correctCount.toFloat() / quizResults.size,
+                    durationInSeconds = (System.currentTimeMillis() - questionStartTime) / 1000
+                )
+                
+                // Save to Firestore in the background
+                coroutineScope.launch {
+                    try {
+                        quizResultRepository.saveQuizResult(firestoreQuizResult)
+                    } catch (e: Exception) {
+                        // Log error but don't block the UI
+                        println("Error saving quiz result to Firestore: ${e.message}")
+                    }
+                }
+                
+                // Continue with existing functionality
                 val intent = Intent(context, QuizResultsActivity::class.java).apply {
                     putParcelableArrayListExtra("results", ArrayList(quizResults))
                 }
