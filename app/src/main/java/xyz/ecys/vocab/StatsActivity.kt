@@ -74,9 +74,6 @@ class StatsActivity : ComponentActivity() {
                 val coroutineScope = rememberCoroutineScope()
 
                 // Search state
-                var masteredSearchQuery by remember { mutableStateOf("") }
-                var reviewSearchQuery by remember { mutableStateOf("") }
-                var studiedSearchQuery by remember { mutableStateOf("") }
                 val words by wordRepository.getAllWordsFlow().collectAsState(initial = emptyList())
 
                 // Get daily goal from preferences
@@ -92,10 +89,11 @@ class StatsActivity : ComponentActivity() {
 
                 fun updateWordLists(wordList: List<Word>) {
                     masteredWords = wordList.filter { 
-                        it.timesReviewed > 0 && it.timesCorrect.toFloat() / it.timesReviewed >= 0.9
+                        it.timesReviewed > 0 && (it.timesCorrect.toFloat() / it.timesReviewed >= 0.9 || it.repetitionCount >= 3)
                     }
                     toReviewWords = wordList.filter {
-                        it.timesReviewed > 0 && it.timesCorrect.toFloat() / it.timesReviewed < 0.9
+                        it.timesReviewed > 0 && 
+                        !(it.timesCorrect.toFloat() / it.timesReviewed >= 0.9 || it.repetitionCount >= 3)
                     }
                 }
 
@@ -318,7 +316,6 @@ private fun formatTime(timeInMillis: Long): String {
     val seconds = timeInMillis / 1000
     val minutes = (seconds + 59) / 60  // Round up minutes
     val hours = minutes / 60
-    val remainingMinutes = minutes % 60
     
     return when {
         hours > 0 -> "%.1fh".format(minutes / 60f)  // Show decimal hours
