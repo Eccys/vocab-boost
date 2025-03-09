@@ -52,6 +52,7 @@ class StatsActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         wordRepository = WordRepository.getInstance(this)
         appUsageManager = AppUsageManager.getInstance(this)
+        println("StatsActivity: Using preloaded stats data")
 
         setContent {
             VocabularyBoosterTheme {
@@ -123,6 +124,7 @@ class StatsActivity : ComponentActivity() {
 
                 // Load current streak independently
                 LaunchedEffect(Unit) {
+                    println("StatsActivity: Starting data collection from cache")
                     currentStreak = appUsageManager.getCurrentStreak()
                 }
 

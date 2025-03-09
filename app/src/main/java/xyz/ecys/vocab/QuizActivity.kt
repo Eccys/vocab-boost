@@ -88,6 +88,8 @@ import java.util.Date
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 import xyz.ecys.vocab.quiz.QuizResult
+import android.content.Context
+import xyz.ecys.vocab.utils.TransitionUtils
 
 class QuizActivity : ComponentActivity() {
     private lateinit var wordRepository: WordRepository
@@ -103,7 +105,7 @@ class QuizActivity : ComponentActivity() {
         appUsageManager = AppUsageManager.getInstance(this)
         correctAnswerTracker = CorrectAnswerTracker.getInstance(this)
         settingsManager = SettingsManager.getInstance(this)
-        quizResultRepository = QuizResultRepository.getInstance()
+        quizResultRepository = QuizResultRepository.getInstance(this)
         isBookmarkMode = intent.getStringExtra("mode") == "bookmarks"
 
         // Start tracking quiz session
@@ -135,12 +137,9 @@ class QuizActivity : ComponentActivity() {
                     topBar = {
                         QuizTopBar(
                             onBackClick = { 
-                                // End the session
                                 lifecycleScope.launch {
                                     appUsageManager.endSession()
                                 }
-                                
-                                // Close the activity
                                 finish() 
                             },
                             currentWord = currentWord.value,
@@ -155,16 +154,12 @@ class QuizActivity : ComponentActivity() {
                             hintUsedForCurrentQuestion = hintUsedForCurrentQuestionState,
                             selectedAnswer = selectedAnswerState,
                             onHintClick = {
-                                // Only allow hint if:
-                                // 1. Hints are remaining
-                                // 2. We have a current word
-                                // 3. Hint hasn't been used for this question
-                                // 4. User hasn't answered yet
-                                if (hintsRemaining.value > 0 && 
-                                    currentWord.value != null && 
+                                // Hints are unlimited now
+                                // Only allow hint if it hasn't been used for this question and user hasn't answered
+                                if (currentWord.value != null && 
                                     !hintUsedForCurrentQuestionState &&
                                     selectedAnswerState == null) {
-                                    hintsRemaining.value--
+                                    // Don't decrease hint count anymore
                                     hintUsedForCurrentQuestionState = true
                                 }
                             }
@@ -207,6 +202,11 @@ class QuizActivity : ComponentActivity() {
         super.onResume()
         appUsageManager.startQuizSession()
     }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+        TransitionUtils.applyStandardTransitionOnFinish(this)
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -244,43 +244,21 @@ private fun QuizTopBar(
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Hearts (lives)
-                repeat(3) { index ->
-                    Icon(
-                        painter = if (index < lives) AppIcons.heartSolid() else AppIcons.heartCrackSolid(),
-                        contentDescription = null,
-                        modifier = Modifier.size(24.dp),
-                        tint = Color(0xFFED333B)
-                    )
-                }
+                // Hearts/lives removed - quiz is now endless
                 
-                // Hint button with count directly on the lightbulb
+                // Hint button - now unlimited and without counter
                 if (currentWord != null) {
-                    Box(contentAlignment = Alignment.Center) {
-                        IconButton(
-                            onClick = { onHintClick() },
-                            // Disable if no hints remaining, hint already used for this question, or user has answered
-                            enabled = hintsRemaining > 0 && !hintUsedForCurrentQuestion && selectedAnswer == null
-                        ) {
-                            Icon(
-                                painter = AppIcons.lightbulbSolid(),
-                                contentDescription = "Show hint",
-                                // Gray out if disabled for any reason
-                                tint = if (hintsRemaining > 0 && !hintUsedForCurrentQuestion && selectedAnswer == null) 
-                                    Color(0xFFFFC107) else Color.Gray
-                            )
-                        }
-                        
-                        // Text directly on the lightbulb
-                        Text(
-                            text = hintsRemaining.toString(),
-                            style = MaterialTheme.typography.labelSmall.copy(
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 11.sp // Adjust text size as needed
-                            ),
-                            color = Color.Black,
-                            modifier = Modifier.offset(x = 0.dp, y = -1.dp), // Adjust x and y position as needed
-                            textAlign = TextAlign.Center // Ensures text is centered horizontally
+                    IconButton(
+                        onClick = { onHintClick() },
+                        // Only disabled if hint already used for this question or user has answered
+                        enabled = !hintUsedForCurrentQuestion && selectedAnswer == null
+                    ) {
+                        Icon(
+                            painter = AppIcons.lightbulbSolid(),
+                            contentDescription = "Show hint",
+                            // Gray out if disabled for any reason
+                            tint = if (!hintUsedForCurrentQuestion && selectedAnswer == null) 
+                                Color(0xFFFFC107) else Color.Gray
                         )
                     }
                     
@@ -310,14 +288,14 @@ fun QuizScreen(
     appUsageManager: AppUsageManager,
     isBookmarkMode: Boolean,
     currentWord: MutableState<Word?>,
-    lives: MutableState<Int>,
-    hintsRemaining: MutableState<Int>,
+    @Suppress("UNUSED_PARAMETER") lives: MutableState<Int>,
+    @Suppress("UNUSED_PARAMETER") hintsRemaining: MutableState<Int>,
     selectedAnswer: String?,
     setSelectedAnswer: (String?) -> Unit,
     hintUsedForCurrentQuestion: Boolean,
     setHintUsedForCurrentQuestion: (Boolean) -> Unit,
-    onGameOver: () -> Unit,
-    settingsManager: SettingsManager,
+    @Suppress("UNUSED_PARAMETER") onGameOver: () -> Unit,
+    @Suppress("UNUSED_PARAMETER") settingsManager: SettingsManager,
     quizResultRepository: QuizResultRepository
 ) {
     val context = LocalContext.current
@@ -329,13 +307,14 @@ fun QuizScreen(
     var quizResults by remember { mutableStateOf<List<QuizResult>>(emptyList()) }
     var currentSynonymSet by remember { mutableStateOf(1) }
     var questionStartTime by remember { mutableStateOf(0L) }
-    var showNextButton by remember { mutableStateOf(false) }
+    @Suppress("UNUSED_VARIABLE") 
     var expandedExamples by remember { mutableStateOf(setOf<String>()) }
     var currentBatch by remember { mutableStateOf<List<Word>>(emptyList()) }
     var nextBatch by remember { mutableStateOf<List<Word>>(emptyList()) }
     var options by remember { mutableStateOf<List<String>>(emptyList()) }
     var totalBookmarkedWords by remember { mutableStateOf(0) }
     var showHint by remember { mutableStateOf(false) }
+    var showNextButton by remember { mutableStateOf(false) }
 
     // Add the lookupWord function
     fun lookupWord(word: String) {
@@ -356,14 +335,7 @@ fun QuizScreen(
         if (selectedAnswer == null) {
             setSelectedAnswer(selectedSynonym)
             
-            // Find which word this synonym belongs to
-            val selectedWord = currentBatch.first { word ->
-                selectedSynonym == word.synonym1 ||
-                selectedSynonym == word.synonym2 ||
-                selectedSynonym == word.synonym3
-            }
-            
-            // Use the tracked currentSynonymSet to determine the correct answer
+            // Find the correct answer based on currentSynonymSet
             val correctSynonym = when (currentSynonymSet) {
                 1 -> currentWord.value!!.synonym1
                 2 -> currentWord.value!!.synonym2
@@ -379,10 +351,6 @@ fun QuizScreen(
                 coroutineScope.launch {
                     appUsageManager.recordCorrectAnswer()
                 }
-            }
-            
-            if (!isCorrect) {
-                lives.value--
             }
             
             // Update word statistics with timing information
@@ -413,53 +381,28 @@ fun QuizScreen(
             )
             quizResults = quizResults + legacyResult
 
+            // Update the next button state
             showNextButton = true
             showHint = false // Reset hint when answering
 
-            if (lives.value <= 0) {
-                // Game over, show results
-                onGameOver()
-                
-                // Count correct answers
-                val correctCount = quizResults.count { it.isCorrect }
-                
-                // Create a list of QuizQuestion objects from the legacy QuizResult objects
-                val questions = quizResults.map { result ->
-                    QuizQuestion(
-                        word = result.word,
-                        correctDefinition = result.definition,
-                        userAnswer = result.userChoice,
-                        isCorrect = result.isCorrect
-                    )
-                }
-                
-                // Create a Firestore QuizResult with all questions
+            // Save this single question to Firestore immediately for quiz history
+            coroutineScope.launch {
+                // Create a Firestore QuizResult with just this question
                 val firestoreQuizResult = FirestoreQuizResult(
                     timestamp = Date(),
-                    correctAnswers = correctCount,
-                    totalQuestions = quizResults.size,
-                    questions = questions,
-                    score = correctCount.toFloat() / quizResults.size,
-                    durationInSeconds = (System.currentTimeMillis() - questionStartTime) / 1000
+                    correctAnswers = if (isCorrect) 1 else 0,
+                    totalQuestions = 1,
+                    questions = listOf(newQuizQuestion),
+                    score = if (isCorrect) 1f else 0f,
+                    durationInSeconds = responseTime / 1000
                 )
                 
-                // Save to Firestore in the background
-                coroutineScope.launch {
-                    try {
-                        quizResultRepository.saveQuizResult(firestoreQuizResult)
-                    } catch (e: Exception) {
-                        // Log error but don't block the UI
-                        println("Error saving quiz result to Firestore: ${e.message}")
-                    }
-                }
-                
-                // Continue with existing functionality
-                val intent = Intent(context, QuizResultsActivity::class.java).apply {
-                    putParcelableArrayListExtra("results", ArrayList(quizResults))
-                }
-                context.startActivity(intent)
-                if (context is ComponentActivity) {
-                    context.finish()
+                // Save to Firestore
+                try {
+                    quizResultRepository.saveQuizResult(firestoreQuizResult)
+                    println("Saved single question to Firestore for quiz history")
+                } catch (e: Exception) {
+                    println("Error saving to Firestore: ${e.message}")
                 }
             }
         }
@@ -488,15 +431,18 @@ fun QuizScreen(
                 wordRepository.getNextWord(currentWord.value)
             }
             
-            // Get 3 other words of the SAME CATEGORY ONLY
+            // Get other words for options using the settings for number of options
+            val totalOptionsCount = settingsManager.getMultipleChoiceOptionsCount()
+            val wrongOptionsCount = totalOptionsCount - 1 // Subtract 1 for the correct answer
+            
             val otherWords = if (isBookmarkMode) {
                 wordRepository.getRandomBookmarkedWordsExcluding(10, nextWord.id)
                     .filter { it.category == nextWord.category }
-                    .take(3)  // Need 3 other words since we already have the question word
+                    .take(wrongOptionsCount)  // Use the number of wrong options from settings
             } else {
-                wordRepository.getRandomWordsByCategory(nextWord.category, 4)  // Get 4 total words
+                wordRepository.getRandomWordsByCategory(nextWord.category, totalOptionsCount)  // Get total words needed
                     .filter { word -> word.id != nextWord.id }
-                    .take(3)  // Take 3 since we already have the question word
+                    .take(wrongOptionsCount)  // Use the number of wrong options from settings
             }
             
             nextBatch = listOf(nextWord) + otherWords
@@ -531,15 +477,19 @@ fun QuizScreen(
                     wordRepository.getNextWord(currentWord.value)
                 }
                 
-                // Get 3 other words of the SAME CATEGORY ONLY
+                // Get other words for options using the settings for number of options
+                val totalOptionsCount = settingsManager.getMultipleChoiceOptionsCount()
+                val wrongOptionsCount = totalOptionsCount - 1 // Subtract 1 for the correct answer
+                
+                // Get other words of the same category
                 val otherWords = if (isBookmarkMode) {
                     wordRepository.getRandomBookmarkedWordsExcluding(10, nextWord.id)
                         .filter { it.category == nextWord.category }
-                        .take(3)  // Need 3 other words since we already have the question word
+                        .take(wrongOptionsCount)  // Use the number of wrong options from settings
                 } else {
-                    wordRepository.getRandomWordsByCategory(nextWord.category, 4)  // Get 4 total words
+                    wordRepository.getRandomWordsByCategory(nextWord.category, totalOptionsCount)  // Get total words needed
                         .filter { word -> word.id != nextWord.id }
-                        .take(3)  // Take 3 since we already have the question word
+                        .take(wrongOptionsCount)  // Use the number of wrong options from settings
                 }
                 
                 currentBatch = listOf(nextWord) + otherWords
@@ -551,31 +501,39 @@ fun QuizScreen(
             }
         }
         setSelectedAnswer(null)
-        showNextButton = false
-        expandedExamples = emptySet()
+        // No need to set showNextButton since we're using a local variable in handleAnswer
+        // Reset expandedExamples
         showHint = false
         setHintUsedForCurrentQuestion(false)  // Reset the hint used flag for the new question
         questionStartTime = System.currentTimeMillis()
     }
 
-    // Initial load
+    // Update the LaunchedEffect block in the QuizScreen composable function to prioritize reusing cached data
     LaunchedEffect(Unit) {
+        println("QuizActivity: Accessing preloaded quiz data")
         // Get the initial word
         val initialWord = if (isBookmarkMode) {
             wordRepository.getRandomBookmarkedWords(1).firstOrNull() ?: return@LaunchedEffect
         } else {
-            wordRepository.getNextWord(null)
+            // Word should already be preloaded by MainActivity
+            val word = wordRepository.getNextWord(null)
+            println("QuizActivity: Using preloaded word: ${word.word}")
+            word
         }
 
-        // Get other words of the SAME CATEGORY ONLY
+        // Get other words for options using the settings for number of options
+        val totalOptionsCount = settingsManager.getMultipleChoiceOptionsCount()
+        val wrongOptionsCount = totalOptionsCount - 1 // Subtract 1 for the correct answer
+        
+        // Get other words of the same category
         val otherWords = if (isBookmarkMode) {
             wordRepository.getRandomBookmarkedWordsExcluding(10, initialWord.id)
                 .filter { it.category == initialWord.category }
-                .take(3)  // Need 3 other words since we already have the question word
+                .take(wrongOptionsCount)  // Use the number of wrong options from settings
         } else {
-            wordRepository.getRandomWordsByCategory(initialWord.category, 4)  // Get 4 total words
+            wordRepository.getRandomWordsByCategory(initialWord.category, totalOptionsCount)  // Get total words needed
                 .filter { word -> word.id != initialWord.id }
-                .take(3)  // Take 3 since we already have the question word
+                .take(wrongOptionsCount)  // Use the number of wrong options from settings
         }
 
         currentBatch = listOf(initialWord) + otherWords
@@ -747,8 +705,9 @@ fun QuizScreen(
         }
 
         // Update the hint button to show/hide the hint
-        LaunchedEffect(hintsRemaining.value) {
-            if (hintsRemaining.value < 3 && !showHint && hintUsedForCurrentQuestion) {
+        LaunchedEffect(hintUsedForCurrentQuestion) {
+            // Show hint when hint is used for current question
+            if (hintUsedForCurrentQuestion && !showHint) {
                 showHint = true
             }
         }
@@ -867,9 +826,10 @@ fun QuizScreen(
                         // Create a separate state for example expansion
                         var isExampleVisible by remember { mutableStateOf(false) }
                         
-                        // For correct/incorrect answers, use the expandedExamples set
+                        // For correct/incorrect answers, use a local state
                         // For other options, use the local isExampleVisible state
                         val showExample = if (isSelected || isCorrectAnswer) {
+                            // Use expandedExamples for backward compatibility
                             expandedExamples.contains(optionSynonym)
                         } else {
                             isExampleVisible
@@ -883,7 +843,7 @@ fun QuizScreen(
                                 .padding(horizontal = 8.dp)
                                 .clickable {
                                     if (isSelected || isCorrectAnswer) {
-                                        // For correct/incorrect answers, use the expandedExamples set
+                                        // For correct/incorrect answers, use expandedExamples
                                         expandedExamples = if (expandedExamples.contains(optionSynonym)) {
                                             expandedExamples - optionSynonym
                                         } else {
@@ -927,7 +887,6 @@ fun QuizScreen(
                 onClick = { 
                     setSelectedAnswer(null)
                     showNextButton = false
-                    expandedExamples = emptySet()
                     advanceToNextQuestion() 
                 },
                 modifier = Modifier

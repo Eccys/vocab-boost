@@ -46,6 +46,7 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.OnBackPressedCallback
 import androidx.compose.foundation.clickable
 import java.util.*
+import xyz.ecys.vocab.utils.TransitionUtils
 
 fun toSentenceCase(text: String): String {
     return text.trim().replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
@@ -58,6 +59,7 @@ class BookmarksActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         wordRepository = WordRepository.getInstance(this)
+        println("BookmarksActivity: Using preloaded bookmarks data")
 
         setContent {
             VocabularyBoosterTheme {
@@ -212,6 +214,11 @@ class BookmarksActivity : ComponentActivity() {
             }
         }
     }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+        TransitionUtils.applyStandardTransitionOnFinish(this)
+    }
 }
 
 @Composable
@@ -271,6 +278,11 @@ fun BookmarksScreen(
                     .thenBy { it.word.lowercase() }
             )
         }
+    }
+
+    // Add log message when bookmarks are loaded
+    LaunchedEffect(initialBookmarkedWords) {
+        println("BookmarksScreen: Loaded ${initialBookmarkedWords.size} bookmarked words")
     }
 
     if (initialBookmarkedWords.isEmpty()) {

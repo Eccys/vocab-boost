@@ -79,6 +79,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import xyz.ecys.vocab.utils.TransitionUtils
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 class DailyWordActivity : ComponentActivity() {
@@ -90,6 +91,7 @@ class DailyWordActivity : ComponentActivity() {
         
         // Initialize the daily word manager
         dailyWordManager = DailyWordManager.getInstance(this)
+        println("DailyWordActivity: Using preloaded daily word data")
         
         setContent {
             VocabularyBoosterTheme {
@@ -138,6 +140,7 @@ class DailyWordActivity : ComponentActivity() {
                 LaunchedEffect(Unit) {
                     withContext(Dispatchers.IO) {
                         isLoading = true
+                        println("DailyWordActivity: Loading words with today's word from cache")
                         
                         val today = LocalDate.now()
                         val initialWords = mutableListOf<Pair<DailyWord, LocalDate>>()
@@ -405,6 +408,11 @@ class DailyWordActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+        TransitionUtils.applyStandardTransitionOnFinish(this)
     }
 }
 
