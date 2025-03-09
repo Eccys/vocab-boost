@@ -107,7 +107,10 @@ class BookmarksActivity : ComponentActivity() {
                                     ) 
                                 },
                                 navigationIcon = {
-                                    IconButton(onClick = { finish() }) {
+                                    IconButton(onClick = { 
+                                        finish() 
+                                        TransitionUtils.applyStandardTransitionOnFinish(this@BookmarksActivity)
+                                    }) {
                                         Icon(
                                             painter = AppIcons.arrowLeft(),
                                             contentDescription = "Back"

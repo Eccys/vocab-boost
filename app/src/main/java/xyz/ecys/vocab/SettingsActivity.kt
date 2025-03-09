@@ -57,6 +57,7 @@ import kotlin.math.roundToInt
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import xyz.ecys.vocab.utils.TransitionUtils
+import android.app.Activity
 
 @OptIn(ExperimentalMaterial3Api::class)
 class SettingsActivity : ComponentActivity() {
@@ -669,7 +670,10 @@ class SettingsActivity : ComponentActivity() {
                                 }
                             },
                             navigationIcon = {
-                                IconButton(onClick = { finish() }) {
+                                IconButton(onClick = { 
+                                    finish() 
+                                    TransitionUtils.applyStandardTransitionOnFinish(this@SettingsActivity)
+                                }) {
                                     Icon(
                                         painter = AppIcons.arrowLeft(),
                                         contentDescription = "Back",
@@ -691,6 +695,7 @@ class SettingsActivity : ComponentActivity() {
                             FloatingActionButton(
                                 onClick = {
                                     startActivity(Intent(context, DebugActivity::class.java))
+                                    TransitionUtils.applyStandardTransition(this@SettingsActivity)
                                 }
                             ) {
                                 Icon(
@@ -747,6 +752,9 @@ class SettingsActivity : ComponentActivity() {
                                     if (authState != null) {
                                         val intent = Intent(context, AccountsActivity::class.java)
                                         context.startActivity(intent)
+                                        (context as? Activity)?.let { activity ->
+                                            TransitionUtils.applyStandardTransition(activity)
+                                        }
                                     } else {
                                         showAuthSheet = true
                                     }

@@ -50,6 +50,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -554,42 +555,38 @@ class MainActivity : ComponentActivity() { // Calendar Card
                         }
 
                         // Daily Word Card
-                        Card(
+                        Box(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(120.dp)
                                 .graphicsLayer {
                                     scaleX = dailyWordCardScale
                                     scaleY = dailyWordCardScale
-                                },
-                            colors = CardDefaults.cardColors(
-                                containerColor = Color(0xFF18191E),
-                                // Setting contentColor to transparent to prevent default ripple
-                                contentColor = Color.Transparent
-                            ),
-                            shape = RoundedCornerShape(20.dp),
-                            onClick = {
-                                // Launch DailyWordActivity using coroutines for better performance
-                                lifecycleScope.launch(Dispatchers.IO) {
-                                    // Ensure the word is preloaded before navigating
-                                    dailyWordManager.getTodaysWord()
-                                    
-                                    withContext(Dispatchers.Main) {
-                                        startActivity(Intent(this@MainActivity, DailyWordActivity::class.java))
-                                        TransitionUtils.applyStandardTransition(this@MainActivity)
-                                    }
                                 }
-                            },
-                            interactionSource = remember { MutableInteractionSource() }
-                                .also { interactionSource ->
-                                    LaunchedEffect(interactionSource) {
-                                        interactionSource.interactions.collect { interaction ->
-                                            when (interaction) {
-                                                is PressInteraction.Press -> isDailyWordCardPressed = true
-                                                is PressInteraction.Release -> isDailyWordCardPressed = false
-                                                is PressInteraction.Cancel -> isDailyWordCardPressed = false
-                                            }
+                                .background(
+                                    color = Color(0xFF18191E),
+                                    shape = RoundedCornerShape(20.dp)
+                                )
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null
+                                ) {
+                                    // Start activity immediately
+                                    lifecycleScope.launch(Dispatchers.IO) {
+                                        // Ensure the word is preloaded before navigating
+                                        dailyWordManager.getTodaysWord()
+                                        
+                                        withContext(Dispatchers.Main) {
+                                            startActivity(Intent(this@MainActivity, DailyWordActivity::class.java))
+                                            TransitionUtils.applyStandardTransition(this@MainActivity)
                                         }
+                                    }
+                                    
+                                    // Handle visual feedback separately
+                                    isDailyWordCardPressed = true
+                                    lifecycleScope.launch {
+                                        kotlinx.coroutines.delay(100)
+                                        isDailyWordCardPressed = false
                                     }
                                 }
                         ) {
@@ -767,38 +764,36 @@ class MainActivity : ComponentActivity() { // Calendar Card
                                 }
                                 
                                 // Row #2: Button - This is where the quiz should start
-                                Button(
-                                    onClick = {
-                                        startActivity(Intent(this@MainActivity, QuizActivity::class.java))
-                                        TransitionUtils.applyStandardTransition(this@MainActivity)
-                                    },
+                                Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .height(50.dp)
                                         .graphicsLayer {
                                             scaleX = keepGoingScale
                                             scaleY = keepGoingScale
-                                        },
-                                    shape = RoundedCornerShape(12.dp),
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = Color(0xFF1A1A1A)
-                                    ),
-                                    elevation = ButtonDefaults.buttonElevation(
-                                        defaultElevation = 4.dp,
-                                        pressedElevation = 8.dp
-                                    ),
-                                    interactionSource = remember { MutableInteractionSource() }
-                                        .also { interactionSource ->
-                                            LaunchedEffect(interactionSource) {
-                                                interactionSource.interactions.collect { interaction ->
-                                                    when (interaction) {
-                                                        is PressInteraction.Press -> isKeepGoingPressed = true
-                                                        is PressInteraction.Release -> isKeepGoingPressed = false
-                                                        is PressInteraction.Cancel -> isKeepGoingPressed = false
-                                                    }
-                                                }
-                                            }
                                         }
+                                        .background(
+                                            color = Color(0xFF1A1A1A),
+                                            shape = RoundedCornerShape(12.dp)
+                                        )
+                                        .clickable(
+                                            interactionSource = remember { MutableInteractionSource() },
+                                            indication = null // Completely removes the ripple effect
+                                        ) {
+                                            // Start the activity immediately
+                                            val intent = Intent(this@MainActivity, QuizActivity::class.java)
+                                            this@MainActivity.startActivity(intent)
+                                            TransitionUtils.applyStandardTransition(this@MainActivity)
+                                            
+                                            // Update UI state separately from the navigation
+                                            isKeepGoingPressed = true
+                                            // Reset the state after a brief delay (this won't affect navigation speed)
+                                            lifecycleScope.launch {
+                                                kotlinx.coroutines.delay(100)
+                                                isKeepGoingPressed = false
+                                            }
+                                        },
+                                    contentAlignment = Alignment.Center
                                 ) {
                                     Text(
                                         text = when {
@@ -818,38 +813,33 @@ class MainActivity : ComponentActivity() { // Calendar Card
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             // Bookmarks Button
-                            Button(
-                                onClick = {
-                                    startActivity(Intent(this@MainActivity, BookmarksActivity::class.java))
-                                    TransitionUtils.applyStandardTransition(this@MainActivity)
-                                },
+                            Box(
                                 modifier = Modifier
                                     .weight(1f)
                                     .height(56.dp)
                                     .graphicsLayer {
                                         scaleX = bookmarksScale
                                         scaleY = bookmarksScale
-                                    },
-                                shape = RoundedCornerShape(12.dp),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(0xFF18191E)
-                                ),
-                                elevation = ButtonDefaults.buttonElevation(
-                                    defaultElevation = 0.dp,
-                                    pressedElevation = 0.dp
-                                ),
-                                interactionSource = remember { MutableInteractionSource() }
-                                    .also { interactionSource ->
-                                        LaunchedEffect(interactionSource) {
-                                            interactionSource.interactions.collect { interaction ->
-                                                when (interaction) {
-                                                    is PressInteraction.Press -> isBookmarksPressed = true
-                                                    is PressInteraction.Release -> isBookmarksPressed = false
-                                                    is PressInteraction.Cancel -> isBookmarksPressed = false
-                                                }
-                                            }
-                                        }
                                     }
+                                    .background(
+                                        color = Color(0xFF18191E),
+                                        shape = RoundedCornerShape(12.dp)
+                                    )
+                                    .clickable(
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        indication = null
+                                    ) {
+                                        val intent = Intent(this@MainActivity, BookmarksActivity::class.java)
+                                        this@MainActivity.startActivity(intent)
+                                        TransitionUtils.applyStandardTransition(this@MainActivity)
+                                        
+                                        isBookmarksPressed = true
+                                        lifecycleScope.launch {
+                                            kotlinx.coroutines.delay(100)
+                                            isBookmarksPressed = false
+                                        }
+                                    },
+                                contentAlignment = Alignment.Center
                             ) {
                                 Row(
                                     horizontalArrangement = Arrangement.Center,
@@ -871,44 +861,38 @@ class MainActivity : ComponentActivity() { // Calendar Card
                             }
                             
                             // History button
-                            Button(
-                                onClick = { 
-                                    startActivity(Intent(this@MainActivity, QuizHistoryActivity::class.java))
-                                    TransitionUtils.applyStandardTransition(this@MainActivity)
-                                },
+                            Box(
                                 modifier = Modifier
                                     .size(56.dp)
                                     .graphicsLayer {
                                         scaleX = historyButtonScale
                                         scaleY = historyButtonScale
-                                    },
-                                shape = RoundedCornerShape(12.dp),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(0xFF18191E)
-                                ),
-                                elevation = ButtonDefaults.buttonElevation(
-                                    defaultElevation = 0.dp,
-                                    pressedElevation = 0.dp
-                                ),
-                                contentPadding = PaddingValues(0.dp),
-                                interactionSource = remember { MutableInteractionSource() }
-                                    .also { interactionSource ->
-                                        LaunchedEffect(interactionSource) {
-                                            interactionSource.interactions.collect { interaction ->
-                                                when (interaction) {
-                                                    is PressInteraction.Press -> isHistoryButtonPressed = true
-                                                    is PressInteraction.Release -> isHistoryButtonPressed = false
-                                                    is PressInteraction.Cancel -> isHistoryButtonPressed = false
-                                                }
-                                            }
-                                        }
                                     }
+                                    .background(
+                                        color = Color(0xFF18191E),
+                                        shape = RoundedCornerShape(12.dp)
+                                    )
+                                    .clickable(
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        indication = null
+                                    ) {
+                                        val intent = Intent(this@MainActivity, QuizHistoryActivity::class.java)
+                                        this@MainActivity.startActivity(intent)
+                                        TransitionUtils.applyStandardTransition(this@MainActivity)
+                                        
+                                        isHistoryButtonPressed = true
+                                        lifecycleScope.launch {
+                                            kotlinx.coroutines.delay(100)
+                                            isHistoryButtonPressed = false
+                                        }
+                                    },
+                                contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     painter = AppIcons.historySolid(),
                                     contentDescription = "History",
-                                    tint = Color(0xFFFCFCFC),
-                                    modifier = Modifier.size(24.dp)
+                                    modifier = Modifier.size(24.dp),
+                                    tint = Color(0xFFFCFCFC)
                                 )
                             }
                         }

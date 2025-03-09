@@ -25,6 +25,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.activity.compose.BackHandler
 import androidx.compose.ui.Alignment
 import androidx.compose.runtime.rememberCoroutineScope
+import xyz.ecys.vocab.utils.TransitionUtils
 
 @OptIn(ExperimentalMaterial3Api::class)
 class DebugActivity : ComponentActivity() {
@@ -71,7 +72,10 @@ class DebugActivity : ComponentActivity() {
                                     ) 
                                 },
                                 navigationIcon = {
-                                    IconButton(onClick = { finish() }) {
+                                    IconButton(onClick = { 
+                                        finish() 
+                                        TransitionUtils.applyStandardTransitionOnFinish(this@DebugActivity)
+                                    }) {
                                         Icon(
                                             painter = AppIcons.arrowLeft(),
                                             contentDescription = "Back",
@@ -268,5 +272,10 @@ class DebugActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+        TransitionUtils.applyStandardTransitionOnFinish(this)
     }
 } 

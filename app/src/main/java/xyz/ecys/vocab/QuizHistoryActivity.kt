@@ -44,27 +44,56 @@ import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.animation.core.animateFloatAsState
 import xyz.ecys.vocab.utils.TransitionUtils
+import android.content.Context
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 
 @OptIn(ExperimentalMaterial3Api::class)
 class QuizHistoryActivity : ComponentActivity() {
     private lateinit var wordRepository: WordRepository
     private lateinit var quizResultRepository: QuizResultRepository
+    
+    companion object {
+        private const val HISTORY_CACHE_PREFS = "history_cache_prefs"
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         wordRepository = WordRepository.getInstance(this)
         quizResultRepository = QuizResultRepository.getInstance(this)
+        
+        // Initialize the history cache
+        val historyCache = getSharedPreferences(HISTORY_CACHE_PREFS, Context.MODE_PRIVATE)
 
         setContent {
             VocabularyBoosterTheme {
                 val coroutineScope = rememberCoroutineScope()
-                var bookmarkedWords by remember { mutableStateOf(emptySet<String>()) }
+                
+                // Load bookmarked words from cache first
+                var bookmarkedWordsSet by remember { 
+                    val cachedBookmarksJson = historyCache.getString("bookmarkedWords", "[]")
+                    val type = object : TypeToken<Set<String>>() {}.type
+                    try {
+                        mutableStateOf(Gson().fromJson<Set<String>>(cachedBookmarksJson, type) ?: emptySet())
+                    } catch (e: Exception) {
+                        mutableStateOf(emptySet<String>())
+                    }
+                }
+                
                 val context = LocalContext.current
                 val view = LocalView.current
                 
-                // State for quiz history
-                var historyQuestions by remember { mutableStateOf<List<QuizHistoryItem>>(emptyList()) }
-                var isLoading by remember { mutableStateOf(true) }
+                // State for quiz history - load from cache first
+                var historyQuestions by remember { 
+                    val cachedHistoryJson = historyCache.getString("historyItems", "[]")
+                    val type = object : TypeToken<List<QuizHistoryItem>>() {}.type
+                    try {
+                        mutableStateOf(Gson().fromJson<List<QuizHistoryItem>>(cachedHistoryJson, type) ?: emptyList())
+                    } catch (e: Exception) {
+                        mutableStateOf<List<QuizHistoryItem>>(emptyList())
+                    }
+                }
+                var isLoading by remember { mutableStateOf(historyQuestions.isEmpty()) }
                 var pageSize by remember { mutableStateOf(30) }
                 
                 fun lookupWord(wordText: String) {
@@ -83,21 +112,37 @@ class QuizHistoryActivity : ComponentActivity() {
                 // Load initial bookmark states
                 LaunchedEffect(Unit) {
                     val words = wordRepository.getAllWords()
-                    bookmarkedWords = words.filter { it.isBookmarked }.map { it.word }.toSet()
+                    val freshBookmarkedWords = words.filter { it.isBookmarked }.map { it.word }.toSet()
+                    bookmarkedWordsSet = freshBookmarkedWords
+                    
+                    // Cache the bookmarked words
+                    val bookmarksJson = Gson().toJson(freshBookmarkedWords)
+                    historyCache.edit()
+                        .putString("bookmarkedWords", bookmarksJson)
+                        .apply()
                 }
 
                 // Load quiz history
                 LaunchedEffect(pageSize) {
-                    isLoading = true
+                    isLoading = historyQuestions.isEmpty() // Only show loading if we have no cached data
                     try {
                         println("Loading quiz history, page size: $pageSize")
                         
                         // Get quiz history using the new dedicated method
-                        historyQuestions = quizResultRepository.getQuizHistory(pageSize)
+                        val freshHistoryItems = quizResultRepository.getQuizHistory(pageSize)
                         
-                        println("Retrieved ${historyQuestions.size} history items")
-                        if (historyQuestions.isNotEmpty()) {
-                            println("First few words: ${historyQuestions.take(5).map { it.word }}")
+                        println("Retrieved ${freshHistoryItems.size} history items")
+                        if (freshHistoryItems.isNotEmpty()) {
+                            println("First few words: ${freshHistoryItems.take(5).map { it.word }}")
+                            
+                            // Update the UI
+                            historyQuestions = freshHistoryItems
+                            
+                            // Cache the history items
+                            val historyJson = Gson().toJson(freshHistoryItems)
+                            historyCache.edit()
+                                .putString("historyItems", historyJson)
+                                .apply()
                         } else {
                             println("No history items found")
                         }
@@ -123,7 +168,10 @@ class QuizHistoryActivity : ComponentActivity() {
                                 ) 
                             },
                             navigationIcon = {
-                                IconButton(onClick = { finish() }) {
+                                IconButton(onClick = { 
+                                    finish() 
+                                    TransitionUtils.applyStandardTransitionOnFinish(this@QuizHistoryActivity)
+                                }) {
                                     Icon(
                                         painter = AppIcons.arrowLeft(),
                                         contentDescription = "Back",
@@ -160,7 +208,7 @@ class QuizHistoryActivity : ComponentActivity() {
                                 verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 items(historyQuestions) { historyItem ->
-                                    val isBookmarked = bookmarkedWords.contains(historyItem.word)
+                                    val isBookmarked = bookmarkedWordsSet.contains(historyItem.word)
                                     Card(
                                         modifier = Modifier
                                             .fillMaxWidth()
@@ -230,10 +278,10 @@ class QuizHistoryActivity : ComponentActivity() {
                                                         val word = wordRepository.getAllWords().find { it.word == historyItem.word }
                                                         if (word != null) {
                                                             wordRepository.updateBookmark(word.id, !isBookmarked)
-                                                            bookmarkedWords = if (isBookmarked) {
-                                                                bookmarkedWords - historyItem.word
+                                                            bookmarkedWordsSet = if (isBookmarked) {
+                                                                bookmarkedWordsSet - historyItem.word
                                                             } else {
-                                                                bookmarkedWords + historyItem.word
+                                                                bookmarkedWordsSet + historyItem.word
                                                             }
                                                         }
                                                     }

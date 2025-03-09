@@ -140,7 +140,8 @@ class QuizActivity : ComponentActivity() {
                                 lifecycleScope.launch {
                                     appUsageManager.endSession()
                                 }
-                                finish() 
+                                finish()
+                                TransitionUtils.applyStandardTransitionOnFinish(this@QuizActivity)
                             },
                             currentWord = currentWord.value,
                             onBookmarkClick = { word ->

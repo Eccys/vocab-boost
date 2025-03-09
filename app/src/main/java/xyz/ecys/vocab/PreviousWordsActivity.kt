@@ -65,6 +65,7 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.animation.animateContentSize
+import xyz.ecys.vocab.utils.TransitionUtils
 
 @OptIn(ExperimentalMaterial3Api::class)
 class PreviousWordsActivity : ComponentActivity() {
@@ -92,7 +93,10 @@ class PreviousWordsActivity : ComponentActivity() {
                                 )
                             },
                             navigationIcon = {
-                                IconButton(onClick = { finish() }) {
+                                IconButton(onClick = { 
+                                    finish() 
+                                    TransitionUtils.applyStandardTransitionOnFinish(this@PreviousWordsActivity)
+                                }) {
                                     Icon(
                                         painter = AppIcons.arrowLeft(),
                                         contentDescription = "Back",
@@ -115,11 +119,18 @@ class PreviousWordsActivity : ComponentActivity() {
                             // Pass the date as a string rather than just an index
                             intent.putExtra("SELECTED_DATE", date.toString())
                             startActivity(intent)
+                            TransitionUtils.applyStandardTransition(this)
                         }
                     )
                 }
             }
         }
+    }
+
+    // Add the onBackPressed method
+    override fun onBackPressed() {
+        super.onBackPressed()
+        TransitionUtils.applyStandardTransitionOnFinish(this)
     }
 }
 
