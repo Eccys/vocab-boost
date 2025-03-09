@@ -42,6 +42,7 @@ import android.content.Context as AndroidContext
 import java.util.Calendar
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import xyz.ecys.vocab.utils.TransitionUtils
 
 @OptIn(ExperimentalMaterial3Api::class)
 class StatsActivity : ComponentActivity() {
@@ -278,7 +279,10 @@ class StatsActivity : ComponentActivity() {
                                 ) 
                             },
                             navigationIcon = {
-                                IconButton(onClick = { finish() }) {
+                                IconButton(onClick = { 
+                                    finish() 
+                                    TransitionUtils.applyStandardTransitionOnFinish(this@StatsActivity)
+                                }) {
                                     Icon(
                                         painter = AppIcons.arrowLeft(),
                                         contentDescription = "Back"
@@ -327,6 +331,11 @@ class StatsActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+        TransitionUtils.applyStandardTransitionOnFinish(this)
     }
 }
 

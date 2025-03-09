@@ -107,29 +107,11 @@ class DailyWordActivity : ComponentActivity() {
             VocabularyBoosterTheme {
                 var isDailyWordCardPressed by remember { mutableStateOf(false) }
                 
-                // Try to load cached words first
-                var wordsWithDates by remember {
-                    val cachedWordsJson = dailyWordCache.getString("wordsWithDates", null)
-                    if (cachedWordsJson != null) {
-                        try {
-                            val type = object : TypeToken<List<Pair<DailyWord, String>>>() {}.type
-                            val cachedPairs = Gson().fromJson<List<Pair<DailyWord, String>>>(cachedWordsJson, type)
-                            // Convert the String dates back to LocalDate
-                            val convertedPairs = cachedPairs.map { 
-                                Pair(it.first, LocalDate.parse(it.second)) 
-                            }
-                            mutableStateOf(convertedPairs)
-                        } catch (e: Exception) {
-                            Log.e("DailyWordActivity", "Error loading cached words: ${e.message}")
-                            mutableStateOf<List<Pair<DailyWord, LocalDate>>>(emptyList())
-                        }
-                    } else {
-                        mutableStateOf<List<Pair<DailyWord, LocalDate>>>(emptyList())
-                    }
-                }
+                // Simplify to always load fresh data for now
+                var wordsWithDates by remember { mutableStateOf<List<Pair<DailyWord, LocalDate>>>(emptyList()) }
                 
-                // Loading state - only true if we have no cached data
-                var isLoading by remember { mutableStateOf(wordsWithDates.isEmpty()) }
+                // Loading state - always true initially
+                var isLoading by remember { mutableStateOf(true) }
                 
                 // Store the selected date index once we find it
                 var selectedDateIndex by remember { mutableStateOf(0) }
@@ -257,16 +239,6 @@ class DailyWordActivity : ComponentActivity() {
                             selectedDateIndex = indexToSelect
                             isLoading = false
                             isInitialized = true
-                            
-                            // Cache the words for future quick loading
-                            // Convert LocalDate to String for serialization
-                            val pairsToCache = initialWords.map {
-                                Pair(it.first, it.second.toString())
-                            }
-                            val wordsJson = Gson().toJson(pairsToCache)
-                            dailyWordCache.edit()
-                                .putString("wordsWithDates", wordsJson)
-                                .apply()
                         }
                     }
                 }
