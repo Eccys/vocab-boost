@@ -91,7 +91,6 @@ class DailyWordActivity : ComponentActivity() {
         
         // Initialize the daily word manager
         dailyWordManager = DailyWordManager.getInstance(this)
-        println("DailyWordActivity: Using preloaded daily word data")
         
         setContent {
             VocabularyBoosterTheme {
@@ -139,104 +138,89 @@ class DailyWordActivity : ComponentActivity() {
                 // Load initial data asynchronously
                 LaunchedEffect(Unit) {
                     withContext(Dispatchers.IO) {
-                        // Start with loading state, but we'll quickly change it if data is available
                         isLoading = true
-                        println("DailyWordActivity: Loading words with today's word from cache")
                         
-                        try {
-                            // First, check if todayWord is already loaded - this should be fast due to preloading
-                            val today = LocalDate.now()
-                            val todayWord = dailyWordManager.getTodaysWord() // Should be in cache
+                        val today = LocalDate.now()
+                        val initialWords = mutableListOf<Pair<DailyWord, LocalDate>>()
+                        
+                        // Always make sure to get the official today's word from getTodaysWord()
+                        val todayWord = dailyWordManager.getTodaysWord()
+                        
+                        // If we have a selected date, make sure to include it and all days between it and today
+                        if (selectedDate != null) {
+                            // We need to load *all* days between selected date and today
                             
-                            val initialWords = mutableListOf<Pair<DailyWord, LocalDate>>()
+                            // Calculate the range we need to load
+                            val startDate = if (selectedDate.isBefore(today)) selectedDate else today
+                            val endDate = if (selectedDate.isAfter(today)) selectedDate else today
+                            
+                            // Add the selected date and surrounding days for context
+                            // First add days before the selected date (if it's not too far back)
+                            val daysToAddBefore = minOf(2, 30) // Don't go too far back
+                            for (i in 1..daysToAddBefore) {
+                                val date = startDate.minusDays(i.toLong())
+                                val word = dailyWordManager.getWordForSpecificDate(date)
+                                initialWords.add(Pair(word, date))
+                            }
+                            
+                            // Now add all days from start to end (inclusive)
+                            var currentDate = startDate
+                            while (!currentDate.isAfter(endDate)) {
+                                // Skip today - we'll add it separately to ensure consistency
+                                if (!currentDate.isEqual(today)) {
+                                    // Only add if not already in the list
+                                    if (initialWords.none { it.second.isEqual(currentDate) }) {
+                                        val word = dailyWordManager.getWordForSpecificDate(currentDate)
+                                        initialWords.add(Pair(word, currentDate))
+                                    }
+                                }
+                                currentDate = currentDate.plusDays(1)
+                            }
+                            
+                            // Also add a couple of days after the end date (if it's not in the future)
+                            if (!endDate.isEqual(today)) {
+                                for (i in 1..2) {
+                                    val date = endDate.plusDays(i.toLong())
+                                    // Don't include future dates beyond today
+                                    if (!date.isAfter(today) && !date.isEqual(today)) {
+                                        val word = dailyWordManager.getWordForSpecificDate(date)
+                                        initialWords.add(Pair(word, date))
+                                    }
+                                }
+                            }
+                            
+                            // Add today's word (always use getTodaysWord for consistency)
+                            initialWords.add(Pair(todayWord, today))
+                        } else {
+                            // No selected date, just add today and some previous days
+                            // Add today's word first
                             initialWords.add(Pair(todayWord, today))
                             
-                            // If we have initial data, show it immediately to remove loading indicator
-                            withContext(Dispatchers.Main) {
-                                if (initialWords.isNotEmpty()) {
-                                    wordsWithDates = initialWords
-                                    isLoading = false
-                                    // Don't set isInitialized yet - we'll load more data
-                                }
+                            // Add previous days
+                            for (i in 1..preloadDays) {
+                                val date = today.minusDays(i.toLong())
+                                val word = dailyWordManager.getWordForSpecificDate(date)
+                                initialWords.add(Pair(word, date))
                             }
-                            
-                            // Then continue loading the rest of the data in the background
-                            // If we have a selected date, make sure to include it and all days between it and today
-                            if (selectedDate != null) {
-                                // We need to load *all* days between selected date and today
-                                
-                                // Calculate the range we need to load
-                                val startDate = if (selectedDate.isBefore(today)) selectedDate else today
-                                val endDate = if (selectedDate.isAfter(today)) selectedDate else today
-                                
-                                // Add the selected date and surrounding days for context
-                                // First add days before the selected date (if it's not too far back)
-                                val daysToAddBefore = minOf(2, 30) // Don't go too far back
-                                for (i in 1..daysToAddBefore) {
-                                    val date = startDate.minusDays(i.toLong())
-                                    val word = dailyWordManager.getWordForSpecificDate(date)
-                                    initialWords.add(Pair(word, date))
-                                }
-                                
-                                // Now add all days from start to end (inclusive)
-                                var currentDate = startDate
-                                while (!currentDate.isAfter(endDate)) {
-                                    // Skip today - we'll add it separately to ensure consistency
-                                    if (!currentDate.isEqual(today)) {
-                                        // Only add if not already in the list
-                                        if (initialWords.none { it.second.isEqual(currentDate) }) {
-                                            val word = dailyWordManager.getWordForSpecificDate(currentDate)
-                                            initialWords.add(Pair(word, currentDate))
-                                        }
-                                    }
-                                    currentDate = currentDate.plusDays(1)
-                                }
-                                
-                                // Also add a couple of days after the end date (if it's not in the future)
-                                if (!endDate.isEqual(today)) {
-                                    for (i in 1..2) {
-                                        val date = endDate.plusDays(i.toLong())
-                                        // Don't include future dates beyond today
-                                        if (!date.isAfter(today) && !date.isEqual(today)) {
-                                            val word = dailyWordManager.getWordForSpecificDate(date)
-                                            initialWords.add(Pair(word, date))
-                                        }
-                                    }
-                                }
-                            } else {
-                                // No selected date, just add today and some previous days
-                                // Add today's word first
-                                // Add previous days
-                                for (i in 1..preloadDays) {
-                                    val date = today.minusDays(i.toLong())
-                                    val word = dailyWordManager.getWordForSpecificDate(date)
-                                    initialWords.add(Pair(word, date))
-                                }
+                        }
+                        
+                        // Sort words by date (newest first)
+                        initialWords.sortByDescending { it.second }
+                        
+                        // Now find the index of our selected date
+                        var indexToSelect = 0
+                        if (selectedDate != null) {
+                            val foundIndex = initialWords.indexOfFirst { it.second.isEqual(selectedDate) }
+                            if (foundIndex >= 0) {
+                                indexToSelect = foundIndex
                             }
-                            
-                            // Sort words by date (newest first)
-                            initialWords.sortByDescending { it.second }
-                            
-                            // Now find the index of our selected date
-                            var indexToSelect = 0
-                            if (selectedDate != null) {
-                                val foundIndex = initialWords.indexOfFirst { it.second.isEqual(selectedDate) }
-                                if (foundIndex >= 0) {
-                                    indexToSelect = foundIndex
-                                }
-                            }
-                            
-                            withContext(Dispatchers.Main) {
-                                wordsWithDates = initialWords
-                                selectedDateIndex = indexToSelect
-                                isLoading = false
-                                isInitialized = true
-                            }
-                        } catch (e: Exception) {
-                            println("Error loading daily words: ${e.message}")
-                            withContext(Dispatchers.Main) {
-                                isLoading = false
-                            }
+                        }
+                        
+                        withContext(Dispatchers.Main) {
+                            wordsWithDates = initialWords
+                            selectedDateIndex = indexToSelect
+                            isLoading = false
+                            isInitialized = true
                         }
                     }
                 }
@@ -403,7 +387,7 @@ class DailyWordActivity : ComponentActivity() {
                                 }
                                 
                                 // Loading indicator at bottom when loading more words
-                                if (isLoading && pagerState.currentPage >= wordsWithDates.size - 3) {
+                                if (isLoading) {
                                     Box(
                                         modifier = Modifier
                                             .fillMaxWidth()

@@ -4,7 +4,6 @@ import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
 import android.view.HapticFeedbackConstants
-import androidx.activity.ComponentActivity
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -50,10 +49,15 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import xyz.ecys.vocab.data.SettingsManager
 import xyz.ecys.vocab.quiz.QuizResult
 import java.util.Date
+import android.util.Log
+import xyz.ecys.vocab.data.GlobalQuizState
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -63,13 +67,8 @@ fun QuizScreen(
     appUsageManager: AppUsageManager,
     isBookmarkMode: Boolean,
     currentWord: MutableState<Word?>,
-    lives: MutableState<Int>,
-    hintsRemaining: MutableState<Int>,
     selectedAnswer: String?,
     setSelectedAnswer: (String?) -> Unit,
-    hintUsedForCurrentQuestion: Boolean,
-    setHintUsedForCurrentQuestion: (Boolean) -> Unit,
-    onGameOver: () -> Unit,
     settingsManager: SettingsManager,
     quizResultRepository: QuizResultRepository
 ) {
@@ -130,75 +129,10 @@ fun QuizScreen(
         }
     }
 
-    // Function to create and save a FirestoreQuizResult 
-    fun createAndSaveFirestoreQuizResult() {
-        android.util.Log.d("QuizResult", "createAndSaveFirestoreQuizResult called with ${quizResults.size} results")
-        
-        if (quizResults.isEmpty()) {
-            android.util.Log.w("QuizResult", "No quiz results to save")
-            return
-        }
-        
-        try {
-            // Count correct answers
-            val correctCount = quizResults.count { it.isCorrect }
-            
-            // Create a list of QuizQuestion objects from the legacy QuizResult objects
-            val questions = quizResults.map { result ->
-                QuizQuestion(
-                    word = result.word,
-                    correctDefinition = result.definition,
-                    userAnswer = result.userChoice,
-                    isCorrect = result.isCorrect
-                )
-            }
-            
-            // Log all the questions to verify data
-            questions.forEachIndexed { index, question ->
-                android.util.Log.d("QuizResult", "Question $index: ${question.word}, User answer: ${question.userAnswer}, Correct: ${question.isCorrect}")
-            }
-            
-            // Calculate total quiz duration
-            val quizDuration = (System.currentTimeMillis() - quizStartTime) / 1000
-            
-            // Create a Firestore QuizResult with all questions
-            val firestoreQuizResult = FirestoreQuizResult(
-                timestamp = Date(),
-                correctAnswers = correctCount,
-                totalQuestions = quizResults.size,
-                questions = questions,
-                score = if (quizResults.isNotEmpty()) correctCount.toFloat() / quizResults.size else 0f,
-                durationInSeconds = quizDuration
-            )
-            
-            android.util.Log.d("QuizResult", "Created FirestoreQuizResult: ${firestoreQuizResult}")
-            
-            // Save to Firestore using the existing coroutineScope
-            coroutineScope.launch {
-                try {
-                    // Save the quiz result
-                    val documentId = quizResultRepository.saveQuizResult(firestoreQuizResult)
-                    android.util.Log.d("QuizResult", "Successfully saved quiz result to Firestore with ID: $documentId")
-                } catch (e: Exception) {
-                    android.util.Log.e("QuizResult", "Error saving quiz result", e)
-                }
-            }
-        } catch (e: Exception) {
-            android.util.Log.e("QuizResult", "Error preparing quiz result for saving", e)
-        }
-    }
-
     // Move handleAnswer function here
     fun handleAnswer(selectedSynonym: String) {
         if (selectedAnswer == null) {
             setSelectedAnswer(selectedSynonym)
-            
-            // Find which word this synonym belongs to
-            val selectedWord = currentBatch.first { word ->
-                selectedSynonym == word.synonym1 ||
-                selectedSynonym == word.synonym2 ||
-                selectedSynonym == word.synonym3
-            }
             
             // Use the tracked currentSynonymSet to determine the correct answer
             val correctSynonym = when (currentSynonymSet) {
@@ -211,15 +145,14 @@ fun QuizScreen(
             
             val now = System.currentTimeMillis()
             val responseTime = now - questionStartTime
+            android.util.Log.d("QuizTimer", "Question start time: $questionStartTime")
+            android.util.Log.d("QuizTimer", "Answer time: $now")
+            android.util.Log.d("QuizTimer", "Response time: $responseTime")
             
             if (isCorrect) {
                 coroutineScope.launch {
                     appUsageManager.recordCorrectAnswer()
                 }
-            }
-            
-            if (!isCorrect) {
-                lives.value--
             }
             
             // Update word statistics with timing information
@@ -232,39 +165,44 @@ fun QuizScreen(
                 )
             }
             
-            // Create a QuizQuestion object for the current question
-            val newQuizQuestion = QuizQuestion(
-                word = currentWord.value!!.word,
-                correctDefinition = currentWord.value!!.definition,
-                userAnswer = selectedSynonym,
-                isCorrect = isCorrect
-            )
-            
-            // Add to the legacy results list for backwards compatibility
-            val legacyResult = QuizResult(
+            val newResult = QuizResult(
                 word = currentWord.value!!.word,
                 definition = currentWord.value!!.definition,
                 userChoice = selectedSynonym,
                 correctChoice = correctSynonym,
                 isCorrect = isCorrect
             )
-            quizResults = quizResults + legacyResult
+            quizResults = quizResults + newResult
 
             showNextButton = true
-
-            if (lives.value <= 0) {
-                // Game over, show results
-                onGameOver()
+            
+            // Save each individual question result to Firestore immediately
+            coroutineScope.launch {
+                // Create a QuizQuestion object for the current question
+                val question = QuizQuestion(
+                    word = currentWord.value!!.word,
+                    correctDefinition = currentWord.value!!.definition,
+                    userAnswer = selectedSynonym,
+                    isCorrect = isCorrect
+                )
                 
-                // Save quiz results to Firestore
-                createAndSaveFirestoreQuizResult()
+                // Create a Firestore QuizResult with just this question
+                val firestoreQuizResult = FirestoreQuizResult(
+                    timestamp = Date(),
+                    correctAnswers = if (isCorrect) 1 else 0,
+                    totalQuestions = 1,
+                    questions = listOf(question),
+                    score = if (isCorrect) 1f else 0f,
+                    durationInSeconds = responseTime / 1000
+                )
                 
-                // Continue with existing functionality
-                val intent = Intent(context, QuizResultsActivity::class.java).apply {
-                    putParcelableArrayListExtra("results", ArrayList(quizResults))
+                // Save to Firestore
+                try {
+                    quizResultRepository.saveQuizResult(firestoreQuizResult)
+                    android.util.Log.d("QuizResult", "Saved quiz result to Firestore")
+                } catch (e: Exception) {
+                    android.util.Log.e("QuizResult", "Error saving quiz result: ${e.message}")
                 }
-                
-                context.startActivity(intent)
             }
         }
     }
@@ -281,29 +219,75 @@ fun QuizScreen(
 
     // Function to advance to next question
     fun advanceToNextQuestion() {
-        // Always save quiz results when advancing to next question, regardless of count
-        if (quizResults.isNotEmpty()) {
-            createAndSaveFirestoreQuizResult()
-        }
-        
-        // If we have a preloaded batch, use it
-        if (currentBatch.isNotEmpty()) {
-            coroutineScope.launch {
-                // Get the next word prioritizing overdue words by their overdue ratio
-                val nextWord = if (isBookmarkMode) {
-                    // In bookmark mode, get a random bookmarked word
-                    if (totalBookmarkedWords > 1) {
-                        val bookmarkedWords = wordRepository.getBookmarkedWordsFlow().first()
-                        val filteredWords = bookmarkedWords.filter { it.id != currentWord.value?.id }
-                        if (filteredWords.isNotEmpty()) filteredWords.random() else bookmarkedWords.random()
-                    } else {
-                        wordRepository.getRandomBookmarkedWords(1).firstOrNull() ?: return@launch
-                    }
+        coroutineScope.launch {
+            // Get the next word prioritizing overdue words by their overdue ratio
+            val nextWord = if (isBookmarkMode) {
+                // In bookmark mode, get a random bookmarked word
+                if (totalBookmarkedWords > 1) {
+                    val bookmarkedWords = wordRepository.getBookmarkedWordsFlow().first()
+                    val filteredWords = bookmarkedWords.filter { it.id != currentWord.value?.id }
+                    if (filteredWords.isNotEmpty()) filteredWords.random() else bookmarkedWords.random()
                 } else {
-                    // In normal mode, get the next word prioritizing overdue words
-                    wordRepository.getNextWord(currentWord.value)
+                    wordRepository.getRandomBookmarkedWords(1).firstOrNull() ?: return@launch
+                }
+            } else {
+                // In normal mode, get the next word prioritizing overdue words
+                wordRepository.getNextWord(currentWord.value)
+            }
+
+            // Build a batch with the selected word and (optionsCount-1) other random words
+            val otherWords = if (isBookmarkMode) {
+                // In bookmark mode, try to get words of the same category first
+                val bookmarkedWords = wordRepository.getBookmarkedWordsFlow().first()
+                val sameCategoryBookmarked = bookmarkedWords
+                    .filter { it.id != nextWord.id && it.category == nextWord.category }
+                
+                if (sameCategoryBookmarked.size >= optionsCount - 1) {
+                    // If we have enough words of the same category, use them
+                    sameCategoryBookmarked.shuffled().take(optionsCount - 1)
+                } else {
+                    // Otherwise, fall back to random bookmarked words
+                    android.util.Log.d("QuizCategory", "Not enough bookmarked words of category ${nextWord.category}, falling back to random")
+                    wordRepository.getRandomBookmarkedWordsExcluding(optionsCount - 1, nextWord.id)
+                }
+            } else {
+                // In normal mode, try to get words of the same category first
+                val availableWords = wordRepository.getAllWords()
+                val sameCategoryWords = availableWords
+                    .filter { it.id != nextWord.id && it.category == nextWord.category }
+                
+                if (sameCategoryWords.size >= optionsCount - 1) {
+                    // If we have enough words of the same category, use them
+                    sameCategoryWords.shuffled().take(optionsCount - 1)
+                } else {
+                    // Otherwise, fall back to random words
+                    android.util.Log.d("QuizCategory", "Not enough words of category ${nextWord.category}, falling back to random")
+                    wordRepository.getRandomWordsExcluding(optionsCount - 1, nextWord)
                 }
             }
+            
+            // Create the new batch with the prioritized word first
+            currentBatch = listOf(nextWord) + otherWords
+            currentWord.value = nextWord
+            
+            // Generate options and synonym set for the quiz
+            val (newOptions, newSynonymSet) = generateOptions(currentBatch, nextWord, context)
+            options = newOptions
+            currentSynonymSet = newSynonymSet
+            
+            // Reset UI state for the new question
+            setSelectedAnswer(null)
+            showNextButton = false
+            expandedExamples = emptySet()
+            showTooltip = false
+            questionStartTime = System.currentTimeMillis()
+            
+            // Update debug info
+            val currentTime = System.currentTimeMillis()
+            allWords = wordRepository.getAllWords()
+            overdueWords = wordRepository.getWordsForLearning(100).filter { it.nextReviewDate <= currentTime && it.nextReviewDate > 0 }
+            unseenWords = allWords.filter { it.timesReviewed == 0 }
+            recentlyReviewedWords = wordRepository.getRecentlyReviewedWords(5)
         }
     }
 
@@ -355,7 +339,7 @@ fun QuizScreen(
             currentWord.value = initialWord
             
             // Generate options and synonym set for the quiz
-            val (newOptions, newSynonymSet) = generateOptions(currentBatch, initialWord)
+            val (newOptions, newSynonymSet) = generateOptions(currentBatch, initialWord, context)
             options = newOptions
             currentSynonymSet = newSynonymSet
             
@@ -566,7 +550,7 @@ fun QuizScreen(
                                 
                                 currentBatch = listOf(nextWord) + otherWords
                                 currentWord.value = nextWord
-                                val (newOptions, newSynonymSet) = generateOptions(currentBatch, nextWord)
+                                val (newOptions, newSynonymSet) = generateOptions(currentBatch, nextWord, context)
                                 options = newOptions
                                 currentSynonymSet = newSynonymSet
                                 setSelectedAnswer(null)
@@ -936,12 +920,7 @@ fun QuizScreen(
                     setSelectedAnswer(null)
                     showNextButton = false
                     expandedExamples = emptySet()
-                    
-                    // Always save quiz results when moving to next question
-                    if (quizResults.isNotEmpty()) {
-                        createAndSaveFirestoreQuizResult()
-                    }
-                    
+                    showTooltip = false  // Also reset tooltip here for good measure
                     advanceToNextQuestion() 
                 },
                 modifier = Modifier

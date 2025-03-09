@@ -51,6 +51,12 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.fadeOut
 import androidx.compose.material3.HorizontalDivider
+import xyz.ecys.vocab.data.QuizResultRepository
+import androidx.compose.ui.unit.DpSize
+import kotlin.math.roundToInt
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import xyz.ecys.vocab.utils.TransitionUtils
 
 @OptIn(ExperimentalMaterial3Api::class)
 class SettingsActivity : ComponentActivity() {
@@ -257,6 +263,10 @@ class SettingsActivity : ComponentActivity() {
                                             val appUsageManager = AppUsageManager.getInstance(context)
                                             appUsageManager.resetAllUsageData()
                                             
+                                            // Clear quiz history from both local storage and Firestore
+                                            val quizResultRepository = QuizResultRepository.getInstance(context)
+                                            quizResultRepository.clearAllQuizResults()
+                                            
                                             authViewModel.showMessage("Database reset successfully")
                                         }
                                     }
@@ -361,6 +371,10 @@ class SettingsActivity : ComponentActivity() {
                                                 val appUsageManager = AppUsageManager.getInstance(context)
                                                 appUsageManager.resetAllUsageData()
                                                 
+                                                // Clear quiz history from both local storage and Firestore
+                                                val quizResultRepository = QuizResultRepository.getInstance(context)
+                                                quizResultRepository.clearAllQuizResults()
+                                                
                                                 // Sync changes to the cloud
                                                 authViewModel.syncData { syncSuccess ->
                                                     if (syncSuccess) {
@@ -387,6 +401,10 @@ class SettingsActivity : ComponentActivity() {
                                                             // Clear app usage data (streaks and time spent)
                                                             val appUsageManager = AppUsageManager.getInstance(context)
                                                             appUsageManager.resetAllUsageData()
+                                                            
+                                                            // Clear quiz history from both local storage and Firestore
+                                                            val quizResultRepository = QuizResultRepository.getInstance(context)
+                                                            quizResultRepository.clearAllQuizResults()
                                                             
                                                             // Sync changes to the cloud
                                                             authViewModel.syncData { syncSuccess ->
@@ -687,11 +705,16 @@ class SettingsActivity : ComponentActivity() {
                     Box(
                         modifier = Modifier.fillMaxSize()
                     ) {
+                        // Add scroll state with improved scrolling experience
+                        val scrollState = rememberScrollState()
+                        
                         Column(
                             modifier = Modifier
                                 .fillMaxSize()
                                 .padding(innerPadding)
-                                .padding(16.dp),
+                                .padding(horizontal = 16.dp)
+                                .verticalScroll(scrollState)
+                                .padding(bottom = 32.dp), // Extra bottom padding for better UX when scrolling
                             verticalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
                             // Authentication Section
@@ -843,6 +866,64 @@ class SettingsActivity : ComponentActivity() {
                                             }
                                         )
                                     }
+                                }
+                            }
+
+                            // Quiz Options Count Slider
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = Color(0xFF18191E)
+                                ),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    // Get the current value from preferences (default to 3)
+                                    var wrongOptionsCount by remember { 
+                                        mutableStateOf(prefs.getInt("quiz_wrong_options_count", 3).toFloat())
+                                    }
+                                    
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text("Answer Choices")
+                                        Text(
+                                            text = "${wrongOptionsCount.toInt()} wrong answers",
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = Color(0xFFAAAAAA)
+                                        )
+                                    }
+                                    
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    
+                                    // Slider matching the app's current design - light blue thumb and track, no tick marks
+                                    Slider(
+                                        value = wrongOptionsCount,
+                                        onValueChange = { newValue ->
+                                            wrongOptionsCount = newValue.roundToInt().toFloat()
+                                        },
+                                        onValueChangeFinished = {
+                                            // Save the value to preferences when user stops dragging
+                                            prefs.edit().putInt("quiz_wrong_options_count", wrongOptionsCount.toInt()).apply()
+                                        },
+                                        valueRange = 1f..6f,
+                                        steps = 4,
+                                        modifier = Modifier.fillMaxWidth(),
+                                        colors = SliderDefaults.colors(
+                                            thumbColor = Color(0xFF90CAF9),        // Light blue thumb
+                                            activeTrackColor = Color(0xFF90CAF9),  // Light blue active track
+                                            inactiveTrackColor = Color(0xFF424242),// Dark gray inactive track
+                                            activeTickColor = Color.Transparent,   // Hide ticks
+                                            inactiveTickColor = Color.Transparent  // Hide ticks
+                                        )
+                                    )
                                 }
                             }
 
@@ -1097,9 +1178,32 @@ class SettingsActivity : ComponentActivity() {
                                 }
                             }
                         }
+
+                        // Indicator at the bottom to hint at scrollable content
+                        AnimatedVisibility(
+                            visible = scrollState.canScrollForward || scrollState.canScrollBackward,
+                            enter = fadeIn(),
+                            exit = fadeOut()
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.BottomCenter)
+                                    .padding(bottom = 8.dp)
+                                    .size(32.dp, 4.dp)
+                                    .background(
+                                        color = Color(0x3090CAF9), // Semi-transparent blue
+                                        shape = RoundedCornerShape(2.dp)
+                                    )
+                            )
+                        }
                     }
                 }
             }
         }
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+        TransitionUtils.applyStandardTransitionOnFinish(this)
     }
 } 

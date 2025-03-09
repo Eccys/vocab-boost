@@ -12,5 +12,10 @@
         <!-- Make the splash screen icons appear in white -->
         <item name="android:windowLightStatusBar">false</item>
         <item name="android:windowLightNavigationBar">false</item>
+        
+        <!-- Enable window content transitions -->
+        <item name="android:windowActivityTransitions">true</item>
+        <item name="android:windowAllowEnterTransitionOverlap">true</item>
+        <item name="android:windowAllowReturnTransitionOverlap">true</item>
     </style>
 </resources>

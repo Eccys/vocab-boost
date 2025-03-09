@@ -223,19 +223,30 @@ class WordRepository private constructor(
         val isSpacedRepetitionEnabled = settingsManager?.isSpacedRepetitionEnabled() ?: true
         
         if (isSpacedRepetitionEnabled) {
-            // PRIORITY 1: ALL OVERDUE WORDS
-            // Get ALL overdue words, sorted by their overdue ratio
+            // PRIORITY 1: Get top overdue words
+            // Get ALL overdue words
             val overdueWords = wordDao.getOverdueWords(currentTime)
             
             // Filter out the excluded word if any
             val availableOverdueWords = overdueWords.filter { it.id != excludeWord?.id }
             
-            // If there are ANY overdue words, always return the one with highest overdue ratio
+            // If there are ANY overdue words, get top 5 (or fewer if less available)
             if (availableOverdueWords.isNotEmpty()) {
-                android.util.Log.d("WordPriority", "Selected an overdue word with ratio: " + 
-                    ((currentTime - availableOverdueWords.first().nextReviewDate) / 
-                    (Math.max(1, availableOverdueWords.first().interval) * 86400000.0)).toString())
-                return availableOverdueWords.first()
+                // Calculate overdue ratio for each word
+                val wordsWithRatio = availableOverdueWords.map { word ->
+                    val overdueRatio = (currentTime - word.nextReviewDate) / (Math.max(1, word.interval) * 86400000.0)
+                    Pair(word, overdueRatio)
+                }
+                
+                // Get the top 3 most overdue words
+                val topOverdueWords = wordsWithRatio
+                    .sortedByDescending { it.second }
+                    .take(3)
+                    .map { it.first }
+                
+                // Pick one of the top words randomly
+                android.util.Log.d("WordPriority", "Selected from top ${topOverdueWords.size} overdue words")
+                return topOverdueWords.random()
             }
             
             // PRIORITY 2: ONLY IF NO OVERDUE WORDS, USE UNSEEN WORDS
@@ -243,31 +254,16 @@ class WordRepository private constructor(
             val unseenWords = wordDao.getUnseenWords()
                 .filter { it.id != excludeWord?.id }
             
-            // If there are ANY unseen words, always return one of them
+            // If there are ANY unseen words, always return a random one of them
             if (unseenWords.isNotEmpty()) {
                 android.util.Log.d("WordPriority", "Selected an unseen word")
-                // Take the first one, don't randomize
-                return unseenWords.first()
+                return unseenWords.random()
             }
             
             // PRIORITY 3: ONLY AS LAST RESORT, USE OTHER WORDS
-            // We only reach here if there are NO overdue words AND NO unseen words
             android.util.Log.d("WordPriority", "No overdue or unseen words, selecting random word")
             
-            // Get all words that are not excluded and don't have a future review date
-            val allWords = wordDao.getAllWords()
-            val availableWords = allWords
-                .filter { it.id != excludeWord?.id }
-                .filter { it.nextReviewDate == 0L || it.nextReviewDate <= currentTime }
-            
-            // If there are any available words, return a random one
-            if (availableWords.isNotEmpty()) {
-                return availableWords.random()
-            }
-            
-            // If all words have future review dates, log this situation and return a random word
-            // excluding the current one (this should be a rare fallback)
-            android.util.Log.d("WordPriority", "All words have future review dates, selecting random word anyway")
+            // If no overdue or unseen words, just get a random word
             return if (excludeWord == null) {
                 wordDao.getRandomWords(1).first()
             } else {

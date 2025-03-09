@@ -315,7 +315,6 @@ fun QuizScreen(
     var totalBookmarkedWords by remember { mutableStateOf(0) }
     var showHint by remember { mutableStateOf(false) }
     var showNextButton by remember { mutableStateOf(false) }
-    var isLoading by remember { mutableStateOf(true) }
 
     // Add the lookupWord function
     fun lookupWord(word: String) {
@@ -509,17 +508,13 @@ fun QuizScreen(
         questionStartTime = System.currentTimeMillis()
     }
 
-    // Update the LaunchedEffect block in the QuizScreen composable function to prioritize reusing cached data
+    // Initial load
     LaunchedEffect(Unit) {
-        println("QuizActivity: Accessing preloaded quiz data")
         // Get the initial word
         val initialWord = if (isBookmarkMode) {
             wordRepository.getRandomBookmarkedWords(1).firstOrNull() ?: return@LaunchedEffect
         } else {
-            // Word should already be preloaded by MainActivity
-            val word = wordRepository.getNextWord(null)
-            println("QuizActivity: Using preloaded word: ${word.word}")
-            word
+            wordRepository.getNextWord(null)
         }
 
         // Get other words for options using the settings for number of options
@@ -537,8 +532,6 @@ fun QuizScreen(
                 .take(wrongOptionsCount)  // Use the number of wrong options from settings
         }
 
-        // Instead of showing loading indicator, immediately set data
-        isLoading = false // Add this variable to track loading state
         currentBatch = listOf(initialWord) + otherWords
         if (currentBatch.isNotEmpty()) {
             currentWord.value = currentBatch[0]
@@ -550,7 +543,7 @@ fun QuizScreen(
         }
     }
 
-    if ((currentBatch.isEmpty() || currentWord.value == null) && isLoading) {
+    if (currentBatch.isEmpty() || currentWord.value == null) {
         Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             if (isBookmarkMode) {
                 Text("No bookmarked words available")

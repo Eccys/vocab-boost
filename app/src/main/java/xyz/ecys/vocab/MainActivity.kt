@@ -84,8 +84,6 @@ import xyz.ecys.vocab.data.AppUsageManager
 import xyz.ecys.vocab.data.DailyWord
 import xyz.ecys.vocab.data.DailyWordManager
 import xyz.ecys.vocab.data.WordDatabase
-import xyz.ecys.vocab.data.WordRepository
-import xyz.ecys.vocab.data.QuizResultRepository
 import xyz.ecys.vocab.ui.theme.AppIcons
 import xyz.ecys.vocab.ui.theme.VocabularyBoosterTheme
 import java.time.Instant
@@ -99,8 +97,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelChildren
 import androidx.compose.runtime.rememberCoroutineScope
 import xyz.ecys.vocab.utils.TransitionUtils
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.first
 
 data class CalendarDay(
     val date: LocalDate,
@@ -923,9 +919,6 @@ class MainActivity : ComponentActivity() { // Calendar Card
                 }
             }
         }
-
-        // Add preloading call after UI is initialized
-        preloadAppData()
     }
 
     override fun onPause() {
@@ -952,79 +945,6 @@ class MainActivity : ComponentActivity() { // Calendar Card
         wordsToday.value = wordDatabase.wordDao().countWordsReviewedToday()
         val prefs = getSharedPreferences("vocab_settings", Context.MODE_PRIVATE)
         dailyGoal.value = prefs.getInt("daily_goal", 20)
-    }
-
-    // Add this after onCreate() or similar lifecycle method, before existing code
-    // Add a data preloader function
-    private fun preloadAppData() {
-        // Use lifecycleScope to ensure coroutines are cancelled when the activity is destroyed
-        lifecycleScope.launch {
-            // Wait for UI to settle first (200ms is usually enough for most UI to render)
-            delay(200)
-            
-            // Log start of preloading
-            println("Starting background data preloading")
-            
-            // Preload in parallel using async
-            val wordRepositoryInstance = WordRepository.getInstance(this@MainActivity)
-            val quizResultRepositoryInstance = QuizResultRepository.getInstance(this@MainActivity)
-            
-            // Launch all preloading operations in parallel
-            val jobs = mutableListOf<Job>()
-            
-            // 1. Preload the first quiz word
-            jobs.add(launch(Dispatchers.IO) {
-                try {
-                    // Fetch first word for quiz to preload it in the repository's cache
-                    val firstWord = wordRepositoryInstance.getNextWord(null)
-                    println("Preloaded first quiz word: ${firstWord.word}")
-                    
-                    // Also preload a batch of other words to have them ready
-                    val otherWords = wordRepositoryInstance.getRandomWordsByCategory(
-                        firstWord.category, 
-                        5 // Load a few extra options
-                    )
-                    println("Preloaded ${otherWords.size} additional quiz words")
-                } catch (e: Exception) {
-                    println("Error preloading quiz word: ${e.message}")
-                }
-            })
-            
-            // 2. Preload bookmarks data
-            jobs.add(launch(Dispatchers.IO) {
-                try {
-                    val bookmarks = wordRepositoryInstance.getBookmarkedWordsFlow().first()
-                    println("Preloaded ${bookmarks.size} bookmarked words")
-                } catch (e: Exception) {
-                    println("Error preloading bookmarks: ${e.message}")
-                }
-            })
-            
-            // 3. Preload quiz history data
-            jobs.add(launch(Dispatchers.IO) {
-                try {
-                    val historyItems = quizResultRepositoryInstance.getQuizHistory(20)
-                    println("Preloaded ${historyItems.size} quiz history items")
-                } catch (e: Exception) {
-                    println("Error preloading quiz history: ${e.message}")
-                }
-            })
-            
-            // 4. Preload daily word data
-            jobs.add(launch(Dispatchers.IO) {
-                try {
-                    val dailyWordManager = DailyWordManager.getInstance(this@MainActivity)
-                    val todayWord = dailyWordManager.getTodaysWord()
-                    println("Preloaded daily word: ${todayWord.word}")
-                } catch (e: Exception) {
-                    println("Error preloading daily word: ${e.message}")
-                }
-            })
-            
-            // Wait for all jobs to complete
-            jobs.forEach { it.join() }
-            println("Background data preloading completed")
-        }
     }
 }
 

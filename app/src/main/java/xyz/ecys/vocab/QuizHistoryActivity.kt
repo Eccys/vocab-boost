@@ -54,7 +54,6 @@ class QuizHistoryActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         wordRepository = WordRepository.getInstance(this)
         quizResultRepository = QuizResultRepository.getInstance(this)
-        println("QuizHistoryActivity: Using preloaded history data")
 
         setContent {
             VocabularyBoosterTheme {
@@ -91,24 +90,12 @@ class QuizHistoryActivity : ComponentActivity() {
                 LaunchedEffect(pageSize) {
                     isLoading = true
                     try {
-                        println("QuizHistoryActivity: Loading history with cached data availability")
+                        println("Loading quiz history, page size: $pageSize")
                         
-                        // Try to get the history data - this should be fast if already preloaded
-                        val preloadedHistory = quizResultRepository.getQuizHistory(pageSize)
+                        // Get quiz history using the new dedicated method
+                        historyQuestions = quizResultRepository.getQuizHistory(pageSize)
                         
-                        // If we already have data, show it immediately
-                        if (preloadedHistory.isNotEmpty()) {
-                            println("Using preloaded history data: ${preloadedHistory.size} items")
-                            historyQuestions = preloadedHistory
-                            isLoading = false
-                        } else {
-                            // If no preloaded data, fetch it normally
-                            historyQuestions = quizResultRepository.getQuizHistory(pageSize)
-                            println("Retrieved ${historyQuestions.size} history items")
-                            isLoading = false
-                        }
-                        
-                        // Log some debug info
+                        println("Retrieved ${historyQuestions.size} history items")
                         if (historyQuestions.isNotEmpty()) {
                             println("First few words: ${historyQuestions.take(5).map { it.word }}")
                         } else {
@@ -117,6 +104,7 @@ class QuizHistoryActivity : ComponentActivity() {
                     } catch (e: Exception) {
                         println("Error loading quiz history: ${e.message}")
                         e.printStackTrace()
+                    } finally {
                         isLoading = false
                     }
                 }
