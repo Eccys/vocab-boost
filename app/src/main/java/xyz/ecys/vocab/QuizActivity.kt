@@ -315,6 +315,7 @@ fun QuizScreen(
     var totalBookmarkedWords by remember { mutableStateOf(0) }
     var showHint by remember { mutableStateOf(false) }
     var showNextButton by remember { mutableStateOf(false) }
+    var isLoading by remember { mutableStateOf(true) }
 
     // Add the lookupWord function
     fun lookupWord(word: String) {
@@ -536,6 +537,8 @@ fun QuizScreen(
                 .take(wrongOptionsCount)  // Use the number of wrong options from settings
         }
 
+        // Instead of showing loading indicator, immediately set data
+        isLoading = false // Add this variable to track loading state
         currentBatch = listOf(initialWord) + otherWords
         if (currentBatch.isNotEmpty()) {
             currentWord.value = currentBatch[0]
@@ -547,7 +550,7 @@ fun QuizScreen(
         }
     }
 
-    if (currentBatch.isEmpty() || currentWord.value == null) {
+    if ((currentBatch.isEmpty() || currentWord.value == null) && isLoading) {
         Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             if (isBookmarkMode) {
                 Text("No bookmarked words available")

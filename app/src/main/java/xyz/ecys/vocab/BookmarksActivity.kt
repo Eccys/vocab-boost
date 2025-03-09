@@ -237,6 +237,7 @@ fun BookmarksScreen(
     var expandedTooltipWordId by remember { mutableStateOf<Int?>(null) }
     val context = LocalContext.current
     val view = LocalView.current
+    var isLoading by remember { mutableStateOf(true) }
 
     // Custom colors for CompactWordCard
     val cardBackground = Color(0xFF19181E)  // Specific card background color
@@ -245,16 +246,12 @@ fun BookmarksScreen(
     val Success = MaterialTheme.colorScheme.primary
     val Error = MaterialTheme.colorScheme.error
 
-    fun lookupWord(wordText: String) {
-        view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
-        try {
-            val dictionaryIntent = Intent(Intent.ACTION_VIEW)
-            dictionaryIntent.data = Uri.parse("dictionary:$wordText")
-            context.startActivity(dictionaryIntent)
-        } catch (e: ActivityNotFoundException) {
-            val searchIntent = Intent(Intent.ACTION_VIEW)
-            searchIntent.data = Uri.parse("https://www.google.com/search?q=define+$wordText")
-            context.startActivity(searchIntent)
+    // Initialize displayedWords immediately if initialBookmarkedWords is not empty
+    // This prevents showing empty state briefly when data is available
+    LaunchedEffect(Unit) {
+        if (initialBookmarkedWords.isNotEmpty()) {
+            displayedWords = initialBookmarkedWords.sortedBy { it.word.lowercase() }
+            isLoading = false
         }
     }
 
@@ -277,6 +274,20 @@ fun BookmarksScreen(
                     .thenBy { !it.definition.contains(searchQuery, ignoreCase = true) }
                     .thenBy { it.word.lowercase() }
             )
+        }
+        isLoading = false
+    }
+
+    fun lookupWord(wordText: String) {
+        view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
+        try {
+            val dictionaryIntent = Intent(Intent.ACTION_VIEW)
+            dictionaryIntent.data = Uri.parse("dictionary:$wordText")
+            context.startActivity(dictionaryIntent)
+        } catch (e: ActivityNotFoundException) {
+            val searchIntent = Intent(Intent.ACTION_VIEW)
+            searchIntent.data = Uri.parse("https://www.google.com/search?q=define+$wordText")
+            context.startActivity(searchIntent)
         }
     }
 
