@@ -30,6 +30,8 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import xyz.ecys.vocab.QuizResultsActivity
 import xyz.ecys.vocab.data.*
+import xyz.ecys.vocab.data.QuizResult as FirestoreQuizResult
+import xyz.ecys.vocab.data.QuizQuestion
 import xyz.ecys.vocab.ui.theme.*
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -52,6 +54,10 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import xyz.ecys.vocab.data.SettingsManager
+import xyz.ecys.vocab.quiz.QuizResult
+import java.util.Date
+import android.util.Log
+import xyz.ecys.vocab.data.GlobalQuizState
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -61,9 +67,10 @@ fun QuizScreen(
     appUsageManager: AppUsageManager,
     isBookmarkMode: Boolean,
     currentWord: MutableState<Word?>,
-    lives: MutableState<Int>,
-    onGameOver: () -> Unit,
-    settingsManager: SettingsManager
+    selectedAnswer: String?,
+    setSelectedAnswer: (String?) -> Unit,
+    settingsManager: SettingsManager,
+    quizResultRepository: QuizResultRepository
 ) {
     val context = LocalContext.current
     val view = LocalView.current
@@ -73,13 +80,13 @@ fun QuizScreen(
     var quizResults by remember { mutableStateOf<List<QuizResult>>(emptyList()) }
     var currentSynonymSet by remember { mutableStateOf(1) }
     var questionStartTime by remember { mutableStateOf(0L) }
-    var selectedAnswer by remember { mutableStateOf<String?>(null) }
     var showNextButton by remember { mutableStateOf(false) }
     var expandedExamples by remember { mutableStateOf(setOf<String>()) }
     var currentBatch by remember { mutableStateOf<List<Word>>(emptyList()) }
     var options by remember { mutableStateOf<List<String>>(emptyList()) }
     var totalBookmarkedWords by remember { mutableStateOf(0) }
     var showTooltip by remember { mutableStateOf(false) }
+    var quizStartTime by remember { mutableStateOf(System.currentTimeMillis()) }
 
     // Debug state
     var showDebugInfo by remember { mutableStateOf(true) }
@@ -125,7 +132,7 @@ fun QuizScreen(
     // Move handleAnswer function here
     fun handleAnswer(selectedSynonym: String) {
         if (selectedAnswer == null) {
-            selectedAnswer = selectedSynonym
+            setSelectedAnswer(selectedSynonym)
             
             // Use the tracked currentSynonymSet to determine the correct answer
             val correctSynonym = when (currentSynonymSet) {
@@ -148,10 +155,6 @@ fun QuizScreen(
                 }
             }
             
-            if (!isCorrect) {
-                lives.value--
-            }
-            
             // Update word statistics with timing information
             coroutineScope.launch {
                 wordRepository.updateWordStats(
@@ -172,22 +175,33 @@ fun QuizScreen(
             quizResults = quizResults + newResult
 
             showNextButton = true
-
-            if (lives.value <= 0) {
-                // Game over, show results
-                coroutineScope.launch {
-                    // End the session before transitioning
-                    appUsageManager.endSession()
-                    
-                    // Create intent with results
-                    val intent = Intent(context, QuizResultsActivity::class.java).apply {
-                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        putParcelableArrayListExtra("results", ArrayList(quizResults))
-                    }
-                    
-                    // Start the activity and notify game over
-                    context.startActivity(intent)
-                    onGameOver()
+            
+            // Save each individual question result to Firestore immediately
+            coroutineScope.launch {
+                // Create a QuizQuestion object for the current question
+                val question = QuizQuestion(
+                    word = currentWord.value!!.word,
+                    correctDefinition = currentWord.value!!.definition,
+                    userAnswer = selectedSynonym,
+                    isCorrect = isCorrect
+                )
+                
+                // Create a Firestore QuizResult with just this question
+                val firestoreQuizResult = FirestoreQuizResult(
+                    timestamp = Date(),
+                    correctAnswers = if (isCorrect) 1 else 0,
+                    totalQuestions = 1,
+                    questions = listOf(question),
+                    score = if (isCorrect) 1f else 0f,
+                    durationInSeconds = responseTime / 1000
+                )
+                
+                // Save to Firestore
+                try {
+                    quizResultRepository.saveQuizResult(firestoreQuizResult)
+                    android.util.Log.d("QuizResult", "Saved quiz result to Firestore")
+                } catch (e: Exception) {
+                    android.util.Log.e("QuizResult", "Error saving quiz result: ${e.message}")
                 }
             }
         }
@@ -257,12 +271,12 @@ fun QuizScreen(
             currentWord.value = nextWord
             
             // Generate options and synonym set for the quiz
-            val (newOptions, newSynonymSet) = generateOptions(currentBatch, nextWord)
+            val (newOptions, newSynonymSet) = generateOptions(currentBatch, nextWord, context)
             options = newOptions
             currentSynonymSet = newSynonymSet
             
             // Reset UI state for the new question
-            selectedAnswer = null
+            setSelectedAnswer(null)
             showNextButton = false
             expandedExamples = emptySet()
             showTooltip = false
@@ -325,11 +339,12 @@ fun QuizScreen(
             currentWord.value = initialWord
             
             // Generate options and synonym set for the quiz
-            val (newOptions, newSynonymSet) = generateOptions(currentBatch, initialWord)
+            val (newOptions, newSynonymSet) = generateOptions(currentBatch, initialWord, context)
             options = newOptions
             currentSynonymSet = newSynonymSet
             
             questionStartTime = System.currentTimeMillis()
+            quizStartTime = System.currentTimeMillis() // Set the quiz start time
             android.util.Log.d("QuizTimer", "Setting initial question start time: $questionStartTime")
         }
     }
@@ -535,10 +550,10 @@ fun QuizScreen(
                                 
                                 currentBatch = listOf(nextWord) + otherWords
                                 currentWord.value = nextWord
-                                val (newOptions, newSynonymSet) = generateOptions(currentBatch, nextWord)
+                                val (newOptions, newSynonymSet) = generateOptions(currentBatch, nextWord, context)
                                 options = newOptions
                                 currentSynonymSet = newSynonymSet
-                                selectedAnswer = null
+                                setSelectedAnswer(null)
                                 showNextButton = false
                                 expandedExamples = emptySet()
                                 questionStartTime = System.currentTimeMillis()
@@ -902,7 +917,7 @@ fun QuizScreen(
         if (showNextButton) {
             Button(
                 onClick = { 
-                    selectedAnswer = null
+                    setSelectedAnswer(null)
                     showNextButton = false
                     expandedExamples = emptySet()
                     showTooltip = false  // Also reset tooltip here for good measure

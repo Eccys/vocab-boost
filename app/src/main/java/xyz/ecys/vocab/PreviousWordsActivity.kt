@@ -7,6 +7,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.Spring
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -63,6 +64,8 @@ import java.time.format.DateTimeFormatter
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.material.ripple.rememberRipple
+import androidx.compose.animation.animateContentSize
+import xyz.ecys.vocab.utils.TransitionUtils
 
 @OptIn(ExperimentalMaterial3Api::class)
 class PreviousWordsActivity : ComponentActivity() {
@@ -90,7 +93,10 @@ class PreviousWordsActivity : ComponentActivity() {
                                 )
                             },
                             navigationIcon = {
-                                IconButton(onClick = { finish() }) {
+                                IconButton(onClick = { 
+                                    finish() 
+                                    TransitionUtils.applyStandardTransitionOnFinish(this@PreviousWordsActivity)
+                                }) {
                                     Icon(
                                         painter = AppIcons.arrowLeft(),
                                         contentDescription = "Back",
@@ -113,11 +119,18 @@ class PreviousWordsActivity : ComponentActivity() {
                             // Pass the date as a string rather than just an index
                             intent.putExtra("SELECTED_DATE", date.toString())
                             startActivity(intent)
+                            TransitionUtils.applyStandardTransition(this)
                         }
                     )
                 }
             }
         }
+    }
+
+    // Add the onBackPressed method
+    override fun onBackPressed() {
+        super.onBackPressed()
+        TransitionUtils.applyStandardTransitionOnFinish(this)
     }
 }
 
@@ -211,6 +224,16 @@ fun WordsListContainer(
                             )
                         }
                     } else {
+                        // Add state for button animation
+                        var isLoadMorePressed by remember { mutableStateOf(false) }
+                        val loadMoreScale by animateFloatAsState(
+                            targetValue = if (isLoadMorePressed) 0.97f else 1f,
+                            animationSpec = spring(
+                                dampingRatio = 0.75f,
+                                stiffness = 300f
+                            )
+                        )
+                        
                         Button(
                             onClick = {
                                 // Load 30 more words
@@ -220,10 +243,37 @@ fun WordsListContainer(
                             },
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(vertical = 8.dp),
+                                .padding(vertical = 8.dp)
+                                .graphicsLayer {
+                                    scaleX = loadMoreScale
+                                    scaleY = loadMoreScale
+                                }
+                                .animateContentSize(
+                                    animationSpec = spring(
+                                        dampingRatio = 0.8f,
+                                        stiffness = Spring.StiffnessLow
+                                    )
+                                ),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = Color(0xFF18191E)
-                            )
+                            ),
+                            shape = RoundedCornerShape(12.dp),
+                            elevation = ButtonDefaults.buttonElevation(
+                                defaultElevation = 0.dp,
+                                pressedElevation = 0.dp
+                            ),
+                            interactionSource = remember { MutableInteractionSource() }
+                                .also { interactionSource ->
+                                    LaunchedEffect(interactionSource) {
+                                        interactionSource.interactions.collect { interaction ->
+                                            when (interaction) {
+                                                is PressInteraction.Press -> isLoadMorePressed = true
+                                                is PressInteraction.Release -> isLoadMorePressed = false
+                                                is PressInteraction.Cancel -> isLoadMorePressed = false
+                                            }
+                                        }
+                                    }
+                                }
                         ) {
                             Text(
                                 text = "Load More Words",
@@ -234,7 +284,7 @@ fun WordsListContainer(
                     }
                 }
                 
-                Spacer(Modifier.height(80.dp))
+                Spacer(Modifier.height(16.dp))
             }
         }
     }

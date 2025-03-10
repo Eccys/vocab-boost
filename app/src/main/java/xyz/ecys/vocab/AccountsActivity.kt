@@ -36,6 +36,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.fadeOut
+import xyz.ecys.vocab.utils.TransitionUtils
 
 @OptIn(ExperimentalMaterial3Api::class)
 class AccountsActivity : ComponentActivity() {
@@ -57,10 +58,28 @@ class AccountsActivity : ComponentActivity() {
                 val authError by authViewModel.authError.collectAsState()
                 val message by authViewModel.message.collectAsState()
                 var lastSync by remember { mutableStateOf(authViewModel.getLastSyncTime()) }
-                var showSnackbar by remember { mutableStateOf(false) }
-                var snackbarMessage by remember { mutableStateOf("") }
                 var showForgotPasswordDialog by remember { mutableStateOf(false) }
                 var resetEmail by remember { mutableStateOf("") }
+                
+                // Snackbar state - single source of truth
+                var snackbarVisible by remember { mutableStateOf(false) }
+                var snackbarMessage by remember { mutableStateOf("") }
+                
+                // Process messages from authViewModel
+                LaunchedEffect(message) {
+                    message?.let {
+                        if (it.isNotEmpty()) {
+                            snackbarMessage = it
+                            snackbarVisible = true
+                            // Auto-dismiss after 3 seconds
+                            scope.launch {
+                                kotlinx.coroutines.delay(3000)
+                                snackbarVisible = false
+                                authViewModel.showMessage(null) // Clear the message
+                            }
+                        }
+                    }
+                }
 
                 Scaffold(
                     topBar = {
@@ -75,7 +94,10 @@ class AccountsActivity : ComponentActivity() {
                                 ) 
                             },
                             navigationIcon = {
-                                IconButton(onClick = { finish() }) {
+                                IconButton(onClick = { 
+                                    finish() 
+                                    TransitionUtils.applyStandardTransitionOnFinish(this@AccountsActivity)
+                                }) {
                                     Icon(
                                         painter = AppIcons.arrowLeft(),
                                         contentDescription = "Back",
@@ -197,11 +219,9 @@ class AccountsActivity : ComponentActivity() {
                                         authViewModel.syncData { success ->
                                             if (success) {
                                                 lastSync = authViewModel.getLastSyncTime()
-                                                showSnackbar = true
-                                                snackbarMessage = "Data synced successfully"
+                                                authViewModel.showMessage("Data synced successfully")
                                             } else {
-                                                showSnackbar = true
-                                                snackbarMessage = authError ?: "Sync failed"
+                                                authViewModel.showMessage(authError ?: "Sync failed")
                                             }
                                         }
                                     }
@@ -223,11 +243,9 @@ class AccountsActivity : ComponentActivity() {
                                         authViewModel.downloadDataFromCloud { success ->
                                             if (success) {
                                                 lastSync = authViewModel.getLastSyncTime()
-                                                showSnackbar = true
-                                                snackbarMessage = "Data downloaded successfully"
+                                                authViewModel.showMessage("Data downloaded successfully")
                                             } else {
-                                                showSnackbar = true
-                                                snackbarMessage = authError ?: "Download failed"
+                                                authViewModel.showMessage(authError ?: "Download failed")
                                             }
                                         }
                                     }
@@ -283,59 +301,6 @@ class AccountsActivity : ComponentActivity() {
                                 }
                         ) {
                             Text("Sign Out")
-                        }
-                    }
-                }
-
-                // Add Snackbar to show messages
-                if (showSnackbar) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(16.dp),
-                        contentAlignment = Alignment.TopCenter
-                    ) {
-                        Card(
-                            modifier = Modifier
-                                .padding(top = 16.dp)
-                                .fillMaxWidth(0.9f),
-                            shape = RoundedCornerShape(24.dp), // More rounded corners
-                            colors = CardDefaults.cardColors(
-                                containerColor = Color(0xFF18191E)
-                            ),
-                            elevation = CardDefaults.cardElevation(
-                                defaultElevation = 6.dp
-                            )
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 16.dp, vertical = 12.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(12.dp)
-                            ) {
-                                Icon(
-                                    painter = AppIcons.circleInfoSolid(),
-                                    contentDescription = "Info",
-                                    tint = Color(0xFF90CAF9)
-                                )
-                                Text(
-                                    text = snackbarMessage,
-                                    color = Color(0xFFFCFCFC),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    modifier = Modifier.weight(1f)
-                                )
-                                IconButton(
-                                    onClick = { showSnackbar = false },
-                                    modifier = Modifier.size(24.dp)
-                                ) {
-                                    Icon(
-                                        painter = AppIcons.xSolid(),
-                                        contentDescription = "Dismiss",
-                                        tint = Color(0xFFAAAAAA)
-                                    )
-                                }
-                            }
                         }
                     }
                 }
@@ -693,9 +658,8 @@ class AccountsActivity : ComponentActivity() {
                                                 scope.launch {
                                                     kotlinx.coroutines.delay(1500)
                                                     showForgotPasswordDialog = false
-                                                    showSnackbar = true
-                                                    snackbarMessage = "Password reset link sent to your email"
-                                                }
+                                                    authViewModel.showMessage("Password reset link sent to your email")
+                                            }
                                             }
                                         }
                                     }
@@ -724,7 +688,7 @@ class AccountsActivity : ComponentActivity() {
                 // Custom Snackbar
                 Box(modifier = Modifier.fillMaxSize()) {
                     AnimatedVisibility(
-                        visible = showSnackbar,
+                        visible = snackbarVisible,
                         enter = slideInVertically(
                             initialOffsetY = { -it },
                             animationSpec = spring(
@@ -784,7 +748,7 @@ class AccountsActivity : ComponentActivity() {
                                     modifier = Modifier.weight(1f)
                                 )
                                 IconButton(
-                                    onClick = { showSnackbar = false },
+                                    onClick = { snackbarVisible = false },
                                     modifier = Modifier.size(24.dp)
                                 ) {
                                     Icon(
@@ -797,23 +761,12 @@ class AccountsActivity : ComponentActivity() {
                         }
                     }
                 }
-
-                // Show snackbar when message changes
-                LaunchedEffect(message) {
-                    message?.let {
-                        if (it.isNotEmpty()) {
-                            snackbarMessage = it
-                            showSnackbar = true
-                            // Auto-dismiss after 3 seconds
-                            scope.launch {
-                                kotlinx.coroutines.delay(3000)
-                                showSnackbar = false
-                                authViewModel.showMessage(null) // Clear the message
-                            }
-                        }
-                    }
-                }
             }
         }
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+        TransitionUtils.applyStandardTransitionOnFinish(this)
     }
 } 

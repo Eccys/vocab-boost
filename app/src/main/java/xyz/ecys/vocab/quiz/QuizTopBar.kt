@@ -22,11 +22,9 @@ fun QuizTopBar(
     onBackClick: () -> Unit,
     currentWord: Word?,
     onBookmarkClick: (Word) -> Unit,
-    lives: Int,
-    hintsRemaining: Int = 0,
-    hintUsedForCurrentQuestion: Boolean = false,
-    selectedAnswer: String? = null,
-    onHintClick: () -> Unit = {}
+    hintUsedForCurrentQuestion: Boolean,
+    selectedAnswer: String?,
+    onHintClick: () -> Unit
 ) {
     TopAppBar(
         title = { 
@@ -51,41 +49,19 @@ fun QuizTopBar(
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                repeat(3) { index ->
-                    Icon(
-                        painter = if (index < lives) AppIcons.heartSolid() else AppIcons.heartCrackSolid(),
-                        contentDescription = null,
-                        modifier = Modifier.size(24.dp),
-                        tint = Color(0xFFED333B)
-                    )
-                }
                 if (currentWord != null) {
-                    if (hintsRemaining > 0) {
-                        Box(contentAlignment = Alignment.Center) {
-                            IconButton(
-                                onClick = { onHintClick() },
-                                enabled = hintsRemaining > 0 && !hintUsedForCurrentQuestion && selectedAnswer == null
-                            ) {
-                                Icon(
-                                    painter = AppIcons.lightbulbSolid(),
-                                    contentDescription = "Show hint",
-                                    tint = if (hintsRemaining > 0 && !hintUsedForCurrentQuestion && selectedAnswer == null) 
-                                        Color(0xFFFFC107) else Color.Gray
-                                )
-                            }
-                            
-                            Text(
-                                text = hintsRemaining.toString(),
-                                style = MaterialTheme.typography.labelSmall.copy(
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 10.sp
-                                ),
-                                color = Color.Black,
-                                modifier = Modifier.offset(x = 0.dp, y = 1.dp),
-                                textAlign = TextAlign.Center
-                            )
-                        }
+                    IconButton(
+                        onClick = { onHintClick() },
+                        enabled = !hintUsedForCurrentQuestion && selectedAnswer == null
+                    ) {
+                        Icon(
+                            painter = AppIcons.lightbulbSolid(),
+                            contentDescription = "Show hint",
+                            tint = if (!hintUsedForCurrentQuestion && selectedAnswer == null) 
+                                Color(0xFFFFC107) else Color.Gray
+                        )
                     }
+                    
                     IconButton(
                         onClick = { onBookmarkClick(currentWord) }
                     ) {

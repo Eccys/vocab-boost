@@ -31,6 +31,8 @@ import kotlinx.coroutines.launch
 import xyz.ecys.vocab.data.Word
 import xyz.ecys.vocab.data.WordRepository
 import xyz.ecys.vocab.data.AppUsageManager
+import xyz.ecys.vocab.data.QuizResultRepository
+import xyz.ecys.vocab.data.QuizHistoryItem
 import xyz.ecys.vocab.ui.theme.VocabularyBoosterTheme
 import xyz.ecys.vocab.ui.theme.AppIcons
 import xyz.ecys.vocab.ui.components.stats.*
@@ -38,28 +40,38 @@ import xyz.ecys.vocab.utils.FormatUtils.toSentenceCase
 import java.util.Locale
 import android.content.Context as AndroidContext
 import java.util.Calendar
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import xyz.ecys.vocab.utils.TransitionUtils
 
 @OptIn(ExperimentalMaterial3Api::class)
 class StatsActivity : ComponentActivity() {
     private lateinit var wordRepository: WordRepository
     private lateinit var appUsageManager: AppUsageManager
+    private lateinit var quizResultRepository: QuizResultRepository
 
     companion object {
         private const val DEFAULT_DAILY_GOAL = 20
+        private const val STATS_CACHE_PREFS = "stats_cache_prefs"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         wordRepository = WordRepository.getInstance(this)
         appUsageManager = AppUsageManager.getInstance(this)
+        quizResultRepository = QuizResultRepository.getInstance(this)
+
+        // Initialize the stats cache
+        val statsCache = getSharedPreferences(STATS_CACHE_PREFS, AndroidContext.MODE_PRIVATE)
 
         setContent {
             VocabularyBoosterTheme {
-                var totalReviewed by remember { mutableStateOf(0) }
-                var timeSpentToday by remember { mutableStateOf(0L) }
-                var totalTimeSpent by remember { mutableStateOf(0L) }
-                var bestStreak by remember { mutableStateOf(0) }
-                var currentStreak by remember { mutableStateOf(0) }
+                // Load cached values first
+                var totalReviewed by remember { mutableStateOf(statsCache.getInt("totalReviewed", 0)) }
+                var timeSpentToday by remember { mutableStateOf(statsCache.getLong("timeSpentToday", 0L)) }
+                var totalTimeSpent by remember { mutableStateOf(statsCache.getLong("totalTimeSpent", 0L)) }
+                var bestStreak by remember { mutableStateOf(statsCache.getInt("bestStreak", 0)) }
+                var currentStreak by remember { mutableStateOf(statsCache.getInt("currentStreak", 0)) }
                 var showingCurrentStreak by remember { mutableStateOf(false) }
                 var masteredWords by remember { mutableStateOf<List<Word>>(emptyList()) }
                 var toReviewWords by remember { mutableStateOf<List<Word>>(emptyList()) }
@@ -70,21 +82,35 @@ class StatsActivity : ComponentActivity() {
                 var showWordsToday by remember { mutableStateOf(false) }
                 var showWordInfo by remember { mutableStateOf<Word?>(null) }
                 var showGoalDialog by remember { mutableStateOf(false) }
+                var wordsToday by remember { mutableStateOf(statsCache.getInt("wordsToday", 0)) }
                 val snackbarHostState = remember { SnackbarHostState() }
                 val coroutineScope = rememberCoroutineScope()
 
-                // Search state
-                var masteredSearchQuery by remember { mutableStateOf("") }
-                var reviewSearchQuery by remember { mutableStateOf("") }
-                var studiedSearchQuery by remember { mutableStateOf("") }
+                // Get word data
                 val words by wordRepository.getAllWordsFlow().collectAsState(initial = emptyList())
+                
+                // Get cached history items 
+                var historyItems by remember { mutableStateOf<List<QuizHistoryItem>>(emptyList()) }
+
+                // Load cached history from preferences if available
+                LaunchedEffect(Unit) {
+                    val historyJson = statsCache.getString("historyItems", null)
+                    if (historyJson != null) {
+                        try {
+                            val type = object : TypeToken<List<QuizHistoryItem>>() {}.type
+                            historyItems = Gson().fromJson(historyJson, type)
+                        } catch (e: Exception) {
+                            // Ignore parsing errors
+                            android.util.Log.e("StatsActivity", "Failed to parse cached history: ${e.message}")
+                        }
+                    }
+                }
 
                 // Get daily goal from preferences
                 val prefs = getSharedPreferences("vocab_settings", AndroidContext.MODE_PRIVATE)
                 var dailyGoal by remember { 
                     mutableStateOf(prefs.getInt("daily_goal", DEFAULT_DAILY_GOAL))
                 }
-                var wordsToday by remember { mutableStateOf(0) }
                 var goalInput by remember { mutableStateOf(dailyGoal.toString()) }
 
                 // Add this variable to track correct words
@@ -92,10 +118,11 @@ class StatsActivity : ComponentActivity() {
 
                 fun updateWordLists(wordList: List<Word>) {
                     masteredWords = wordList.filter { 
-                        it.timesReviewed > 0 && it.timesCorrect.toFloat() / it.timesReviewed >= 0.9
+                        it.timesReviewed > 0 && (it.timesCorrect.toFloat() / it.timesReviewed >= 0.9 || it.repetitionCount >= 3)
                     }
                     toReviewWords = wordList.filter {
-                        it.timesReviewed > 0 && it.timesCorrect.toFloat() / it.timesReviewed < 0.9
+                        it.timesReviewed > 0 && 
+                        !(it.timesCorrect.toFloat() / it.timesReviewed >= 0.9 || it.repetitionCount >= 3)
                     }
                 }
 
@@ -105,13 +132,20 @@ class StatsActivity : ComponentActivity() {
                     }
                 }
 
-                // Load statistics
+                // Load word lists immediately from the cached list
                 LaunchedEffect(words) {
-                    totalReviewed = words.count { it.timesReviewed > 0 }
-                    timeSpentToday = appUsageManager.getQuizTimeSpentToday()
-                    totalTimeSpent = appUsageManager.getTotalQuizTimeSpent()
-                    bestStreak = appUsageManager.getBestStreak()
-                    wordsToday = words.count { word ->
+                    updateWordLists(words)
+                }
+
+                // Load updated statistics and update the cache
+                LaunchedEffect(Unit) {
+                    // Use the repositories to get the latest data
+                    val freshTotalReviewed = words.count { it.timesReviewed > 0 }
+                    val freshTimeSpentToday = appUsageManager.getQuizTimeSpentToday()
+                    val freshTotalTimeSpent = appUsageManager.getTotalQuizTimeSpent()
+                    val freshBestStreak = appUsageManager.getBestStreak()
+                    val freshCurrentStreak = appUsageManager.getCurrentStreak()
+                    val freshWordsToday = words.count { word ->
                         val today = Calendar.getInstance().apply {
                             set(Calendar.HOUR_OF_DAY, 0)
                             set(Calendar.MINUTE, 0)
@@ -120,12 +154,41 @@ class StatsActivity : ComponentActivity() {
                         }.timeInMillis
                         word.lastReviewed >= today
                     }
+
+                    // Update the UI
+                    totalReviewed = freshTotalReviewed
+                    timeSpentToday = freshTimeSpentToday
+                    totalTimeSpent = freshTotalTimeSpent
+                    bestStreak = freshBestStreak
+                    currentStreak = freshCurrentStreak
+                    wordsToday = freshWordsToday
                     updateWordLists(words)
+
+                    // Update cache
+                    statsCache.edit()
+                        .putInt("totalReviewed", freshTotalReviewed)
+                        .putLong("timeSpentToday", freshTimeSpentToday)
+                        .putLong("totalTimeSpent", freshTotalTimeSpent)
+                        .putInt("bestStreak", freshBestStreak)
+                        .putInt("currentStreak", freshCurrentStreak)
+                        .putInt("wordsToday", freshWordsToday)
+                        .apply()
                 }
 
-                // Load current streak independently
+                // Load history data
                 LaunchedEffect(Unit) {
-                    currentStreak = appUsageManager.getCurrentStreak()
+                    try {
+                        val freshHistoryItems = quizResultRepository.getQuizHistory(30)
+                        historyItems = freshHistoryItems
+                        
+                        // Cache the history items
+                        val historyJson = Gson().toJson(freshHistoryItems)
+                        statsCache.edit()
+                            .putString("historyItems", historyJson)
+                            .apply()
+                    } catch (e: Exception) {
+                        android.util.Log.e("StatsActivity", "Failed to load quiz history: ${e.message}")
+                    }
                 }
 
                 // Dialogs
@@ -147,6 +210,9 @@ class StatsActivity : ComponentActivity() {
                         coroutineScope.launch {
                             wordRepository.resetAllStats()
                             snackbarHostState.showSnackbar("Learning progress has been reset")
+                            
+                            // Clear the cached stats
+                            statsCache.edit().clear().apply()
                         }
                     }
                 )
@@ -213,7 +279,10 @@ class StatsActivity : ComponentActivity() {
                                 ) 
                             },
                             navigationIcon = {
-                                IconButton(onClick = { finish() }) {
+                                IconButton(onClick = { 
+                                    finish() 
+                                    TransitionUtils.applyStandardTransitionOnFinish(this@StatsActivity)
+                                }) {
                                     Icon(
                                         painter = AppIcons.arrowLeft(),
                                         contentDescription = "Back"
@@ -262,6 +331,11 @@ class StatsActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+        TransitionUtils.applyStandardTransitionOnFinish(this)
     }
 }
 
@@ -318,7 +392,6 @@ private fun formatTime(timeInMillis: Long): String {
     val seconds = timeInMillis / 1000
     val minutes = (seconds + 59) / 60  // Round up minutes
     val hours = minutes / 60
-    val remainingMinutes = minutes % 60
     
     return when {
         hours > 0 -> "%.1fh".format(minutes / 60f)  // Show decimal hours

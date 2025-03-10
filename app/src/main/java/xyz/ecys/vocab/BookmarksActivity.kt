@@ -46,6 +46,7 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.OnBackPressedCallback
 import androidx.compose.foundation.clickable
 import java.util.*
+import xyz.ecys.vocab.utils.TransitionUtils
 
 fun toSentenceCase(text: String): String {
     return text.trim().replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
@@ -106,7 +107,10 @@ class BookmarksActivity : ComponentActivity() {
                                     ) 
                                 },
                                 navigationIcon = {
-                                    IconButton(onClick = { finish() }) {
+                                    IconButton(onClick = { 
+                                        finish() 
+                                        TransitionUtils.applyStandardTransitionOnFinish(this@BookmarksActivity)
+                                    }) {
                                         Icon(
                                             painter = AppIcons.arrowLeft(),
                                             contentDescription = "Back"
@@ -211,6 +215,11 @@ class BookmarksActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+        TransitionUtils.applyStandardTransitionOnFinish(this)
     }
 }
 

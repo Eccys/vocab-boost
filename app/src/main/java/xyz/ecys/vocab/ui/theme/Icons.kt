@@ -166,4 +166,9 @@ object AppIcons {
     fun starOutline(): Painter {
         return painterResource(id = R.drawable.star_regular)
     }
+
+    @Composable
+    fun historySolid(): Painter {
+        return painterResource(id = R.drawable.history_solid)
+    }
 } 

@@ -113,11 +113,11 @@ interface WordDao {
         SET timesReviewed = timesReviewed + 1,
             timesCorrect = timesCorrect + :wasCorrect,
             lastReviewed = :timestamp,
+            quality = :quality,
             easeFactor = :easeFactor,
             interval = :interval,
             repetitionCount = :repetitionCount,
-            nextReviewDate = :nextReviewDate,
-            quality = :quality
+            nextReviewDate = :nextReviewDate
         WHERE id = :wordId
     """)
     suspend fun updateWordStats(
@@ -129,6 +129,19 @@ interface WordDao {
         interval: Int,
         repetitionCount: Int,
         nextReviewDate: Long
+    )
+
+    @Query("""
+        UPDATE words 
+        SET timesReviewed = timesReviewed + 1,
+            timesCorrect = timesCorrect + :wasCorrect,
+            lastReviewed = :timestamp
+        WHERE id = :wordId
+    """)
+    suspend fun updateBasicStats(
+        wordId: Int,
+        wasCorrect: Int,
+        timestamp: Long
     )
 
     @Query("SELECT * FROM words WHERE id = :wordId LIMIT 1")
