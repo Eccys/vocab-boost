@@ -9,8 +9,9 @@ class SettingsManager private constructor(context: Context) {
     )
     
     companion object {
-        private const val KEY_MULTIPLE_CHOICE_OPTIONS = "multiple_choice_options"
-        private const val DEFAULT_OPTIONS_COUNT = 4
+        private const val KEY_SPACED_REPETITION = "spaced_repetition"
+        private const val KEY_QUIZ_WRONG_OPTIONS = "quiz_wrong_options_count"
+        private const val DEFAULT_WRONG_OPTIONS_COUNT = 3
         
         @Volatile
         private var INSTANCE: SettingsManager? = null
@@ -24,11 +25,13 @@ class SettingsManager private constructor(context: Context) {
         }
     }
     
-    fun getMultipleChoiceOptionsCount(): Int {
-        return sharedPreferences.getInt(KEY_MULTIPLE_CHOICE_OPTIONS, DEFAULT_OPTIONS_COUNT)
+    fun isSpacedRepetitionEnabled(): Boolean {
+        return sharedPreferences.getBoolean(KEY_SPACED_REPETITION, true)
     }
     
-    fun setMultipleChoiceOptionsCount(count: Int) {
-        sharedPreferences.edit().putInt(KEY_MULTIPLE_CHOICE_OPTIONS, count).apply()
+    fun getMultipleChoiceOptionsCount(): Int {
+        // Return total number of options (wrong options + 1 correct option)
+        val wrongOptionsCount = sharedPreferences.getInt(KEY_QUIZ_WRONG_OPTIONS, DEFAULT_WRONG_OPTIONS_COUNT)
+        return wrongOptionsCount + 1
     }
 } 

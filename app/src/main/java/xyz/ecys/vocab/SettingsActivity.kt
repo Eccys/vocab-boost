@@ -51,6 +51,13 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.fadeOut
 import androidx.compose.material3.HorizontalDivider
+import xyz.ecys.vocab.data.QuizResultRepository
+import androidx.compose.ui.unit.DpSize
+import kotlin.math.roundToInt
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import xyz.ecys.vocab.utils.TransitionUtils
+import android.app.Activity
 
 @OptIn(ExperimentalMaterial3Api::class)
 class SettingsActivity : ComponentActivity() {
@@ -111,7 +118,9 @@ class SettingsActivity : ComponentActivity() {
                 var showRefreshConfirmation by remember { mutableStateOf(false) }
                 var showAuthSheet by remember { mutableStateOf(authSheetVisible) }
                 var showGoalDialog by remember { mutableStateOf(false) }
-                var goalInput by remember { mutableStateOf("20") }
+                // Get the current daily goal from preferences
+                val currentDailyGoal = prefs.getInt("daily_goal", 20)
+                var goalInput by remember { mutableStateOf(currentDailyGoal.toString()) }
                 
                 // Title click counter state
                 var titleClickCount by remember { mutableStateOf(0) }
@@ -177,9 +186,18 @@ class SettingsActivity : ComponentActivity() {
                 }
 
                 if (showNeuralInfo) {
+                    // Custom colors that match CompactWordCard
+                    val dialogBackground = Color(0xFF19181E)
+                    val textColor = Color(0xFFFCFCFC)
+                    val dimmedText = textColor.copy(alpha = 0.7f)
+                    val accentColor = Color(0xFF90CAF9)
+
                     AlertDialog(
                         onDismissRequest = { showNeuralInfo = false },
                         title = { Text("Neural Processing") },
+                        containerColor = dialogBackground,
+                        titleContentColor = textColor,
+                        textContentColor = textColor,
                         text = { 
                             Text(
                                 """
@@ -191,21 +209,32 @@ class SettingsActivity : ComponentActivity() {
                                 • Optimize your learning path
                                 
                                 The system uses spaced repetition and performance metrics to create a personalized learning experience.
-                                """.trimIndent()
+                                """.trimIndent(),
+                                color = dimmedText
                             )
                         },
                         confirmButton = {
                             TextButton(onClick = { showNeuralInfo = false }) {
-                                Text("Got it")
+                                Text("Got it", color = accentColor)
                             }
                         }
                     )
                 }
 
                 if (showRefreshConfirmation) {
+                    // Custom colors that match CompactWordCard
+                    val dialogBackground = Color(0xFF19181E)
+                    val textColor = Color(0xFFFCFCFC)
+                    val dimmedText = textColor.copy(alpha = 0.7f)
+                    val accentColor = Color(0xFF90CAF9)
+                    val warningColor = Color(0xFFED333B)
+
                     AlertDialog(
                         onDismissRequest = { showRefreshConfirmation = false },
                         title = { Text("Refresh Database") },
+                        containerColor = dialogBackground,
+                        titleContentColor = textColor,
+                        textContentColor = textColor,
                         text = { 
                             Text(
                                 """
@@ -213,7 +242,8 @@ class SettingsActivity : ComponentActivity() {
                                 All learning progress, custom words, streaks, and time spent data will be lost.
                                 
                                 Are you sure you want to continue?
-                                """.trimIndent()
+                                """.trimIndent(),
+                                color = dimmedText
                             )
                         },
                         confirmButton = {
@@ -234,17 +264,21 @@ class SettingsActivity : ComponentActivity() {
                                             val appUsageManager = AppUsageManager.getInstance(context)
                                             appUsageManager.resetAllUsageData()
                                             
+                                            // Clear quiz history from both local storage and Firestore
+                                            val quizResultRepository = QuizResultRepository.getInstance(context)
+                                            quizResultRepository.clearAllQuizResults()
+                                            
                                             authViewModel.showMessage("Database reset successfully")
                                         }
                                     }
                                 }
                             ) {
-                                Text("Refresh", color = Color(0xFFED333B))
+                                Text("Refresh", color = warningColor)
                             }
                         },
                         dismissButton = {
                             TextButton(onClick = { showRefreshConfirmation = false }) {
-                                Text("Cancel")
+                                Text("Cancel", color = accentColor)
                             }
                         }
                     )
@@ -252,9 +286,19 @@ class SettingsActivity : ComponentActivity() {
                 
                 // Password confirmation dialog
                 if (showPasswordDialog) {
+                    // Custom colors that match CompactWordCard
+                    val dialogBackground = Color(0xFF19181E)
+                    val textColor = Color(0xFFFCFCFC)
+                    val dimmedText = textColor.copy(alpha = 0.7f)
+                    val accentColor = Color(0xFF90CAF9)
+                    val warningColor = Color(0xFFED333B)
+
                     AlertDialog(
                         onDismissRequest = { showPasswordDialog = false },
                         title = { Text("Confirm Password") },
+                        containerColor = dialogBackground,
+                        titleContentColor = textColor,
+                        textContentColor = textColor,
                         text = {
                             Column(
                                 verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -269,10 +313,14 @@ class SettingsActivity : ComponentActivity() {
                                 
                                 if (isGoogleSignIn && !hasPassword) {
                                     Text(
-                                        "You're signed in with Google. Are you sure you want to reset the database? All learning progress, custom words, streaks, and time spent data will be lost."
+                                        "You're signed in with Google. Are you sure you want to reset the database? All learning progress, custom words, streaks, and time spent data will be lost.",
+                                        color = dimmedText
                                     )
                                 } else {
-                                    Text("Please enter your password to confirm database reset")
+                                    Text(
+                                        "Please enter your password to confirm database reset",
+                                        color = dimmedText
+                                    )
                                     OutlinedTextField(
                                         value = passwordInput,
                                         onValueChange = { passwordInput = it },
@@ -280,12 +328,12 @@ class SettingsActivity : ComponentActivity() {
                                         visualTransformation = PasswordVisualTransformation(),
                                         singleLine = true,
                                         colors = OutlinedTextFieldDefaults.colors(
-                                            unfocusedTextColor = Color(0xFFFCFCFC),
-                                            focusedTextColor = Color(0xFFFCFCFC),
-                                            cursorColor = Color(0xFF90CAF9),
-                                            focusedBorderColor = Color(0xFF90CAF9),
+                                            unfocusedTextColor = textColor,
+                                            focusedTextColor = textColor,
+                                            cursorColor = accentColor,
+                                            focusedBorderColor = accentColor,
                                             unfocusedBorderColor = Color(0xFF546E7A),
-                                            focusedLabelColor = Color(0xFF90CAF9),
+                                            focusedLabelColor = accentColor,
                                             unfocusedLabelColor = Color(0xFF546E7A)
                                         )
                                     )
@@ -294,7 +342,7 @@ class SettingsActivity : ComponentActivity() {
                                 authError?.let {
                                     Text(
                                         text = it,
-                                        color = Color(0xFFED333B),
+                                        color = warningColor,
                                         style = MaterialTheme.typography.bodySmall
                                     )
                                 }
@@ -324,6 +372,10 @@ class SettingsActivity : ComponentActivity() {
                                                 val appUsageManager = AppUsageManager.getInstance(context)
                                                 appUsageManager.resetAllUsageData()
                                                 
+                                                // Clear quiz history from both local storage and Firestore
+                                                val quizResultRepository = QuizResultRepository.getInstance(context)
+                                                quizResultRepository.clearAllQuizResults()
+                                                
                                                 // Sync changes to the cloud
                                                 authViewModel.syncData { syncSuccess ->
                                                     if (syncSuccess) {
@@ -351,6 +403,10 @@ class SettingsActivity : ComponentActivity() {
                                                             val appUsageManager = AppUsageManager.getInstance(context)
                                                             appUsageManager.resetAllUsageData()
                                                             
+                                                            // Clear quiz history from both local storage and Firestore
+                                                            val quizResultRepository = QuizResultRepository.getInstance(context)
+                                                            quizResultRepository.clearAllQuizResults()
+                                                            
                                                             // Sync changes to the cloud
                                                             authViewModel.syncData { syncSuccess ->
                                                                 if (syncSuccess) {
@@ -369,7 +425,7 @@ class SettingsActivity : ComponentActivity() {
                                     }
                                 }
                             ) {
-                                Text("Confirm", color = Color(0xFFED333B))
+                                Text("Confirm", color = warningColor)
                             }
                         },
                         dismissButton = {
@@ -378,7 +434,7 @@ class SettingsActivity : ComponentActivity() {
                                 passwordInput = ""
                                 authViewModel.clearError()
                             }) {
-                                Text("Cancel")
+                                Text("Cancel", color = accentColor)
                             }
                         }
                     )
@@ -386,6 +442,14 @@ class SettingsActivity : ComponentActivity() {
 
                 // Forgot Password Dialog
                 if (showForgotPasswordDialog) {
+                    // Custom colors that match CompactWordCard
+                    val dialogBackground = Color(0xFF19181E)
+                    val textColor = Color(0xFFFCFCFC)
+                    val dimmedText = textColor.copy(alpha = 0.7f)
+                    val accentColor = Color(0xFF90CAF9)
+                    val warningColor = Color(0xFFED333B)
+                    val successColor = Color(0xFF4CAF50)
+                    
                     var emailError by remember { mutableStateOf<String?>(null) }
                     var emailSuccess by remember { mutableStateOf<String?>(null) }
                     
@@ -405,9 +469,9 @@ class SettingsActivity : ComponentActivity() {
                     AlertDialog(
                         onDismissRequest = { showForgotPasswordDialog = false },
                         title = { Text("Reset Password") },
-                        containerColor = Color(0xFF18191E),
-                        titleContentColor = Color(0xFFFCFCFC),
-                        textContentColor = Color(0xFFFCFCFC),
+                        containerColor = dialogBackground,
+                        titleContentColor = textColor,
+                        textContentColor = textColor,
                         text = {
                             Column(
                                 verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -417,7 +481,7 @@ class SettingsActivity : ComponentActivity() {
                                     Text(
                                         "A password reset link will be sent to your email address ($userEmail).",
                                         style = MaterialTheme.typography.bodyMedium,
-                                        color = Color(0xFFAAAAAA)
+                                        color = dimmedText
                                     )
                                     
                                     Text(
@@ -429,7 +493,7 @@ class SettingsActivity : ComponentActivity() {
                                     Text(
                                         "You have already requested a password reset recently.",
                                         style = MaterialTheme.typography.bodyMedium,
-                                        color = Color(0xFFAAAAAA)
+                                        color = dimmedText
                                     )
                                     
                                     Text(
@@ -442,7 +506,7 @@ class SettingsActivity : ComponentActivity() {
                                 emailError?.let {
                                     Text(
                                         text = it,
-                                        color = Color(0xFFED333B),
+                                        color = warningColor,
                                         style = MaterialTheme.typography.bodySmall
                                     )
                                 }
@@ -450,7 +514,7 @@ class SettingsActivity : ComponentActivity() {
                                 emailSuccess?.let {
                                     Text(
                                         text = it,
-                                        color = Color(0xFF4CAF50),
+                                        color = successColor,
                                         style = MaterialTheme.typography.bodySmall
                                     )
                                 }
@@ -458,7 +522,7 @@ class SettingsActivity : ComponentActivity() {
                                 authError?.let {
                                     Text(
                                         text = it,
-                                        color = Color(0xFFED333B),
+                                        color = warningColor,
                                         style = MaterialTheme.typography.bodySmall
                                     )
                                 }
@@ -485,7 +549,7 @@ class SettingsActivity : ComponentActivity() {
                             ) {
                                 Text(
                                     "Send Reset Link", 
-                                    color = if (canRequestReset) Color(0xFF90CAF9) else Color(0xFF546E7A)
+                                    color = if (canRequestReset) accentColor else Color(0xFF546E7A)
                                 )
                             }
                         },
@@ -496,7 +560,7 @@ class SettingsActivity : ComponentActivity() {
                                     authViewModel.clearError()
                                 }
                             ) {
-                                Text("Cancel", color = Color(0xFF90CAF9))
+                                Text("Cancel", color = accentColor)
                             }
                         }
                     )
@@ -606,7 +670,10 @@ class SettingsActivity : ComponentActivity() {
                                 }
                             },
                             navigationIcon = {
-                                IconButton(onClick = { finish() }) {
+                                IconButton(onClick = { 
+                                    finish() 
+                                    TransitionUtils.applyStandardTransitionOnFinish(this@SettingsActivity)
+                                }) {
                                     Icon(
                                         painter = AppIcons.arrowLeft(),
                                         contentDescription = "Back",
@@ -628,6 +695,7 @@ class SettingsActivity : ComponentActivity() {
                             FloatingActionButton(
                                 onClick = {
                                     startActivity(Intent(context, DebugActivity::class.java))
+                                    TransitionUtils.applyStandardTransition(this@SettingsActivity)
                                 }
                             ) {
                                 Icon(
@@ -642,11 +710,16 @@ class SettingsActivity : ComponentActivity() {
                     Box(
                         modifier = Modifier.fillMaxSize()
                     ) {
+                        // Add scroll state with improved scrolling experience
+                        val scrollState = rememberScrollState()
+                        
                         Column(
                             modifier = Modifier
                                 .fillMaxSize()
                                 .padding(innerPadding)
-                                .padding(16.dp),
+                                .padding(horizontal = 16.dp)
+                                .verticalScroll(scrollState)
+                                .padding(bottom = 32.dp), // Extra bottom padding for better UX when scrolling
                             verticalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
                             // Authentication Section
@@ -679,6 +752,9 @@ class SettingsActivity : ComponentActivity() {
                                     if (authState != null) {
                                         val intent = Intent(context, AccountsActivity::class.java)
                                         context.startActivity(intent)
+                                        (context as? Activity)?.let { activity ->
+                                            TransitionUtils.applyStandardTransition(activity)
+                                        }
                                     } else {
                                         showAuthSheet = true
                                     }
@@ -798,6 +874,64 @@ class SettingsActivity : ComponentActivity() {
                                             }
                                         )
                                     }
+                                }
+                            }
+
+                            // Quiz Options Count Slider
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = Color(0xFF18191E)
+                                ),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    // Get the current value from preferences (default to 3)
+                                    var wrongOptionsCount by remember { 
+                                        mutableStateOf(prefs.getInt("quiz_wrong_options_count", 3).toFloat())
+                                    }
+                                    
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text("Answer Choices")
+                                        Text(
+                                            text = "${wrongOptionsCount.toInt()} wrong answers",
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = Color(0xFFAAAAAA)
+                                        )
+                                    }
+                                    
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    
+                                    // Slider matching the app's current design - light blue thumb and track, no tick marks
+                                    Slider(
+                                        value = wrongOptionsCount,
+                                        onValueChange = { newValue ->
+                                            wrongOptionsCount = newValue.roundToInt().toFloat()
+                                        },
+                                        onValueChangeFinished = {
+                                            // Save the value to preferences when user stops dragging
+                                            prefs.edit().putInt("quiz_wrong_options_count", wrongOptionsCount.toInt()).apply()
+                                        },
+                                        valueRange = 1f..6f,
+                                        steps = 4,
+                                        modifier = Modifier.fillMaxWidth(),
+                                        colors = SliderDefaults.colors(
+                                            thumbColor = Color(0xFF90CAF9),        // Light blue thumb
+                                            activeTrackColor = Color(0xFF90CAF9),  // Light blue active track
+                                            inactiveTrackColor = Color(0xFF424242),// Dark gray inactive track
+                                            activeTickColor = Color.Transparent,   // Hide ticks
+                                            inactiveTickColor = Color.Transparent  // Hide ticks
+                                        )
+                                    )
                                 }
                             }
 
@@ -1052,9 +1186,32 @@ class SettingsActivity : ComponentActivity() {
                                 }
                             }
                         }
+
+                        // Indicator at the bottom to hint at scrollable content
+                        AnimatedVisibility(
+                            visible = scrollState.canScrollForward || scrollState.canScrollBackward,
+                            enter = fadeIn(),
+                            exit = fadeOut()
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.BottomCenter)
+                                    .padding(bottom = 8.dp)
+                                    .size(32.dp, 4.dp)
+                                    .background(
+                                        color = Color(0x3090CAF9), // Semi-transparent blue
+                                        shape = RoundedCornerShape(2.dp)
+                                    )
+                            )
+                        }
                     }
                 }
             }
         }
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+        TransitionUtils.applyStandardTransitionOnFinish(this)
     }
 } 
