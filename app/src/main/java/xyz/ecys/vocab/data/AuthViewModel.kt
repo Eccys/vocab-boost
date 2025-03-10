@@ -14,9 +14,13 @@ import java.text.SimpleDateFormat
 import java.util.*
 import android.content.Intent
 import android.util.Log
+import android.app.Application
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 
 class AuthViewModel : ViewModel() {
     private val authRepository = AuthRepository.getInstance()
+    private val TAG = "AuthViewModel"
 
     val currentUser: FirebaseUser? get() = authRepository.currentUser
     val authState: StateFlow<FirebaseUser?> = authRepository.authState
@@ -29,6 +33,30 @@ class AuthViewModel : ViewModel() {
 
     private val _signInIntent = MutableStateFlow<Intent?>(null)
     val signInIntent: StateFlow<Intent?> = _signInIntent
+
+    // Auto-sync settings
+    private val AUTO_SYNC_INTERVAL = 30 * 60 * 1000L // 30 minutes in milliseconds
+    private var lastAutoSyncTime = 0L
+    private val autoSyncJob = viewModelScope.launch {
+        while (isActive) {
+            // Check if user is signed in and if it's time to sync
+            if (currentUser != null && !currentUser!!.isAnonymous && 
+                System.currentTimeMillis() - lastAutoSyncTime > AUTO_SYNC_INTERVAL) {
+                
+                try {
+                    Log.d(TAG, "Starting auto-sync")
+                    authRepository.syncData().await()
+                    lastAutoSyncTime = System.currentTimeMillis()
+                    Log.d(TAG, "Auto-sync completed successfully")
+                } catch (e: Exception) {
+                    Log.e(TAG, "Auto-sync failed", e)
+                }
+            }
+            
+            // Check again after a delay
+            delay(5 * 60 * 1000) // Check every 5 minutes
+        }
+    }
 
     fun signUp(email: String, password: String, onComplete: (Boolean) -> Unit) {
         viewModelScope.launch {
@@ -160,18 +188,12 @@ class AuthViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 authRepository.syncData().await()
-                _authError.value = null
+                lastAutoSyncTime = System.currentTimeMillis() // Update last auto-sync time
                 _message.value = "Data synced successfully"
                 onComplete(true)
             } catch (e: Exception) {
-                Log.e("AuthViewModel", "Sync error", e)
-                val errorMsg = when {
-                    e.message?.contains("PERMISSION_DENIED") == true -> "Permission denied. Please check your account."
-                    e.message?.contains("NOT_FOUND") == true -> "Could not find your account data. Creating new sync data."
-                    e.message?.contains("NETWORK") == true -> "Network error. Please check your connection."
-                    else -> "Error syncing data: ${e.message}"
-                }
-                _authError.value = errorMsg
+                Log.e(TAG, "Sync failed", e)
+                _authError.value = e.message ?: "Sync failed"
                 onComplete(false)
             }
         }
@@ -284,5 +306,10 @@ class AuthViewModel : ViewModel() {
 
     fun getTimeUntilNextPasswordReset(): Long {
         return authRepository.getTimeUntilNextPasswordReset()
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        autoSyncJob.cancel()
     }
 } 
