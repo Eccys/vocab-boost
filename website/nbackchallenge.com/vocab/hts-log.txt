@@ -1,0 +1,30 @@
+HTTrack3.49-5 launched on Sun, 09 Mar 2025 20:48:44 at https://nbackchallenge.com
+(httrack https://nbackchallenge.com -O ./vocab -Y -%v )
+
+Information, Warnings and Errors reported for this mirror:
+note:	the hts-log.txt file, and hts-cache folder, may contain sensitive information,
+	such as username/password authentication for websites mirrored in this project
+	do not share these files/folders if you want these information to remain private
+
+20:48:44	Warning: 	Cache: damaged cache, trying to repair
+20:48:44	Warning: 	Cache: 94042 bytes successfully recovered in 29 entries
+20:48:44	Warning: 	Note: due to https://nbackchallenge.com remote robots.txt rules, links beginning with these path will be forbidden: /account-deletion (see in the options to disable this)
+20:48:45	Warning: 	engine: warning: temporary file nbackchallenge.com/images/iPhoneScreens.svg.tmp already exists
+20:48:45	Warning: 	engine: warning: temporary file nbackchallenge.com/images/burger.svg.tmp already exists
+20:48:45	Warning: 	engine: warning: temporary file nbackchallenge.com/images/burgerCloseIcon.svg.tmp already exists
+20:48:45	Warning: 	engine: warning: temporary file nbackchallenge.com/images/nbc.svg.tmp already exists
+20:48:45	Warning: 	engine: warning: temporary file nbackchallenge.com/images/appleGrey.svg.tmp already exists
+20:48:45	Warning: 	engine: warning: temporary file nbackchallenge.com/images/playStoreGrey.svg.tmp already exists
+20:48:45	Warning: 	engine: warning: temporary file nbackchallenge.com/icon.svg.tmp already exists
+20:48:45	Warning: 	engine: warning: temporary file nbackchallenge.com/_next/static/css/49a04fb6dd936701.css.tmp already exists
+20:48:45	Warning: 	engine: warning: temporary file nbackchallenge.com/articles.html.tmp already exists
+20:48:57	Warning: 	link is probably looping, type unknown, aborting: https://idp.springer.com/authorize?response_type=cookie&client_id=springerlink&redirect_uri=https%3A%2F%2Flink.springer.com%2Farticle%2F10.3758%2Fs13423-016-1217-0
+20:49:00	Warning: 	link is probably looping, type unknown, aborting: https://idp.nature.com/authorize?response_type=cookie&client_id=grover&redirect_uri=https%3A%2F%2Fwww.nature.com%2Farticles%2Fs41598-020-77310-9
+20:49:02	Warning: 	link is probably looping, type unknown, aborting: https://idp.nature.com/authorize?response_type=cookie&client_id=grover&redirect_uri=https%3A%2F%2Fwww.nature.com%2Farticles%2Fs41598-020-77310-9
+20:51:55	Error: 	"Forbidden" (403) at link https://www.pnas.org/doi/full/10.1073/pnas.0801268105 (from https://nbackchallenge.com/)
+20:51:59	Error: 	"HTTP Forbidden" (401) at link https://www.wsj.com/articles/SB10001424052702304432304576371462612272884 (from https://nbackchallenge.com/)
+20:52:03	Warning: 	Retry after error -4 (Interrupted transfer) at link https://twitter.com/NBackChallenge (from https://nbackchallenge.com/)
+20:54:22	Warning: 	link is probably looping, type unknown, aborting: https://idp.springer.com/authorize?response_type=cookie&client_id=springerlink&redirect_uri=https%3A%2F%2Flink.springer.com%2Farticle%2F10.3758%2Fs13423-016-1217-0
+20:54:23	Warning: 	link is probably looping, type unknown, aborting: https://idp.nature.com/authorize?response_type=cookie&client_id=grover&redirect_uri=https%3A%2F%2Fwww.nature.com%2Farticles%2Fs41598-020-77310-9
+20:54:23	Warning: 	Retry after error -4 (Interrupted transfer) at link https://twitter.com/AppStore (from https://apps.apple.com/us/app/n-back-challenge/id1524599079)
+20:59:06	Error: 	Exit requested by shell or user

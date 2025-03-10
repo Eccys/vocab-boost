@@ -1,0 +1,7 @@
+Mirror in progress since Sun, 09 Mar 2025 20:48:44 .. please wait!
+httrack https://nbackchallenge.com -O ./vocab -Y -%v 
+To pause the engine: create an empty file named 'hts-stop.lock'
+PID=533855
+UID=1000
+GID=1000
+START=1741553324
