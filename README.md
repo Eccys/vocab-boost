@@ -109,9 +109,7 @@ Vocab respects user privacy:
 
 ## Support and Feedback
 
-- Report issues via email: support@vocab-app.com
-- Submit feature requests through the app's feedback form
-- Join our community forum for discussions
+- Report issues via email: help.vocabboost@gmail.com
 
 ## Open Source Contribution
 
