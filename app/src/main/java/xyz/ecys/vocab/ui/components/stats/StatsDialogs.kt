@@ -29,6 +29,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.height
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.material3.OutlinedTextFieldDefaults
 
 @Composable
 fun GoalDialog(
@@ -39,15 +40,33 @@ fun GoalDialog(
     onSave: (Int) -> Unit
 ) {
     if (showDialog) {
+        // Custom colors that match CompactWordCard
+        val dialogBackground = Color(0xFF19181E)
+        val textColor = Color(0xFFFCFCFC)
+        val dimmedText = textColor.copy(alpha = 0.7f)
+        val accentColor = Color(0xFF90CAF9)
+
         AlertDialog(
             onDismissRequest = onDismiss,
             title = { Text("Set Daily Goal") },
+            containerColor = dialogBackground,
+            titleContentColor = textColor,
+            textContentColor = textColor,
             text = {
                 OutlinedTextField(
                     value = goalInput,
                     onValueChange = { onGoalInputChange(it.filter { char -> char.isDigit() }) },
                     label = { Text("Words per day") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        unfocusedTextColor = textColor,
+                        focusedTextColor = textColor,
+                        cursorColor = accentColor,
+                        focusedBorderColor = accentColor,
+                        unfocusedBorderColor = Color(0xFF546E7A),
+                        focusedLabelColor = accentColor,
+                        unfocusedLabelColor = Color(0xFF546E7A)
+                    )
                 )
             },
             confirmButton = {
@@ -57,12 +76,12 @@ fun GoalDialog(
                         onDismiss()
                     }
                 ) {
-                    Text("Save")
+                    Text("Save", color = accentColor)
                 }
             },
             dismissButton = {
                 TextButton(onClick = onDismiss) {
-                    Text("Cancel")
+                    Text("Cancel", color = accentColor)
                 }
             }
         )
@@ -76,10 +95,24 @@ fun ResetDialog(
     onConfirm: () -> Unit
 ) {
     if (showDialog) {
+        // Custom colors that match CompactWordCard
+        val dialogBackground = Color(0xFF19181E)
+        val textColor = Color(0xFFFCFCFC)
+        val accentColor = Color(0xFF90CAF9)
+        val warningColor = Color(0xFFED333B)
+
         AlertDialog(
             onDismissRequest = onDismiss,
             title = { Text("Reset Progress") },
-            text = { Text("This will reset all learning statistics. Your bookmarks will be preserved. This action cannot be undone.") },
+            containerColor = dialogBackground,
+            titleContentColor = textColor,
+            textContentColor = textColor,
+            text = { 
+                Text(
+                    "This will reset all learning statistics. Your bookmarks will be preserved. This action cannot be undone.", 
+                    color = textColor.copy(alpha = 0.7f)
+                ) 
+            },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -87,12 +120,12 @@ fun ResetDialog(
                         onDismiss()
                     }
                 ) {
-                    Text("Reset")
+                    Text("Reset", color = warningColor)
                 }
             },
             dismissButton = {
                 TextButton(onClick = onDismiss) {
-                    Text("Cancel")
+                    Text("Cancel", color = accentColor)
                 }
             }
         )

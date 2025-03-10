@@ -1,7 +1,9 @@
 package xyz.ecys.vocab
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -79,10 +81,17 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import xyz.ecys.vocab.utils.TransitionUtils
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 class DailyWordActivity : ComponentActivity() {
     private lateinit var dailyWordManager: DailyWordManager
+    
+    companion object {
+        private const val DAILY_WORD_CACHE_PREFS = "daily_word_cache_prefs"
+    }
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -91,17 +100,25 @@ class DailyWordActivity : ComponentActivity() {
         // Initialize the daily word manager
         dailyWordManager = DailyWordManager.getInstance(this)
         
+        // Initialize the daily word cache
+        val dailyWordCache = getSharedPreferences(DAILY_WORD_CACHE_PREFS, Context.MODE_PRIVATE)
+        
         setContent {
             VocabularyBoosterTheme {
                 var isDailyWordCardPressed by remember { mutableStateOf(false) }
-                // State for currently loaded words
+                
+                // Simplify to always load fresh data for now
                 var wordsWithDates by remember { mutableStateOf<List<Pair<DailyWord, LocalDate>>>(emptyList()) }
-                // Loading state
+                
+                // Loading state - always true initially
                 var isLoading by remember { mutableStateOf(true) }
+                
                 // Store the selected date index once we find it
                 var selectedDateIndex by remember { mutableStateOf(0) }
+                
                 // Track when initialization is complete
                 var isInitialized by remember { mutableStateOf(false) }
+                
                 // Number of days to preload
                 val preloadDays = 5
                 
@@ -137,7 +154,9 @@ class DailyWordActivity : ComponentActivity() {
                 // Load initial data asynchronously
                 LaunchedEffect(Unit) {
                     withContext(Dispatchers.IO) {
-                        isLoading = true
+                        if (wordsWithDates.isEmpty()) {
+                            isLoading = true
+                        }
                         
                         val today = LocalDate.now()
                         val initialWords = mutableListOf<Pair<DailyWord, LocalDate>>()
@@ -297,7 +316,10 @@ class DailyWordActivity : ComponentActivity() {
                                 }
                             },
                             navigationIcon = {
-                                IconButton(onClick = { finish() }) {
+                                IconButton(onClick = { 
+                                    finish()
+                                    TransitionUtils.applyStandardTransitionOnFinish(this@DailyWordActivity)
+                                }) {
                                     Icon(
                                         painter = AppIcons.arrowLeft(),
                                         contentDescription = "Back",
@@ -370,6 +392,7 @@ class DailyWordActivity : ComponentActivity() {
                                                 // Launch the PreviousWordsActivity
                                                 val intent = Intent(this@DailyWordActivity, PreviousWordsActivity::class.java)
                                                 startActivity(intent)
+                                                TransitionUtils.applyStandardTransition(this@DailyWordActivity)
                                             }
                                         )
                                     } else {
@@ -405,6 +428,11 @@ class DailyWordActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+        TransitionUtils.applyStandardTransitionOnFinish(this)
     }
 }
 

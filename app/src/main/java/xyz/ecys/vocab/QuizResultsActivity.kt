@@ -30,7 +30,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.input.pointer.pointerInput
-import xyz.ecys.vocab.data.QuizResult
+import xyz.ecys.vocab.data.QuizResult as FirestoreQuizResult
+import xyz.ecys.vocab.quiz.QuizResult
 
 @OptIn(ExperimentalMaterial3Api::class)
 class QuizResultsActivity : ComponentActivity() {

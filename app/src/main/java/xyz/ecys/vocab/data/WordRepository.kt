@@ -10,7 +10,8 @@ import com.google.gson.reflect.TypeToken
 
 class WordRepository private constructor(
     private val wordDao: WordDao,
-    private val context: Context
+    private val context: Context,
+    private val settingsManager: SettingsManager? = null
 ) {
     
     companion object {
@@ -20,7 +21,8 @@ class WordRepository private constructor(
         fun getInstance(context: Context): WordRepository {
             return INSTANCE ?: synchronized(this) {
                 val database = WordDatabase.getDatabase(context)
-                WordRepository(database.wordDao(), context.applicationContext).also {
+                val settingsManager = SettingsManager.getInstance(context)
+                WordRepository(database.wordDao(), context.applicationContext, settingsManager).also {
                     INSTANCE = it
                 }
             }
@@ -74,54 +76,66 @@ class WordRepository private constructor(
         responseTime: Long = 0
     ) = withContext(Dispatchers.IO) {
         // Get current word to access its repetition count
-        // val word = wordDao.getAllWords().find { it.id == wordId } ?: return@withContext
-        // New efficient approach: fetching the word directly by its ID
         val word = wordDao.getWordById(wordId) ?: return@withContext
-
-        // Calculate quality based on correctness and response time
-        val quality = when {
-            wasCorrect -> when {
-                responseTime < 3000 -> 5  // fast response
-                responseTime <= 5000 -> 4  // medium response
-                else -> 3  // slow but correct
+        
+        // Check if spaced repetition is enabled
+        val isSpacedRepetitionEnabled = settingsManager?.isSpacedRepetitionEnabled() ?: true
+        
+        if (isSpacedRepetitionEnabled) {
+            // Full spaced repetition algorithm
+            // Calculate quality based on correctness and response time
+            val quality = when {
+                wasCorrect -> when {
+                    responseTime < 3000 -> 5  // fast response
+                    responseTime <= 5000 -> 4  // medium response
+                    else -> 3  // slow but correct
+                }
+                else -> when {
+                    word.repetitionCount == 1 -> 2  // failed but had one successful rep before
+                    else -> 1  // complete fail
+                }
             }
-            else -> when {
-                word.repetitionCount == 1 -> 2  // failed but had one successful rep before
-                else -> 1  // complete fail
-            }
-        }
 
-        // Calculate new ease factor
-        val newEaseFactor = if (wasCorrect) {
-            val adjustment = 0.1f - (5 - quality) * (0.08f + (5 - quality) * 0.02f)
-            kotlin.math.max(1.3f, word.easeFactor + adjustment)
+            // Calculate new ease factor
+            val newEaseFactor = if (wasCorrect) {
+                val adjustment = 0.1f - (5 - quality) * (0.08f + (5 - quality) * 0.02f)
+                kotlin.math.max(1.3f, word.easeFactor + adjustment)
+            } else {
+                val adjustment = 0.1f - (5 - quality) * (0.08f + (5 - quality) * 0.02f)
+                kotlin.math.max(1.3f, word.easeFactor + adjustment)
+            }
+
+            // Calculate new interval based on SM-2
+            val newInterval = when {
+                !wasCorrect -> 1  // Reset to 1 day on failure
+                word.repetitionCount == 0 -> 1  // First successful repetition
+                word.repetitionCount == 1 -> 3  // Second successful repetition
+                else -> (word.interval * word.easeFactor).toInt()  // Subsequent repetitions
+            }
+
+            // Calculate next review date
+            val nextReviewDate = timestamp + (newInterval * 24 * 60 * 60 * 1000L)
+
+            // Update the word stats in the database with spaced repetition data
+            wordDao.updateWordStats(
+                wordId = wordId,
+                wasCorrect = if (wasCorrect) 1 else 0,
+                timestamp = timestamp,
+                quality = quality,
+                easeFactor = newEaseFactor,
+                interval = newInterval,
+                repetitionCount = if (wasCorrect) word.repetitionCount + 1 else 0,
+                nextReviewDate = nextReviewDate
+            )
         } else {
-            val adjustment = 0.1f - (5 - quality) * (0.08f + (5 - quality) * 0.02f)
-            kotlin.math.max(1.3f, word.easeFactor + adjustment)
+            // When spaced repetition is disabled, only update basic stats
+            // Don't update easeFactor, interval, repetitionCount, nextReviewDate, or quality
+            wordDao.updateBasicStats(
+                wordId = wordId,
+                wasCorrect = if (wasCorrect) 1 else 0,
+                timestamp = timestamp
+            )
         }
-
-        // Calculate new interval based on SM-2
-        val newInterval = when {
-            !wasCorrect -> 1  // Reset to 1 day on failure
-            word.repetitionCount == 0 -> 1  // First successful repetition
-            word.repetitionCount == 1 -> 3  // Second successful repetition
-            else -> (word.interval * word.easeFactor).toInt()  // Subsequent repetitions
-        }
-
-        // Calculate next review date
-        val nextReviewDate = timestamp + (newInterval * 24 * 60 * 60 * 1000L)
-
-        // Update the word stats in the database
-        wordDao.updateWordStats(
-            wordId = wordId,
-            wasCorrect = if (wasCorrect) 1 else 0,
-            timestamp = timestamp,
-            quality = quality,
-            easeFactor = newEaseFactor,
-            interval = newInterval,
-            repetitionCount = if (wasCorrect) word.repetitionCount + 1 else 0,
-            nextReviewDate = nextReviewDate
-        )
     }
 
     suspend fun getWordsForLearning(count: Int = 10): List<Word> = withContext(Dispatchers.IO) {
@@ -205,55 +219,64 @@ class WordRepository private constructor(
     suspend fun getNextWord(excludeWord: Word? = null): Word {
         val currentTime = System.currentTimeMillis()
         
-        // PRIORITY 1: ALL OVERDUE WORDS
-        // Get ALL overdue words, sorted by their overdue ratio
-        val overdueWords = wordDao.getOverdueWords(currentTime)
+        // Check if spaced repetition is enabled
+        val isSpacedRepetitionEnabled = settingsManager?.isSpacedRepetitionEnabled() ?: true
         
-        // Filter out the excluded word if any
-        val availableOverdueWords = overdueWords.filter { it.id != excludeWord?.id }
-        
-        // If there are ANY overdue words, always return the one with highest overdue ratio
-        if (availableOverdueWords.isNotEmpty()) {
-            android.util.Log.d("WordPriority", "Selected an overdue word with ratio: " + 
-                ((currentTime - availableOverdueWords.first().nextReviewDate) / 
-                (Math.max(1, availableOverdueWords.first().interval) * 86400000.0)).toString())
-            return availableOverdueWords.first()
-        }
-        
-        // PRIORITY 2: ONLY IF NO OVERDUE WORDS, USE UNSEEN WORDS
-        // Get completely unseen words (timesReviewed = 0)
-        val unseenWords = wordDao.getUnseenWords()
-            .filter { it.id != excludeWord?.id }
-        
-        // If there are ANY unseen words, always return one of them
-        if (unseenWords.isNotEmpty()) {
-            android.util.Log.d("WordPriority", "Selected an unseen word")
-            // Take the first one, don't randomize
-            return unseenWords.first()
-        }
-        
-        // PRIORITY 3: ONLY AS LAST RESORT, USE OTHER WORDS
-        // We only reach here if there are NO overdue words AND NO unseen words
-        android.util.Log.d("WordPriority", "No overdue or unseen words, selecting random word")
-        
-        // Get all words that are not excluded and don't have a future review date
-        val allWords = wordDao.getAllWords()
-        val availableWords = allWords
-            .filter { it.id != excludeWord?.id }
-            .filter { it.nextReviewDate == 0L || it.nextReviewDate <= currentTime }
-        
-        // If there are any available words, return a random one
-        if (availableWords.isNotEmpty()) {
-            return availableWords.random()
-        }
-        
-        // If all words have future review dates, log this situation and return a random word
-        // excluding the current one (this should be a rare fallback)
-        android.util.Log.d("WordPriority", "All words have future review dates, selecting random word anyway")
-        return if (excludeWord == null) {
-            wordDao.getRandomWords(1).first()
+        if (isSpacedRepetitionEnabled) {
+            // PRIORITY 1: Get top overdue words
+            // Get ALL overdue words
+            val overdueWords = wordDao.getOverdueWords(currentTime)
+            
+            // Filter out the excluded word if any
+            val availableOverdueWords = overdueWords.filter { it.id != excludeWord?.id }
+            
+            // If there are ANY overdue words, get top 5 (or fewer if less available)
+            if (availableOverdueWords.isNotEmpty()) {
+                // Calculate overdue ratio for each word
+                val wordsWithRatio = availableOverdueWords.map { word ->
+                    val overdueRatio = (currentTime - word.nextReviewDate) / (Math.max(1, word.interval) * 86400000.0)
+                    Pair(word, overdueRatio)
+                }
+                
+                // Get the top 3 most overdue words
+                val topOverdueWords = wordsWithRatio
+                    .sortedByDescending { it.second }
+                    .take(3)
+                    .map { it.first }
+                
+                // Pick one of the top words randomly
+                android.util.Log.d("WordPriority", "Selected from top ${topOverdueWords.size} overdue words")
+                return topOverdueWords.random()
+            }
+            
+            // PRIORITY 2: ONLY IF NO OVERDUE WORDS, USE UNSEEN WORDS
+            // Get completely unseen words (timesReviewed = 0)
+            val unseenWords = wordDao.getUnseenWords()
+                .filter { it.id != excludeWord?.id }
+            
+            // If there are ANY unseen words, always return a random one of them
+            if (unseenWords.isNotEmpty()) {
+                android.util.Log.d("WordPriority", "Selected an unseen word")
+                return unseenWords.random()
+            }
+            
+            // PRIORITY 3: ONLY AS LAST RESORT, USE OTHER WORDS
+            android.util.Log.d("WordPriority", "No overdue or unseen words, selecting random word")
+            
+            // If no overdue or unseen words, just get a random word
+            return if (excludeWord == null) {
+                wordDao.getRandomWords(1).first()
+            } else {
+                wordDao.getRandomWordsExcluding(1, excludeWord.id).first()
+            }
         } else {
-            wordDao.getRandomWordsExcluding(1, excludeWord.id).first()
+            // When spaced repetition is disabled, simply return a random word
+            android.util.Log.d("WordPriority", "Spaced repetition disabled, selecting fully random word")
+            return if (excludeWord == null) {
+                wordDao.getRandomWords(1).first()
+            } else {
+                wordDao.getRandomWordsExcluding(1, excludeWord.id).first()
+            }
         }
     }
 } 
