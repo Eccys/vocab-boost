@@ -3,13 +3,15 @@ import '../styles/Download.css';
 import HistoryScreen from './HistoryScreen';
 import QuizScreen from './QuizScreen';
 import StatsScreen from './StatsScreen';
+import SettingsScreen from './SettingsScreen';
 
 const Download: React.FC = () => {
+  // Initialize with 0 to show Settings screen first
   const [currentScreenIndex, setCurrentScreenIndex] = useState(0);
   const [userInteracted, setUserInteracted] = useState(false);
   
   const screens = [
-    { id: 'synonyms', name: 'Synonyms' },
+    { id: 'settings', name: 'Settings' },
     { id: 'history', name: 'History' },
     { id: 'stats', name: 'Statistics' },
     { id: 'quiz', name: 'Quiz' }
@@ -76,7 +78,6 @@ const Download: React.FC = () => {
                 key={screen.id} 
                 className={`screen ${screen.id}-screen ${index === currentScreenIndex ? 'active' : ''}`}
               >
-                {/* Screen content would go here - simplified for this example */}
                 <div className="screen-header">
                   <div className="back-button">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -93,7 +94,9 @@ const Download: React.FC = () => {
                   </div>
                 </div>
                 <div className="screen-content">
-                  {screen.id === 'history' ? (
+                  {screen.id === 'settings' ? (
+                    <SettingsScreen />
+                  ) : screen.id === 'history' ? (
                     <HistoryScreen />
                   ) : screen.id === 'quiz' ? (
                     <QuizScreen />
