@@ -13,8 +13,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 5px 10px 20px;
-  gap: 15px;
+  padding: 5px 10px 15px;
+  gap: 10px;
 }
 
 /* Progress Circle */
@@ -22,7 +22,7 @@
   position: relative;
   width: 180px;
   height: 180px;
-  margin: 5px 0 10px;
+  margin: 0 0 5px;
 }
 
 .progress-circle {
@@ -54,15 +54,16 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(2, 1fr);
-  gap: 10px;
+  gap: 8px;
   width: 100%;
+  margin-bottom: 5px;
 }
 
 .stat-card {
   background-color: #1e1e1e;
   border-radius: 12px;
-  aspect-ratio: 1 / 1;
-  padding: 12px 8px;
+  aspect-ratio: 1 / 0.8;
+  padding: 8px 5px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -71,19 +72,19 @@
 
 .stat-icon {
   font-size: 18px;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .stat-value {
   font-size: 20px;
   font-weight: 600;
-  margin: 2px 0;
+  margin: 0;
 }
 
 /* Cards without icons should have the value positioned better */
 .stat-card:nth-child(n+4) .stat-value {
   font-size: 22px;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
 }
 
 .stat-label {
@@ -100,7 +101,7 @@
   border: 1px solid #333;
   border-radius: 12px;
   color: #ee4444;
-  padding: 10px 0;
+  padding: 8px 0;
   width: 90%;
   text-align: center;
   font-size: 13px;
