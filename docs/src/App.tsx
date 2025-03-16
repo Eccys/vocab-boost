@@ -6,6 +6,9 @@ import AOS from 'aos';
 import HomePage from './pages/HomePage';
 import WordOfDayPage from './pages/WordOfDayPage';
 
+// Components
+import NavBar from './components/NavBar';
+
 // Import AOS script for animations
 import 'aos/dist/aos.css';
 
@@ -19,10 +22,13 @@ AOS.init({
 
 const App: React.FC = () => {
   return (
-    <Routes>
-      <Route path="/" element={<HomePage />} />
-      <Route path="/word-of-day" element={<WordOfDayPage />} />
-    </Routes>
+    <>
+      <NavBar />
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/word-of-day" element={<WordOfDayPage />} />
+      </Routes>
+    </>
   );
 };
 
