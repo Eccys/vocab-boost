@@ -35,6 +35,7 @@
 .logo img {
   width: 32px;
   height: 32px;
+  border-radius: 10px;
 }
 
 /* Modern Navbar Styling */
@@ -83,6 +84,8 @@
 
 .nav-icon {
   display: none;
+  border-radius: 10px;
+  overflow: hidden;
 }
 
 .nav-indicator {
@@ -162,6 +165,13 @@
   color: white;
   cursor: pointer;
   z-index: 1001;
+  border-radius: 10px;
+  padding: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.mobile-menu-toggle:hover {
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 /* Media Queries */
@@ -205,6 +215,12 @@
   
   .nav-icon {
     display: block;
+    border-radius: 10px;
+    padding: 2px;
+  }
+  
+  .nav-icon svg {
+    border-radius: 8px;
   }
   
   .nav-item {
