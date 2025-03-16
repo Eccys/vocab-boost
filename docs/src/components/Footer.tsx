@@ -13,17 +13,30 @@ const Footer: React.FC = () => {
       const scrollTop = window.scrollY;
       const offsetTop = rect.top + scrollTop;
       
+      // Perform smooth scroll
       window.scrollTo({
         top: offsetTop - 80, // Account for header height
         behavior: 'smooth'
       });
-    }
-    
-    // Update URL hash without full page reload
-    if (history.pushState) {
-      history.pushState(null, '', `#${sectionId}`);
+      
+      // Trigger a scroll event after scrolling completes to update the header navigation
+      setTimeout(() => {
+        window.dispatchEvent(new Event('scroll'));
+        
+        // Update URL hash without full page reload
+        if (history.pushState) {
+          history.pushState(null, '', `#${sectionId}`);
+        } else {
+          window.location.hash = sectionId;
+        }
+      }, 1000);
     } else {
-      window.location.hash = sectionId;
+      // Update URL hash even if section not found
+      if (history.pushState) {
+        history.pushState(null, '', `#${sectionId}`);
+      } else {
+        window.location.hash = sectionId;
+      }
     }
   };
 
