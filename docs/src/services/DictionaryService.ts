@@ -221,31 +221,138 @@ export const generateQuiz = async (
   word: string, 
   partOfSpeech: string
 ): Promise<{ options: string[], correctAnswer: string }> => {
-  // Get synonyms for the word
-  const synonyms = await getSynonyms(word);
-  
-  // Select one synonym as the correct answer (if available)
-  let correctAnswer = '';
-  if (synonyms.length > 0) {
-    correctAnswer = synonyms[Math.floor(Math.random() * synonyms.length)];
-  } else {
-    // Fallback if no synonyms found
-    correctAnswer = word;
+  try {
+    // Get synonyms for the word
+    const synonyms = await getSynonyms(word);
+    
+    // Select one synonym as the correct answer (if available)
+    let correctAnswer = '';
+    if (synonyms.length > 0) {
+      correctAnswer = synonyms[Math.floor(Math.random() * synonyms.length)];
+    } else {
+      // Fallback if no synonyms found
+      correctAnswer = word;
+    }
+
+    // For more challenging quiz options, let's try to get:
+    // 1. An antonym or contrasting word if possible
+    // 2. Words of the same part of speech but different meanings
+
+    // First, try to get an antonym or contrasting word
+    let distractors: string[] = [];
+    const contrastingSeeds = await getContrastingWords(word, partOfSpeech);
+    
+    // If we have contrasting words, use those
+    if (contrastingSeeds.length > 0) {
+      // Only get 1-2 contrasting words to mix things up
+      const numContrasting = Math.min(2, contrastingSeeds.length);
+      distractors = contrastingSeeds.slice(0, numContrasting);
+    }
+    
+    // Fill the remaining slots with random words of the same part of speech
+    const numNeeded = 3 - distractors.length;
+    if (numNeeded > 0) {
+      const randomWords = await getRandomWordsOfSamePartOfSpeech(partOfSpeech, numNeeded);
+      distractors = [...distractors, ...randomWords];
+    }
+    
+    // Make sure no distractors are accidentally synonyms of the correct answer
+    distractors = distractors.filter(word => 
+      !synonyms.includes(word) && 
+      word.toLowerCase() !== correctAnswer.toLowerCase()
+    );
+    
+    // If we don't have enough distractors, fall back to random words
+    if (distractors.length < 3) {
+      const additionalWords = await getRandomWordsOfSamePartOfSpeech(partOfSpeech, 3 - distractors.length);
+      distractors = [...distractors, ...additionalWords];
+    }
+    
+    // Limit to exactly 3 distractors
+    distractors = distractors.slice(0, 3);
+    
+    // Combine the correct answer with distractors
+    const options = [correctAnswer, ...distractors];
+    
+    // Shuffle the options
+    const shuffledOptions = shuffleArray(options);
+    
+    return {
+      options: shuffledOptions,
+      correctAnswer
+    };
+  } catch (error) {
+    console.error('Error generating quiz:', error);
+    
+    // Fallback to a simple quiz if there's an error
+    const fallbackOptions = [
+      word,
+      `alternative_${partOfSpeech}_1`,
+      `alternative_${partOfSpeech}_2`,
+      `alternative_${partOfSpeech}_3`
+    ];
+    
+    return {
+      options: shuffleArray(fallbackOptions),
+      correctAnswer: word
+    };
   }
-  
-  // Get random words of the same part of speech
-  const randomWords = await getRandomWordsOfSamePartOfSpeech(partOfSpeech, 3);
-  
-  // Combine the correct answer with random words
-  const options = [correctAnswer, ...randomWords];
-  
-  // Shuffle the options
-  const shuffledOptions = shuffleArray(options);
-  
-  return {
-    options: shuffledOptions,
-    correctAnswer
-  };
+};
+
+// Helper function to find contrasting words
+const getContrastingWords = async (word: string, partOfSpeech: string): Promise<string[]> => {
+  try {
+    // First try to get antonyms via the thesaurus API
+    const response = await fetch(
+      `https://www.dictionaryapi.com/api/v3/references/thesaurus/json/${word}?key=${THESAURUS_API_KEY}`
+    );
+    const data = await response.json();
+    
+    if (!data || data.length === 0 || typeof data[0] === 'string') {
+      return [];
+    }
+    
+    // Extract antonyms from the API response
+    const antonyms: string[] = [];
+    data.forEach((entry: any) => {
+      if (entry.meta && entry.meta.ants && entry.meta.ants.length > 0) {
+        entry.meta.ants.forEach((antGroup: string[]) => {
+          antonyms.push(...antGroup);
+        });
+      }
+    });
+    
+    // If we found antonyms, return those
+    if (antonyms.length > 0) {
+      return [...new Set(antonyms)];
+    }
+    
+    // Alternative approach: use semantically distant words of the same part of speech
+    // We'll use a different seed word that's semantically very different from our focus word
+    
+    // Hand-picked contrasting seed words for each part of speech
+    const contrastSeedMap: Record<string, string[]> = {
+      noun: ['extreme', 'opposite', 'contrary', 'reverse'],
+      verb: ['stop', 'halt', 'cease', 'prevent'],
+      adjective: ['contrary', 'opposite', 'different', 'dissimilar'],
+      adverb: ['contrarily', 'oppositely', 'differently', 'conversely']
+    };
+    
+    const normalizedPos = partOfSpeech.toLowerCase();
+    const pos = normalizedPos === 'adj' || normalizedPos === 'adjective' ? 'adjective' : 
+                normalizedPos === 'adv' || normalizedPos === 'adverb' ? 'adverb' : 
+                normalizedPos === 'v' || normalizedPos === 'verb' ? 'verb' : 'noun';
+    
+    const contrastSeeds = contrastSeedMap[pos] || contrastSeedMap.noun;
+    const seedWord = contrastSeeds[Math.floor(Math.random() * contrastSeeds.length)];
+    
+    // Now get words related to this contrasting seed
+    return await getRelatedWords(seedWord, pos);
+    
+  } catch (error) {
+    console.error('Error fetching contrasting words:', error);
+    return [];
+  }
 };
 
 export default {
