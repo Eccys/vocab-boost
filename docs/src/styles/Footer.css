@@ -81,7 +81,7 @@
 
 /* New styling for footer navigation links with gradient underline animation */
 .footer-nav-link {
-  display: inline-block;
+  display: block;
   margin-bottom: 12px;
   color: var(--text-secondary);
   transition: color 0.3s ease, transform 0.3s ease;
