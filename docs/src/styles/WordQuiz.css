@@ -182,6 +182,29 @@
   margin-bottom: 15px;
 }
 
+.api-message {
+  margin-top: 10px;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 0 20px;
+  opacity: 0.8;
+  font-style: italic;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.6;
+  }
+}
+
 .quiz-error {
   text-align: center;
   padding: 20px 0;

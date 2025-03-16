@@ -15,23 +15,31 @@ const WordQuiz: React.FC<WordQuizProps> = ({ word, partOfSpeech, onClose }) => {
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [showResult, setShowResult] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [apiMessage, setApiMessage] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchQuizData = async () => {
       try {
         setLoading(true);
+        setApiMessage("Using Merriam-Webster API to generate quiz...");
+        
         // Initialize API keys
         DictionaryService.initApiKeys();
         
         // Generate quiz options
         const quiz = await DictionaryService.generateQuiz(word, partOfSpeech);
         
+        if (quiz.options.length === 0) {
+          throw new Error("Couldn't generate quiz options. The API may be rate limited or experiencing issues.");
+        }
+        
         setOptions(quiz.options);
         setCorrectAnswer(quiz.correctAnswer);
+        setApiMessage(null);
         setLoading(false);
       } catch (err) {
         console.error('Error generating quiz:', err);
-        setError('Could not load quiz questions. Please try again later.');
+        setError('Could not load quiz questions. Please try again later. The API may be rate limited if you refresh too frequently.');
         setLoading(false);
       }
     };
@@ -77,6 +85,7 @@ const WordQuiz: React.FC<WordQuizProps> = ({ word, partOfSpeech, onClose }) => {
           <div className="quiz-loading">
             <div className="spinner"></div>
             <p>Loading quiz...</p>
+            {apiMessage && <p className="api-message">{apiMessage}</p>}
           </div>
         ) : error ? (
           <div className="quiz-error">
