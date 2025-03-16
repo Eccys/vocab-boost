@@ -2,9 +2,9 @@
 // This service handles all interactions with the Merriam-Webster APIs
 
 // Environment variables - these should be loaded from .env file
-// Using the provided keys for immediate use
-let DICTIONARY_API_KEY = '3762541c-f0ec-4fe7-a364-0b76c0fc2cc3';
-let THESAURUS_API_KEY = 'ecd56eea-18e1-409a-a066-19af340754f3';
+// Using placeholder values here, real keys will be loaded from .env
+let DICTIONARY_API_KEY = 'your-dictionary-api-key';
+let THESAURUS_API_KEY = 'your-thesaurus-api-key';
 
 // Initialize API keys from environment variables if available
 // This will happen during runtime, so the actual keys won't be in the source code
