@@ -2,7 +2,7 @@ import React from 'react';
 import '../styles/StatsScreen.css';
 
 interface StatCardProps {
-  icon: string;
+  icon: React.ReactNode;
   value: string;
   label: string;
 }
@@ -60,32 +60,64 @@ const StatsScreen: React.FC = () => {
         {/* Stats Grid */}
         <div className="stats-grid">
           <StatCard
-            icon="⚡"
-            value="0"
+            icon={
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
+              </svg>
+            }
+            value="45"
             label="Words Studied"
           />
           <StatCard
-            icon="⏱️"
+            icon={
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+            }
             value="18m"
             label="Time Spent"
           />
           <StatCard
-            icon="🏆"
-            value="1d"
+            icon={
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFD700" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M8 21l8 0"></path>
+                <path d="M12 17l0 4"></path>
+                <path d="M12 3c-1.3 0-2.4.84-2.82 2L9 5.5H7a3 3 0 0 0 0 6h10a3 3 0 0 0 0-6h-2l-.18-.5C14.4 3.84 13.3 3 12 3z"></path>
+              </svg>
+            }
+            value="7d"
             label="Best Streak"
           />
           <StatCard
-            icon="✅"
+            icon={
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4CAF50" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20 6L9 17l-5-5"></path>
+              </svg>
+            }
             value="5"
             label="Mastered"
           />
           <StatCard
-            icon="📊"
+            icon={
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 3v18h18"></path>
+                <path d="M18 9l-6-6-2 2-4 4-2 2"></path>
+                <path d="M6 5l6 6"></path>
+                <path d="M14 9l-6 6"></path>
+              </svg>
+            }
             value="10"
             label="Today"
           />
           <StatCard
-            icon="📚"
+            icon={
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path>
+                <path d="M8 7h6"></path>
+                <path d="M8 11h8"></path>
+              </svg>
+            }
             value="40"
             label="To Review"
           />
