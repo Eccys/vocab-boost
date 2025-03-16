@@ -19,24 +19,17 @@ const Footer: React.FC = () => {
         behavior: 'smooth'
       });
       
-      // Trigger a scroll event after scrolling completes to update the header navigation
-      setTimeout(() => {
-        window.dispatchEvent(new Event('scroll'));
-        
-        // Update URL hash without full page reload
-        if (history.pushState) {
-          history.pushState(null, '', `#${sectionId}`);
-        } else {
-          window.location.hash = sectionId;
-        }
-      }, 1000);
-    } else {
-      // Update URL hash even if section not found
+      // Update URL hash without full page reload
       if (history.pushState) {
         history.pushState(null, '', `#${sectionId}`);
       } else {
         window.location.hash = sectionId;
       }
+      
+      // Manually trigger a scroll event to update the header navigation
+      setTimeout(() => {
+        window.dispatchEvent(new Event('scroll'));
+      }, 100);
     }
   };
 
