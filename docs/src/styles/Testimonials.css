@@ -1,0 +1,106 @@
+.testimonials {
+  padding: 100px 0;
+  background: radial-gradient(circle at 50% 75%, rgba(106, 17, 203, 0.05) 0%, rgba(37, 117, 252, 0.05) 5%, transparent 45%);
+}
+
+.testimonials .section-title::after {
+  background: linear-gradient(90deg, var(--secondary-color), var(--primary-color));
+}
+
+.testimonial-slider {
+  display: flex;
+  overflow-x: auto;
+  gap: 30px;
+  padding: 30px 10px;
+  margin: 0 -10px;
+  cursor: grab;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+.testimonial-slider::-webkit-scrollbar {
+  display: none;
+}
+
+.testimonial {
+  flex: 0 0 350px;
+  background: rgba(15, 15, 17, 0.8);
+  border-radius: 16px;
+  padding: 30px;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 10px 30px -15px rgba(0, 0, 0, 0.5),
+              0 0 0 1px rgba(255, 255, 255, 0.05);
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+.testimonial:hover {
+  transform: translateY(-5px);
+  background: rgba(22, 22, 26, 0.95);
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 20px 40px -20px rgba(0, 0, 0, 0.7),
+              0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+.quote {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin-bottom: 20px;
+  position: relative;
+  padding-left: 25px;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.quote::before {
+  content: '"';
+  position: absolute;
+  left: 0;
+  top: -5px;
+  font-size: 3rem;
+  color: var(--primary-color);
+  opacity: 0.5;
+  line-height: 1;
+}
+
+.author {
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.rating {
+  color: #FFD700;
+  font-size: 1.2rem;
+  letter-spacing: 2px;
+}
+
+.testimonial-slider.active {
+  cursor: grabbing;
+}
+
+@media (max-width: 768px) {
+  .testimonials {
+    padding: 80px 0;
+  }
+  
+  .testimonial {
+    flex: 0 0 300px;
+    padding: 25px;
+  }
+  
+  .quote {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .testimonial {
+    flex: 0 0 260px;
+    padding: 20px;
+  }
+} 
