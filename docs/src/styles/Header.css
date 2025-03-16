@@ -49,7 +49,7 @@
 .modern-navbar {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   background: rgba(18, 18, 18, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
@@ -64,11 +64,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 8px 16px;
+  gap: 6px;
+  padding: 8px 12px;
   border-radius: 50px;
   font-weight: 600;
-  font-size: 15px;
+  font-size: 14px;
   color: rgba(255, 255, 255, 0.8);
   transition: all 0.3s ease;
   cursor: pointer;

@@ -35,6 +35,12 @@ const Header: React.FC = () => {
       sectionId: 'features'
     },
     {
+      name: 'How It Works',
+      url: '/#how-it-works',
+      icon: <BookOpenText size={18} strokeWidth={2.5} />,
+      sectionId: 'how-it-works'
+    },
+    {
       name: 'Download',
       url: '/#download',
       icon: <Download size={18} strokeWidth={2.5} />,
@@ -200,26 +206,27 @@ const Header: React.FC = () => {
     closeMobileMenu();
     
     const section = document.getElementById(sectionId);
+    
+    // Find the matching nav item
+    const matchingItem = navItems.find(item => item.sectionId === sectionId);
+    if (matchingItem) {
+      setActiveTab(matchingItem.name);
+    }
+    
     if (section) {
-      // Find the matching nav item
-      const matchingItem = navItems.find(item => item.sectionId === sectionId);
-      if (matchingItem) {
-        setActiveTab(matchingItem.name);
-      }
-      
       // Calculate position and scroll
       const offsetTop = section.getBoundingClientRect().top + window.scrollY;
       window.scrollTo({
         top: offsetTop - 80, // Account for header height
         behavior: 'smooth'
       });
-      
-      // Update URL hash without full page reload
-      if (history.pushState) {
-        history.pushState(null, '', `#${sectionId}`);
-      } else {
-        window.location.hash = sectionId;
-      }
+    }
+    
+    // Update URL hash without full page reload
+    if (history.pushState) {
+      history.pushState(null, '', `#${sectionId}`);
+    } else {
+      window.location.hash = sectionId;
     }
   };
 
