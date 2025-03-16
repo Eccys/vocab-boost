@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import '../styles/Header.css';
-import { Home, BookOpen, Download, Github, Menu, X, Calendar, BookOpenText } from 'lucide-react';
+import { Home, Download, Menu, X, BookOpenText } from 'lucide-react';
 
 // Define the navigation items structure
 interface NavItem {
@@ -21,7 +21,7 @@ const Header: React.FC = () => {
   const menuRef = useRef<HTMLDivElement>(null);
   const toggleButtonRef = useRef<HTMLButtonElement>(null);
 
-  // Define navigation items
+  // Define navigation items - removed Github and Today's Word
   const navItems: NavItem[] = [
     {
       name: 'Home',
@@ -32,22 +32,13 @@ const Header: React.FC = () => {
       name: 'Features',
       url: '/#features',
       icon: <BookOpenText size={18} strokeWidth={2.5} />,
-    },
-    {
-      name: "Today's Word",
-      url: '/word-of-day',
-      icon: <Calendar size={18} strokeWidth={2.5} />,
+      onClick: (e) => scrollToSection(e, 'features')
     },
     {
       name: 'Download',
       url: '/#download',
       icon: <Download size={18} strokeWidth={2.5} />,
       onClick: (e) => scrollToSection(e, 'download')
-    },
-    {
-      name: 'GitHub',
-      url: 'https://github.com/eccys/vocab-boost',
-      icon: <Github size={18} strokeWidth={2.5} />,
     }
   ];
 
@@ -65,7 +56,7 @@ const Header: React.FC = () => {
   useEffect(() => {
     // Check if we're on a specific page
     if (location.pathname === '/word-of-day') {
-      setActiveTab("Today's Word");
+      setActiveTab('Home'); // Default to Home when on word-of-day page
     } else if (location.hash) {
       // Handle hash links on homepage
       const hash = location.hash.substring(1);
@@ -225,9 +216,9 @@ const Header: React.FC = () => {
         </div>
         
         <div className="header-right">
-          <a href="#download" className="header-cta-btn" onClick={(e) => scrollToSection(e, 'download')}>
-            Get the App
-          </a>
+          <Link to="/word-of-day" className="header-cta-btn">
+            Today's Word
+          </Link>
           
           <button 
             className="mobile-menu-toggle" 
