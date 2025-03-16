@@ -59,7 +59,6 @@ const Footer: React.FC = () => {
         <div className="footer-bottom">
           <p>&copy; {new Date().getFullYear()} Vocab App. All rights reserved.</p>
           <p>Made with ❤️ by <a href="https://ecys.xyz" target="_blank" rel="noopener noreferrer">Ecys</a></p>
-          <p><small>This is a demo landing page for illustrative purposes only.</small></p>
         </div>
       </div>
     </footer>

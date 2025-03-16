@@ -35,7 +35,7 @@
 .logo img {
   width: 32px;
   height: 32px;
-  border-radius: 10px;
+  border-radius: 5px;
 }
 
 /* Modern Navbar Styling */
@@ -84,7 +84,7 @@
 
 .nav-icon {
   display: none;
-  border-radius: 10px;
+  border-radius: 5px;
   overflow: hidden;
 }
 
@@ -165,7 +165,7 @@
   color: white;
   cursor: pointer;
   z-index: 1001;
-  border-radius: 10px;
+  border-radius: 5px;
   padding: 4px;
   transition: background-color 0.2s ease;
 }
@@ -215,7 +215,7 @@
   
   .nav-icon {
     display: block;
-    border-radius: 10px;
+    border-radius: 5px;
     padding: 2px;
   }
   
