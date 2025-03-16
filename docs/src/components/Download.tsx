@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import '../styles/Download.css';
 import HistoryScreen from './HistoryScreen';
 import QuizScreen from './QuizScreen';
+import StatsScreen from './StatsScreen';
 
 const Download: React.FC = () => {
   const [currentScreenIndex, setCurrentScreenIndex] = useState(0);
@@ -96,6 +97,8 @@ const Download: React.FC = () => {
                     <HistoryScreen />
                   ) : screen.id === 'quiz' ? (
                     <QuizScreen />
+                  ) : screen.id === 'stats' ? (
+                    <StatsScreen />
                   ) : (
                     <div className="screen-placeholder">
                       {screen.name} Screen
