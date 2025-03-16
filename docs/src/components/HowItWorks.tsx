@@ -16,7 +16,7 @@ const HowItWorks: React.FC = () => {
     {
       number: 3,
       title: 'Review at Optimal Times',
-      description: "Our spaced repetition algorithm schedules reviews when you're most likely to forget, optimizing your retention."
+      description: "Our machine learning algorithm schedules reviews when you're most likely to forget, optimizing your retention."
     },
     {
       number: 4,

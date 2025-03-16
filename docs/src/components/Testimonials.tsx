@@ -14,7 +14,7 @@ const Testimonials: React.FC = () => {
       rating: 5
     },
     {
-      quote: "I love that it's open source and respects my privacy while helping me learn. The spaced repetition system really works!",
+      quote: "I love that it's open source and respects my privacy while helping me learn. The machine learning system really works!",
       author: "Elena K., Software Developer",
       rating: 5
     },
