@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import '../styles/Header.css';
@@ -13,6 +13,19 @@ interface NavItem {
   sectionId?: string;
 }
 
+// Debounce function to limit how often a function is called
+function debounce<T extends (...args: any[]) => any>(
+  func: T,
+  wait: number
+): (...args: Parameters<T>) => void {
+  let timeout: ReturnType<typeof setTimeout> | null = null;
+  
+  return function(...args: Parameters<T>) {
+    if (timeout) clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), wait);
+  };
+}
+
 const Header: React.FC = () => {
   const location = useLocation();
   const [isScrolled, setIsScrolled] = useState(false);
@@ -21,6 +34,9 @@ const Header: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string | null>('Home');
   const menuRef = useRef<HTMLDivElement>(null);
   const toggleButtonRef = useRef<HTMLButtonElement>(null);
+  const lastScrollPosRef = useRef(0);
+  const scrollingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const sectionsRef = useRef<Array<{name: string, top: number, bottom: number}>>([]);
 
   // Define navigation items with sectionId for scroll detection
   const navItems: NavItem[] = [
@@ -50,6 +66,8 @@ const Header: React.FC = () => {
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
+      // Recalculate section positions after resize
+      updateSectionPositions();
     };
 
     window.addEventListener('resize', handleResize);
@@ -81,75 +99,114 @@ const Header: React.FC = () => {
     }
   }, [location.pathname, location.hash, navItems]);
 
-  // Handle scroll event for header background and section detection
+  // Update section positions
+  const updateSectionPositions = useCallback(() => {
+    if (location.pathname !== '/' && location.pathname !== '') return;
+    
+    const newSections = navItems
+      .filter(item => item.sectionId)
+      .map(item => {
+        const element = document.getElementById(item.sectionId!);
+        const rect = element?.getBoundingClientRect();
+        const scrollTop = window.scrollY;
+        return {
+          name: item.name,
+          top: (rect?.top || 0) + scrollTop - 100, // Buffer zone at top (accounting for header)
+          bottom: (rect?.bottom || 0) + scrollTop
+        };
+      })
+      .sort((a, b) => a.top - b.top);
+    
+    sectionsRef.current = newSections;
+  }, [navItems, location.pathname]);
+
+  // Determine which section is active based on scroll position
+  const determineActiveSection = useCallback((scrollPosition: number): string | null => {
+    if (location.pathname === '/word-of-day') return null;
+    if (location.pathname !== '/' && location.pathname !== '') return null;
+    
+    const sections = sectionsRef.current;
+    if (sections.length === 0) return 'Home';
+    
+    // If at the very top of the page, select Home
+    if (scrollPosition < sections[0].top - 200) {
+      return 'Home';
+    }
+    
+    // Find section that contains current scroll position with a buffer
+    const buffer = 50; // Pixels of buffer to prevent flickering
+    const scrollDirection = scrollPosition > lastScrollPosRef.current ? 'down' : 'up';
+    lastScrollPosRef.current = scrollPosition;
+    
+    for (let i = 0; i < sections.length; i++) {
+      const section = sections[i];
+      
+      if (scrollDirection === 'down') {
+        // When scrolling down, be more eager to switch to the next section
+        if (scrollPosition >= section.top && scrollPosition <= section.bottom + buffer) {
+          return section.name;
+        }
+      } else {
+        // When scrolling up, be more resistant to switch to the previous section
+        if (scrollPosition >= section.top - buffer && scrollPosition <= section.bottom) {
+          return section.name;
+        }
+      }
+    }
+    
+    // If we're past all sections, highlight the last one
+    if (scrollPosition > sections[sections.length - 1].bottom) {
+      return sections[sections.length - 1].name;
+    }
+    
+    // Fallback to current active tab
+    return activeTab;
+  }, [location.pathname, activeTab]);
+
+  // Handle scroll event with debounce for header background and section detection
   useEffect(() => {
-    const handleScroll = () => {
-      // Update background opacity based on scroll position
+    // Update section positions initially
+    updateSectionPositions();
+    
+    const handleHeaderOpacity = () => {
       if (window.scrollY > 50) {
         setIsScrolled(true);
       } else {
         setIsScrolled(false);
       }
+    };
+    
+    const handleActiveSection = debounce(() => {
+      if (location.pathname === '/word-of-day') return;
       
-      // Don't update active tab on word-of-day page
-      if (location.pathname === '/word-of-day') {
-        return;
-      }
+      const scrollPosition = window.scrollY;
+      const newActiveSection = determineActiveSection(scrollPosition);
       
-      // Only update active tab on homepage
-      if (location.pathname === '/' || location.pathname === '') {
-        // Detect which section is currently in view
-        const scrollPosition = window.scrollY + window.innerHeight / 3;
-        
-        // Get all sections that correspond to nav items
-        const sections = navItems
-          .filter(item => item.sectionId)
-          .map(item => {
-            const element = document.getElementById(item.sectionId!);
-            return {
-              name: item.name,
-              top: element?.offsetTop || 0,
-              bottom: (element?.offsetTop || 0) + (element?.offsetHeight || 0)
-            };
-          })
-          .sort((a, b) => a.top - b.top);
-        
-        // Find the active section based on scroll position
-        let activeSection: string | null = null;
-        for (const section of sections) {
-          if (scrollPosition >= section.top && scrollPosition <= section.bottom) {
-            activeSection = section.name;
-            break;
-          }
-        }
-        
-        // If we scrolled past the last section, activate the last one
-        if (!activeSection && scrollPosition > sections[sections.length - 1]?.bottom) {
-          activeSection = sections[sections.length - 1]?.name || null;
-        }
-        
-        // If we're at the top of the page or found no section, set to Home
-        if (!activeSection && scrollPosition < sections[0]?.top) {
-          activeSection = 'Home';
-        }
-        
-        // Update active tab if it changed
-        if (activeSection !== activeTab) {
-          setActiveTab(activeSection);
-        }
+      if (newActiveSection !== activeTab) {
+        setActiveTab(newActiveSection);
       }
+    }, 50); // 50ms debounce
+    
+    const handleScroll = () => {
+      handleHeaderOpacity();
+      
+      // Skip section detection if we're actively scrolling to a section
+      if (scrollingTimerRef.current) return;
+      
+      handleActiveSection();
     };
 
     window.addEventListener('scroll', handleScroll);
     
-    // Initial call to set correct active tab on page load
-    handleScroll();
+    // Initial call to set correct values
+    handleHeaderOpacity();
+    handleActiveSection();
     
-    // Cleanup event listener
+    // Cleanup
     return () => {
       window.removeEventListener('scroll', handleScroll);
     };
-  }, [location.pathname, activeTab, navItems]);
+  }, [determineActiveSection, updateSectionPositions, location.pathname, activeTab]);
   
   // Handle click outside to close mobile menu
   useEffect(() => {
@@ -184,16 +241,22 @@ const Header: React.FC = () => {
     e.preventDefault();
     const section = document.getElementById(sectionId);
     if (section) {
-      window.scrollTo({
-        top: section.offsetTop - 80, // Account for header height
-        behavior: 'smooth'
-      });
-      
       // Set the active tab immediately for better UX
       const matchingItem = navItems.find(item => item.sectionId === sectionId);
       if (matchingItem) {
         setActiveTab(matchingItem.name);
       }
+      
+      // Prevent section detection during programmatic scrolling
+      if (scrollingTimerRef.current) clearTimeout(scrollingTimerRef.current);
+      scrollingTimerRef.current = setTimeout(() => {
+        scrollingTimerRef.current = null;
+      }, 1000); // Lock section detection for 1 second during programmatic scrolling
+      
+      window.scrollTo({
+        top: section.offsetTop - 80, // Account for header height
+        behavior: 'smooth'
+      });
     }
     closeMobileMenu();
     
