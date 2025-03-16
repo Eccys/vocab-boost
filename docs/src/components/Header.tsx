@@ -286,22 +286,26 @@ const Header: React.FC = () => {
                   <span className="nav-icon">{item.icon}</span>
                   <span className="nav-text">{item.name}</span>
                   
-                  <AnimatePresence>
-                    {isActive && (
-                      <motion.div
-                        className="nav-indicator"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{
-                          duration: 0.12,
-                          ease: "easeOut"
-                        }}
-                      >
-                        <div className="nav-glow"></div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                  {/* Create a shared layout element present in all items to prevent jumps */}
+                  <div className="nav-indicator-container"></div>
+                  
+                  {isActive && (
+                    <motion.div
+                      layoutId="navbar-active-indicator"
+                      className="nav-indicator"
+                      layout="position"
+                      initial={false}
+                      transition={{
+                        type: "spring",
+                        stiffness: 300,
+                        damping: 26,
+                        mass: 0.8,
+                        duration: 0.3
+                      }}
+                    >
+                      <div className="nav-glow"></div>
+                    </motion.div>
+                  )}
                 </a>
               );
             })}

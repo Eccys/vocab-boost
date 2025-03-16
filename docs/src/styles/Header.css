@@ -101,6 +101,15 @@
   overflow: hidden;
 }
 
+/* Container for indicator to prevent layout shifts */
+.nav-indicator-container {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  border-radius: 50px;
+  pointer-events: none;
+}
+
 .nav-indicator {
   position: absolute;
   inset: 0;
