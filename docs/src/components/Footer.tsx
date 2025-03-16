@@ -1,18 +1,34 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import '../styles/Footer.css';
 
 const Footer: React.FC = () => {
-  // Smooth scroll to section
+  const location = useLocation();
+  const navigate = useNavigate();
+  const isHomePage = location.pathname === '/' || location.pathname === '';
+  
+  // Smooth scroll to section, handling cross-page navigation
   const scrollToSection = (e: React.MouseEvent, sectionId: string) => {
     e.preventDefault();
-    const section = document.getElementById(sectionId);
+    
+    // If we're already on the homepage, just scroll to the section
+    if (isHomePage) {
+      scrollToElement(sectionId);
+    } else {
+      // Navigate to home page first, then scroll to section after navigation completes
+      navigate('/', { state: { scrollTo: sectionId } });
+    }
+  };
+  
+  // Helper function to scroll to an element by ID
+  const scrollToElement = (elementId: string) => {
+    const section = document.getElementById(elementId);
     
     // Update URL hash without full page reload
     if (history.pushState) {
-      history.pushState(null, '', `#${sectionId}`);
+      history.pushState(null, '', `#${elementId}`);
     } else {
-      window.location.hash = sectionId;
+      window.location.hash = elementId;
     }
     
     if (section) {
@@ -26,17 +42,32 @@ const Footer: React.FC = () => {
         top: offsetTop - 80, // Account for header height
         behavior: 'smooth'
       });
-    }
-    
-    // Manually trigger a scroll event to update the header navigation
-    // First immediately to update the indicator
-    window.dispatchEvent(new Event('scroll'));
-    
-    // Then again after scrolling completes to finalize
-    setTimeout(() => {
+      
+      // Manually trigger a scroll event to update the header navigation
       window.dispatchEvent(new Event('scroll'));
-    }, 500);
+      
+      // Then again after scrolling completes to finalize
+      setTimeout(() => {
+        window.dispatchEvent(new Event('scroll'));
+      }, 500);
+    }
   };
+
+  // Check if we have a section to scroll to from navigation state
+  React.useEffect(() => {
+    // This handles the case when we navigate from another page
+    if (location.state && location.state.scrollTo) {
+      const sectionId = location.state.scrollTo;
+      
+      // Need to wait for the page to fully render before scrolling
+      setTimeout(() => {
+        scrollToElement(sectionId);
+        
+        // Clear the navigation state to prevent scrolling on refresh
+        navigate('/', { replace: true, state: {} });
+      }, 100);
+    }
+  }, [location.state, navigate]);
 
   return (
     <footer className="footer">
