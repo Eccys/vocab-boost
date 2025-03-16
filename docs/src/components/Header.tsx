@@ -27,9 +27,11 @@ const Header: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<string>('Home');
   const [isAnimating, setIsAnimating] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false); // Track manual navigation
   const lastActiveTabRef = useRef<string>('Home'); // Track last active tab
   const menuRef = useRef<HTMLDivElement>(null);
   const toggleButtonRef = useRef<HTMLButtonElement>(null);
+  const navigationTimerRef = useRef<NodeJS.Timeout | null>(null);
   
   // Define navigation items
   const navItems: NavItem[] = [
@@ -53,6 +55,15 @@ const Header: React.FC = () => {
     }
   ];
 
+  // Clean up navigation timer on unmount
+  useEffect(() => {
+    return () => {
+      if (navigationTimerRef.current) {
+        clearTimeout(navigationTimerRef.current);
+      }
+    };
+  }, []);
+
   // Handle window resize
   useEffect(() => {
     const handleResize = () => {
@@ -68,6 +79,9 @@ const Header: React.FC = () => {
 
   // Set active tab based on URL and scroll position
   useEffect(() => {
+    // Skip during manual navigation
+    if (isNavigating) return;
+    
     // Check if we're on word-of-day page - don't highlight anything
     if (location.pathname === '/word-of-day') {
       setActiveTab('');
@@ -91,12 +105,12 @@ const Header: React.FC = () => {
       // Check scroll position to set active tab
       updateActiveSection();
     }
-  }, [location.pathname, location.hash]);
+  }, [location.pathname, location.hash, isNavigating]);
 
   // Updated function to determine active section based on scroll position
   const updateActiveSection = () => {
-    // Skip updates during animation to prevent jumpy UI
-    if (isAnimating) return;
+    // Skip updates during animation or manual navigation
+    if (isAnimating || isNavigating) return;
     
     // Only run on home page
     if (location.pathname !== '/' && location.pathname !== '') return;
@@ -189,8 +203,8 @@ const Header: React.FC = () => {
       // Update header background
       setIsScrolled(window.scrollY > 50);
       
-      // Update active section on home page (but skip during animation)
-      if (!isAnimating && (location.pathname === '/' || location.pathname === '')) {
+      // Update active section on home page (but skip during animation or navigation)
+      if (!isAnimating && !isNavigating && (location.pathname === '/' || location.pathname === '')) {
         updateActiveSection();
       }
     };
@@ -203,7 +217,7 @@ const Header: React.FC = () => {
     return () => {
       window.removeEventListener('scroll', handleScroll);
     };
-  }, [location.pathname, isAnimating]);
+  }, [location.pathname, isAnimating, isNavigating]);
   
   // Handle click outside to close mobile menu
   useEffect(() => {
@@ -242,6 +256,21 @@ const Header: React.FC = () => {
     setIsAnimating(false);
   };
   
+  // Lock navigation for a period to prevent scroll events from interfering
+  const lockNavigation = () => {
+    setIsNavigating(true);
+    
+    // Clear any existing timer
+    if (navigationTimerRef.current) {
+      clearTimeout(navigationTimerRef.current);
+    }
+    
+    // Set timer to unlock navigation after animation and scrolling complete
+    navigationTimerRef.current = setTimeout(() => {
+      setIsNavigating(false);
+    }, 1250); // 1.25 seconds (animation duration + scroll time)
+  };
+  
   // Smooth scroll to section - immediate action regardless of animation
   const scrollToSection = (e: React.MouseEvent, sectionId: string) => {
     e.preventDefault();
@@ -250,6 +279,9 @@ const Header: React.FC = () => {
     // Find the matching nav item and update active tab
     const matchingItem = navItems.find(item => item.sectionId === sectionId);
     if (matchingItem) {
+      // Lock navigation to prevent scroll events from changing the active tab
+      lockNavigation();
+      
       // Update active tab (animation will happen independently)
       setActiveTab(matchingItem.name);
       lastActiveTabRef.current = matchingItem.name;
