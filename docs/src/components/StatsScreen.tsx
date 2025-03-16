@@ -2,7 +2,7 @@ import React from 'react';
 import '../styles/StatsScreen.css';
 
 interface StatCardProps {
-  icon: React.ReactNode;
+  icon?: React.ReactNode;
   value: string;
   label: string;
 }
@@ -10,7 +10,7 @@ interface StatCardProps {
 const StatCard: React.FC<StatCardProps> = ({ icon, value, label }) => {
   return (
     <div className="stat-card">
-      <div className="stat-icon">{icon}</div>
+      {icon && <div className="stat-icon">{icon}</div>}
       <div className="stat-value">{value}</div>
       <div className="stat-label">{label}</div>
     </div>
@@ -90,34 +90,14 @@ const StatsScreen: React.FC = () => {
             label="Best Streak"
           />
           <StatCard
-            icon={
-              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4CAF50" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M20 6L9 17l-5-5"></path>
-              </svg>
-            }
             value="5"
             label="Mastered"
           />
           <StatCard
-            icon={
-              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M3 3v18h18"></path>
-                <path d="M18 9l-6-6-2 2-4 4-2 2"></path>
-                <path d="M6 5l6 6"></path>
-                <path d="M14 9l-6 6"></path>
-              </svg>
-            }
             value="10"
             label="Today"
           />
           <StatCard
-            icon={
-              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path>
-                <path d="M8 7h6"></path>
-                <path d="M8 11h8"></path>
-              </svg>
-            }
             value="40"
             label="To Review"
           />

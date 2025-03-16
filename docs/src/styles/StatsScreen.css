@@ -80,6 +80,12 @@
   margin: 2px 0;
 }
 
+/* Cards without icons should have the value positioned better */
+.stat-card:nth-child(n+4) .stat-value {
+  font-size: 22px;
+  margin-bottom: 8px;
+}
+
 .stat-label {
   font-size: 10px;
   color: #aaa;
