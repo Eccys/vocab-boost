@@ -37,6 +37,7 @@ const Header: React.FC = () => {
   const lastScrollPosRef = useRef(0);
   const scrollingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sectionsRef = useRef<Array<{name: string, top: number, bottom: number}>>([]);
+  const [sectionsLoaded, setSectionsLoaded] = useState(false);
 
   // Define navigation items with sectionId for scroll detection
   const navItems: NavItem[] = [
@@ -62,6 +63,39 @@ const Header: React.FC = () => {
     }
   ];
 
+  // Update section positions - now more robust
+  const updateSectionPositions = useCallback(() => {
+    if (location.pathname !== '/' && location.pathname !== '') return;
+    
+    // Get all sections from the DOM
+    const newSections = navItems
+      .filter(item => item.sectionId)
+      .map(item => {
+        const element = document.getElementById(item.sectionId!);
+        if (!element) {
+          console.warn(`Section element with ID ${item.sectionId} not found`);
+          return null;
+        }
+        
+        const rect = element.getBoundingClientRect();
+        const scrollTop = window.scrollY;
+        
+        return {
+          name: item.name,
+          top: rect.top + scrollTop - 100, // Buffer zone at top (accounting for header)
+          bottom: rect.bottom + scrollTop
+        };
+      })
+      .filter(Boolean) // Remove null entries
+      .sort((a, b) => a!.top - b!.top) as Array<{name: string, top: number, bottom: number}>;
+    
+    // Only update if we found sections and they're different from what we had
+    if (newSections.length > 0) {
+      sectionsRef.current = newSections;
+      setSectionsLoaded(true);
+    }
+  }, [navItems, location.pathname]);
+
   // Handle window resize
   useEffect(() => {
     const handleResize = () => {
@@ -72,7 +106,20 @@ const Header: React.FC = () => {
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  }, [updateSectionPositions]);
+
+  // Ensure sections are calculated after everything is rendered
+  useEffect(() => {
+    // Initial calculation
+    updateSectionPositions();
+    
+    // Recalculate after a short delay to ensure all content is rendered
+    const timer = setTimeout(() => {
+      updateSectionPositions();
+    }, 1000);
+    
+    return () => clearTimeout(timer);
+  }, [updateSectionPositions, location.pathname]);
 
   // Set active tab based on URL
   useEffect(() => {
@@ -94,31 +141,18 @@ const Header: React.FC = () => {
         }
       }
       
+      // Check where we are on the page to set the correct tab
+      if (sectionsLoaded) {
+        const currentScrollPosition = window.scrollY;
+        const newActiveSection = determineActiveSection(currentScrollPosition);
+        setActiveTab(newActiveSection);
+        return;
+      }
+      
       // Default to Home if no hash or no matching hash
       setActiveTab('Home');
     }
-  }, [location.pathname, location.hash, navItems]);
-
-  // Update section positions
-  const updateSectionPositions = useCallback(() => {
-    if (location.pathname !== '/' && location.pathname !== '') return;
-    
-    const newSections = navItems
-      .filter(item => item.sectionId)
-      .map(item => {
-        const element = document.getElementById(item.sectionId!);
-        const rect = element?.getBoundingClientRect();
-        const scrollTop = window.scrollY;
-        return {
-          name: item.name,
-          top: (rect?.top || 0) + scrollTop - 100, // Buffer zone at top (accounting for header)
-          bottom: (rect?.bottom || 0) + scrollTop
-        };
-      })
-      .sort((a, b) => a.top - b.top);
-    
-    sectionsRef.current = newSections;
-  }, [navItems, location.pathname]);
+  }, [location.pathname, location.hash, navItems, sectionsLoaded]);
 
   // Determine which section is active based on scroll position
   const determineActiveSection = useCallback((scrollPosition: number): string | null => {
@@ -133,40 +167,34 @@ const Header: React.FC = () => {
       return 'Home';
     }
     
-    // Find section that contains current scroll position with a buffer
-    const buffer = 50; // Pixels of buffer to prevent flickering
-    const scrollDirection = scrollPosition > lastScrollPosRef.current ? 'down' : 'up';
-    lastScrollPosRef.current = scrollPosition;
-    
+    // Find section that contains current scroll position
+    // Using a more straightforward algorithm for clarity
     for (let i = 0; i < sections.length; i++) {
       const section = sections[i];
+      const nextSection = i < sections.length - 1 ? sections[i + 1] : null;
       
-      if (scrollDirection === 'down') {
-        // When scrolling down, be more eager to switch to the next section
-        if (scrollPosition >= section.top && scrollPosition <= section.bottom + buffer) {
-          return section.name;
-        }
-      } else {
-        // When scrolling up, be more resistant to switch to the previous section
-        if (scrollPosition >= section.top - buffer && scrollPosition <= section.bottom) {
+      // If this is the last section or we're before the next section's top
+      if (!nextSection || scrollPosition < nextSection.top) {
+        // Check if we're past the start of this section
+        if (scrollPosition >= section.top - 50) {
           return section.name;
         }
       }
     }
     
     // If we're past all sections, highlight the last one
-    if (scrollPosition > sections[sections.length - 1].bottom) {
+    if (scrollPosition > sections[sections.length - 1].bottom - 100) {
       return sections[sections.length - 1].name;
     }
     
-    // Fallback to current active tab
-    return activeTab;
-  }, [location.pathname, activeTab]);
+    // Fallback to Home
+    return 'Home';
+  }, [location.pathname]);
 
   // Handle scroll event with debounce for header background and section detection
   useEffect(() => {
-    // Update section positions initially
-    updateSectionPositions();
+    // Only proceed if sections are loaded
+    if (!sectionsLoaded) return;
     
     const handleHeaderOpacity = () => {
       if (window.scrollY > 50) {
@@ -178,6 +206,7 @@ const Header: React.FC = () => {
     
     const handleActiveSection = debounce(() => {
       if (location.pathname === '/word-of-day') return;
+      if (location.pathname !== '/' && location.pathname !== '') return;
       
       const scrollPosition = window.scrollY;
       const newActiveSection = determineActiveSection(scrollPosition);
@@ -206,7 +235,7 @@ const Header: React.FC = () => {
     return () => {
       window.removeEventListener('scroll', handleScroll);
     };
-  }, [determineActiveSection, updateSectionPositions, location.pathname, activeTab]);
+  }, [determineActiveSection, activeTab, location.pathname, sectionsLoaded]);
   
   // Handle click outside to close mobile menu
   useEffect(() => {
@@ -251,10 +280,17 @@ const Header: React.FC = () => {
       if (scrollingTimerRef.current) clearTimeout(scrollingTimerRef.current);
       scrollingTimerRef.current = setTimeout(() => {
         scrollingTimerRef.current = null;
-      }, 1000); // Lock section detection for 1 second during programmatic scrolling
+        // Recalculate sections once scrolling is done
+        updateSectionPositions();
+      }, 1000); // Lock section detection for 1 second
+      
+      // Calculate accurate position
+      const rect = section.getBoundingClientRect();
+      const scrollTop = window.scrollY;
+      const offsetTop = rect.top + scrollTop;
       
       window.scrollTo({
-        top: section.offsetTop - 80, // Account for header height
+        top: offsetTop - 80, // Account for header height
         behavior: 'smooth'
       });
     }
