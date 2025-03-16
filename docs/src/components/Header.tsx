@@ -12,11 +12,21 @@ interface NavItem {
   sectionId: string;
 }
 
+// Define section info interface
+interface SectionInfo {
+  name: string | null;
+  sectionId: string;
+  top: number;
+  bottom: number;
+  height: number;
+}
+
 const Header: React.FC = () => {
   const location = useLocation();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<string>('Home');
+  const lastActiveTabRef = useRef<string>('Home'); // Track last active tab
   const menuRef = useRef<HTMLDivElement>(null);
   const toggleButtonRef = useRef<HTMLButtonElement>(null);
   
@@ -71,8 +81,10 @@ const Header: React.FC = () => {
         const matchingItem = navItems.find(item => item.sectionId === hash);
         if (matchingItem) {
           setActiveTab(matchingItem.name);
+          lastActiveTabRef.current = matchingItem.name; // Update last active when explicitly navigating
           return;
         }
+        // If hash doesn't match a nav item (e.g., how-it-works), maintain last active
       }
       
       // Check scroll position to set active tab
@@ -80,40 +92,48 @@ const Header: React.FC = () => {
     }
   }, [location.pathname, location.hash]);
 
-  // Simple function to determine which section is active based on scroll position
+  // Updated function to determine active section based on scroll position
   const updateActiveSection = () => {
     // Only run on home page
     if (location.pathname !== '/' && location.pathname !== '') return;
     
     const scrollPosition = window.scrollY;
     
-    // Get all sections and their positions
-    const sections = navItems.map(item => {
-      const element = document.getElementById(item.sectionId);
-      if (!element) return null;
-      
-      const rect = element.getBoundingClientRect();
-      return {
-        name: item.name,
-        top: rect.top + window.scrollY,
-        bottom: rect.bottom + window.scrollY,
-        height: rect.height
-      };
-    }).filter(Boolean) as Array<{name: string, top: number, bottom: number, height: number}>;
+    // Get all sections and their positions (including how-it-works)
+    const allSectionIds = [...navItems.map(item => item.sectionId), 'how-it-works'];
+    const sectionsInfo: SectionInfo[] = allSectionIds
+      .map(sectionId => {
+        const element = document.getElementById(sectionId);
+        if (!element) return null;
+        
+        const rect = element.getBoundingClientRect();
+        // Find corresponding nav item name (or null for how-it-works)
+        const navItem = navItems.find(item => item.sectionId === sectionId);
+        
+        return {
+          name: navItem ? navItem.name : null,
+          sectionId,
+          top: rect.top + window.scrollY,
+          bottom: rect.bottom + window.scrollY,
+          height: rect.height
+        };
+      })
+      .filter((section): section is SectionInfo => section !== null);
     
-    if (sections.length === 0) return;
+    if (sectionsInfo.length === 0) return;
     
     // If at the very top of the page, select Home
-    if (scrollPosition < sections[0].top - 150) {
+    if (scrollPosition < sectionsInfo[0].top - 150) {
       setActiveTab('Home');
+      lastActiveTabRef.current = 'Home';
       return;
     }
     
-    // Find the section that is currently most visible in the viewport
-    let activeSection = sections[0].name;
+    // Find which section the user is currently viewing
+    let currentSectionId: string | null = null;
     let maxVisibility = 0;
     
-    for (const section of sections) {
+    for (const section of sectionsInfo) {
       const sectionTop = section.top;
       const sectionBottom = section.bottom;
       
@@ -129,19 +149,34 @@ const Header: React.FC = () => {
       if (visibleBottom > visibleTop) {
         // Special case: if we're near the top of a section, prioritize it
         if (scrollPosition >= sectionTop - 150 && scrollPosition < sectionTop + 150) {
-          activeSection = section.name;
+          currentSectionId = section.sectionId;
           break;
         }
         
         const visibleHeight = visibleBottom - visibleTop;
         if (visibleHeight > maxVisibility) {
           maxVisibility = visibleHeight;
-          activeSection = section.name;
+          currentSectionId = section.sectionId;
         }
       }
     }
     
-    setActiveTab(activeSection);
+    // If we're viewing a section with a nav item, update active tab
+    if (currentSectionId) {
+      const section = sectionsInfo.find(s => s.sectionId === currentSectionId);
+      
+      if (section) {
+        if (section.name) {
+          // This is a section with a navbar item - update active tab and last active
+          setActiveTab(section.name);
+          lastActiveTabRef.current = section.name;
+        } else {
+          // This is a section without a navbar item (like how-it-works)
+          // Keep the last active tab highlighted
+          setActiveTab(lastActiveTabRef.current);
+        }
+      }
+    }
   };
 
   // Handle scroll event
@@ -201,10 +236,11 @@ const Header: React.FC = () => {
     
     const section = document.getElementById(sectionId);
     
-    // Find the matching nav item
+    // Find the matching nav item and update active tab
     const matchingItem = navItems.find(item => item.sectionId === sectionId);
     if (matchingItem) {
       setActiveTab(matchingItem.name);
+      lastActiveTabRef.current = matchingItem.name;
     }
     
     if (section) {
@@ -257,8 +293,13 @@ const Header: React.FC = () => {
                       initial={false}
                       transition={{
                         type: "spring",
-                        stiffness: 300,
-                        damping: 30,
+                        stiffness: 500,
+                        damping: 40,
+                        mass: 1.2,
+                        duration: 0.3,
+                        layout: {
+                          duration: 0.3
+                        }
                       }}
                     >
                       <div className="nav-glow"></div>

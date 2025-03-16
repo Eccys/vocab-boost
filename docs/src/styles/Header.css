@@ -57,6 +57,7 @@
   border-radius: 50px;
   box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
   transition: all 0.3s ease;
+  position: relative; /* Ensure relative positioning for absolute children */
 }
 
 .nav-item {
@@ -72,6 +73,7 @@
   color: rgba(255, 255, 255, 0.8);
   transition: all 0.3s ease;
   cursor: pointer;
+  z-index: 1; /* Ensure nav items are above indicators */
 }
 
 .nav-item:hover {
@@ -94,6 +96,7 @@
   z-index: -1;
   border-radius: 50px;
   background: rgba(255, 255, 255, 0.05);
+  pointer-events: none; /* Ensure it doesn't interfere with clicks */
 }
 
 .nav-glow {
