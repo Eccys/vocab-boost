@@ -79,7 +79,60 @@
   background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
 }
 
-.footer-column a {
+/* New styling for footer navigation links with gradient underline animation */
+.footer-nav-link {
+  display: block;
+  margin-bottom: 12px;
+  color: var(--text-secondary);
+  transition: color 0.3s ease, transform 0.3s ease;
+  position: relative;
+  padding-left: 0;
+  text-decoration: none;
+}
+
+.footer-nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, 
+    #FF5E3A, /* Vibrant orange */
+    #FF9500, /* Amber orange */
+    #FF2D55  /* Hot pink */
+  );
+  transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  transform-origin: left;
+  box-shadow: 0 0 8px rgba(255, 94, 58, 0.5);
+  border-radius: 2px;
+}
+
+.footer-nav-link:hover {
+  color: #fff;
+  transform: translateX(5px);
+}
+
+.footer-nav-link:hover::after {
+  width: 100%;
+  box-shadow: 0 0 15px rgba(255, 94, 58, 0.7);
+  animation: pulseShadow 1.5s infinite alternate;
+}
+
+@keyframes pulseShadow {
+  0% {
+    box-shadow: 0 0 5px rgba(255, 94, 58, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 15px rgba(255, 94, 58, 0.7), 0 0 20px rgba(255, 149, 0, 0.3);
+  }
+  100% {
+    box-shadow: 0 0 10px rgba(255, 45, 85, 0.6);
+  }
+}
+
+/* Remove old footer-column a styles as they're replaced by footer-nav-link */
+.footer-column a:not(.footer-nav-link) {
   display: block;
   margin-bottom: 12px;
   color: var(--text-secondary);
@@ -88,12 +141,12 @@
   padding-left: 0;
 }
 
-.footer-column a:hover {
+.footer-column a:not(.footer-nav-link):hover {
   color: var(--text-color);
   transform: translateX(5px);
 }
 
-.footer-column a::before {
+.footer-column a:not(.footer-nav-link)::before {
   content: '';
   position: absolute;
   left: 0;
@@ -105,7 +158,7 @@
   transition: width 0.3s ease;
 }
 
-.footer-column a:hover::before {
+.footer-column a:not(.footer-nav-link):hover::before {
   width: 0;
 }
 

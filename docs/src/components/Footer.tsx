@@ -3,6 +3,30 @@ import { Link } from 'react-router-dom';
 import '../styles/Footer.css';
 
 const Footer: React.FC = () => {
+  // Smooth scroll to section
+  const scrollToSection = (e: React.MouseEvent, sectionId: string) => {
+    e.preventDefault();
+    const section = document.getElementById(sectionId);
+    if (section) {
+      // Calculate accurate position
+      const rect = section.getBoundingClientRect();
+      const scrollTop = window.scrollY;
+      const offsetTop = rect.top + scrollTop;
+      
+      window.scrollTo({
+        top: offsetTop - 80, // Account for header height
+        behavior: 'smooth'
+      });
+    }
+    
+    // Update URL hash without full page reload
+    if (history.pushState) {
+      history.pushState(null, '', `#${sectionId}`);
+    } else {
+      window.location.hash = sectionId;
+    }
+  };
+
   return (
     <footer className="footer">
       <div className="container">
@@ -14,21 +38,21 @@ const Footer: React.FC = () => {
           <div className="footer-links">
             <div className="footer-column">
               <h4>App</h4>
-              <a href="#features">Features</a>
-              <a href="#how-it-works">How It Works</a>
-              <a href="#download">Download</a>
+              <a href="#features" className="footer-nav-link" onClick={(e) => scrollToSection(e, 'features')}>Features</a>
+              <a href="#how-it-works" className="footer-nav-link" onClick={(e) => scrollToSection(e, 'how-it-works')}>How It Works</a>
+              <a href="#download" className="footer-nav-link" onClick={(e) => scrollToSection(e, 'download')}>Download</a>
             </div>
             <div className="footer-column">
               <h4>Resources</h4>
-              <a href="#">Documentation</a>
-              <a href="#">Contributing</a>
-              <a href="#">Releases</a>
+              <a href="#" className="footer-nav-link">Documentation</a>
+              <a href="#" className="footer-nav-link">Contributing</a>
+              <a href="#" className="footer-nav-link">Releases</a>
             </div>
             <div className="footer-column">
               <h4>Connect</h4>
-              <a href="https://github.com/eccys/vocab-boost" target="_blank" rel="noopener noreferrer">GitHub</a>
-              <a href="#">Twitter</a>
-              <a href="mailto:help.vocabboost@gmail.com">Contact Us</a>
+              <a href="https://github.com/eccys/vocab-boost" target="_blank" rel="noopener noreferrer" className="footer-nav-link">GitHub</a>
+              <a href="#" className="footer-nav-link">Twitter</a>
+              <a href="mailto:help.vocabboost@gmail.com" className="footer-nav-link">Contact Us</a>
             </div>
           </div>
         </div>
