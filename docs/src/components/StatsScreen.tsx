@@ -19,7 +19,7 @@ const StatCard: React.FC<StatCardProps> = ({ icon, value, label }) => {
 
 const StatsScreen: React.FC = () => {
   // Calculate progress arc parameters
-  const radius = 70;
+  const radius = 80;
   const circumference = 2 * Math.PI * radius;
   const progress = 10 / 50; // 10 out of 50 completed
   const strokeDashoffset = circumference * (1 - progress);
