@@ -421,7 +421,14 @@ const Header: React.FC = () => {
         </div>
         
         <div className="header-right">
-          <Link to="/word-of-day" className="header-cta-btn">
+          <Link 
+            to="/word-of-day" 
+            className="header-cta-btn"
+            onClick={() => {
+              // Ensure we scroll to top when navigating to Word of Day page
+              window.scrollTo(0, 0);
+            }}
+          >
             Today's Word
           </Link>
           
