@@ -10,6 +10,7 @@ interface NavItem {
   url: string;
   icon: React.ReactNode;
   onClick?: (e: React.MouseEvent) => void;
+  sectionId?: string;
 }
 
 const Header: React.FC = () => {
@@ -17,28 +18,31 @@ const Header: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  const [activeTab, setActiveTab] = useState('Home');
+  const [activeTab, setActiveTab] = useState<string | null>('Home');
   const menuRef = useRef<HTMLDivElement>(null);
   const toggleButtonRef = useRef<HTMLButtonElement>(null);
 
-  // Define navigation items - removed Github and Today's Word
+  // Define navigation items with sectionId for scroll detection
   const navItems: NavItem[] = [
     {
       name: 'Home',
       url: '/#hero',
       icon: <Home size={18} strokeWidth={2.5} />,
+      sectionId: 'hero'
     },
     {
       name: 'Features',
       url: '/#features',
       icon: <BookOpenText size={18} strokeWidth={2.5} />,
-      onClick: (e) => scrollToSection(e, 'features')
+      onClick: (e) => scrollToSection(e, 'features'),
+      sectionId: 'features'
     },
     {
       name: 'Download',
       url: '/#download',
       icon: <Download size={18} strokeWidth={2.5} />,
-      onClick: (e) => scrollToSection(e, 'download')
+      onClick: (e) => scrollToSection(e, 'download'),
+      sectionId: 'download'
     }
   ];
 
@@ -54,38 +58,98 @@ const Header: React.FC = () => {
 
   // Set active tab based on URL
   useEffect(() => {
-    // Check if we're on a specific page
+    // Check if we're on word-of-day page - don't highlight anything
     if (location.pathname === '/word-of-day') {
-      setActiveTab('Home'); // Default to Home when on word-of-day page
-    } else if (location.hash) {
-      // Handle hash links on homepage
-      const hash = location.hash.substring(1);
-      const matchingItem = navItems.find(item => item.url.includes(hash));
-      if (matchingItem) {
-        setActiveTab(matchingItem.name);
+      setActiveTab(null);
+      return;
+    }
+    
+    // Only run this for the home page
+    if (location.pathname === '/' || location.pathname === '') {
+      // If there's a hash in the URL, use that
+      if (location.hash) {
+        const hash = location.hash.substring(1);
+        const matchingItem = navItems.find(item => item.sectionId === hash);
+        if (matchingItem) {
+          setActiveTab(matchingItem.name);
+          return;
+        }
       }
-    } else if (location.pathname === '/' || location.pathname === '') {
+      
+      // Default to Home if no hash or no matching hash
       setActiveTab('Home');
     }
-  }, [location, navItems]);
+  }, [location.pathname, location.hash, navItems]);
 
-  // Handle scroll event
+  // Handle scroll event for header background and section detection
   useEffect(() => {
     const handleScroll = () => {
+      // Update background opacity based on scroll position
       if (window.scrollY > 50) {
         setIsScrolled(true);
       } else {
         setIsScrolled(false);
       }
+      
+      // Don't update active tab on word-of-day page
+      if (location.pathname === '/word-of-day') {
+        return;
+      }
+      
+      // Only update active tab on homepage
+      if (location.pathname === '/' || location.pathname === '') {
+        // Detect which section is currently in view
+        const scrollPosition = window.scrollY + window.innerHeight / 3;
+        
+        // Get all sections that correspond to nav items
+        const sections = navItems
+          .filter(item => item.sectionId)
+          .map(item => {
+            const element = document.getElementById(item.sectionId!);
+            return {
+              name: item.name,
+              top: element?.offsetTop || 0,
+              bottom: (element?.offsetTop || 0) + (element?.offsetHeight || 0)
+            };
+          })
+          .sort((a, b) => a.top - b.top);
+        
+        // Find the active section based on scroll position
+        let activeSection: string | null = null;
+        for (const section of sections) {
+          if (scrollPosition >= section.top && scrollPosition <= section.bottom) {
+            activeSection = section.name;
+            break;
+          }
+        }
+        
+        // If we scrolled past the last section, activate the last one
+        if (!activeSection && scrollPosition > sections[sections.length - 1]?.bottom) {
+          activeSection = sections[sections.length - 1]?.name || null;
+        }
+        
+        // If we're at the top of the page or found no section, set to Home
+        if (!activeSection && scrollPosition < sections[0]?.top) {
+          activeSection = 'Home';
+        }
+        
+        // Update active tab if it changed
+        if (activeSection !== activeTab) {
+          setActiveTab(activeSection);
+        }
+      }
     };
 
     window.addEventListener('scroll', handleScroll);
+    
+    // Initial call to set correct active tab on page load
+    handleScroll();
     
     // Cleanup event listener
     return () => {
       window.removeEventListener('scroll', handleScroll);
     };
-  }, []);
+  }, [location.pathname, activeTab, navItems]);
   
   // Handle click outside to close mobile menu
   useEffect(() => {
@@ -124,8 +188,21 @@ const Header: React.FC = () => {
         top: section.offsetTop - 80, // Account for header height
         behavior: 'smooth'
       });
+      
+      // Set the active tab immediately for better UX
+      const matchingItem = navItems.find(item => item.sectionId === sectionId);
+      if (matchingItem) {
+        setActiveTab(matchingItem.name);
+      }
     }
     closeMobileMenu();
+    
+    // Update URL hash without full page reload
+    if (history.pushState) {
+      history.pushState(null, '', `#${sectionId}`);
+    } else {
+      window.location.hash = sectionId;
+    }
   };
 
   return (
@@ -147,7 +224,6 @@ const Header: React.FC = () => {
               
               // Custom click handler that combines item onClick and active state change
               const handleItemClick = (e: React.MouseEvent) => {
-                setActiveTab(item.name);
                 if (item.onClick) {
                   item.onClick(e);
                 } else {
