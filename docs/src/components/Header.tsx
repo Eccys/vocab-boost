@@ -26,9 +26,11 @@ const Header: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<string>('Home');
+  const [isAnimating, setIsAnimating] = useState(false);
   const lastActiveTabRef = useRef<string>('Home'); // Track last active tab
   const menuRef = useRef<HTMLDivElement>(null);
   const toggleButtonRef = useRef<HTMLButtonElement>(null);
+  const pendingScrollRef = useRef<{sectionId: string, hash: boolean} | null>(null);
   
   // Define navigation items
   const navItems: NavItem[] = [
@@ -92,8 +94,39 @@ const Header: React.FC = () => {
     }
   }, [location.pathname, location.hash]);
 
+  // Process any pending scroll actions when animation completes
+  useEffect(() => {
+    if (!isAnimating && pendingScrollRef.current) {
+      const { sectionId, hash } = pendingScrollRef.current;
+      pendingScrollRef.current = null;
+      
+      const section = document.getElementById(sectionId);
+      
+      if (section) {
+        // Calculate position and scroll
+        const offsetTop = section.getBoundingClientRect().top + window.scrollY;
+        window.scrollTo({
+          top: offsetTop - 80, // Account for header height
+          behavior: 'smooth'
+        });
+      }
+      
+      // Update URL hash without full page reload
+      if (hash) {
+        if (history.pushState) {
+          history.pushState(null, '', `#${sectionId}`);
+        } else {
+          window.location.hash = sectionId;
+        }
+      }
+    }
+  }, [isAnimating]);
+
   // Updated function to determine active section based on scroll position
   const updateActiveSection = () => {
+    // Skip updates during animation to prevent interruption
+    if (isAnimating) return;
+    
     // Only run on home page
     if (location.pathname !== '/' && location.pathname !== '') return;
     
@@ -185,8 +218,8 @@ const Header: React.FC = () => {
       // Update header background
       setIsScrolled(window.scrollY > 50);
       
-      // Update active section on home page
-      if (location.pathname === '/' || location.pathname === '') {
+      // Update active section on home page (but skip during animation)
+      if (!isAnimating && (location.pathname === '/' || location.pathname === '')) {
         updateActiveSection();
       }
     };
@@ -199,7 +232,7 @@ const Header: React.FC = () => {
     return () => {
       window.removeEventListener('scroll', handleScroll);
     };
-  }, [location.pathname]);
+  }, [location.pathname, isAnimating]);
   
   // Handle click outside to close mobile menu
   useEffect(() => {
@@ -229,34 +262,48 @@ const Header: React.FC = () => {
     setIsMobileMenuOpen(false);
   };
   
-  // Smooth scroll to section
+  // Handle animation start and end
+  const handleAnimationStart = () => {
+    setIsAnimating(true);
+  };
+  
+  const handleAnimationComplete = () => {
+    setIsAnimating(false);
+  };
+  
+  // Smooth scroll to section - now with animation completion control
   const scrollToSection = (e: React.MouseEvent, sectionId: string) => {
     e.preventDefault();
     closeMobileMenu();
     
-    const section = document.getElementById(sectionId);
-    
     // Find the matching nav item and update active tab
     const matchingItem = navItems.find(item => item.sectionId === sectionId);
     if (matchingItem) {
-      setActiveTab(matchingItem.name);
-      lastActiveTabRef.current = matchingItem.name;
-    }
-    
-    if (section) {
-      // Calculate position and scroll
-      const offsetTop = section.getBoundingClientRect().top + window.scrollY;
-      window.scrollTo({
-        top: offsetTop - 80, // Account for header height
-        behavior: 'smooth'
-      });
-    }
-    
-    // Update URL hash without full page reload
-    if (history.pushState) {
-      history.pushState(null, '', `#${sectionId}`);
-    } else {
-      window.location.hash = sectionId;
+      // Only change the tab if it's different to trigger animation
+      if (activeTab !== matchingItem.name) {
+        setActiveTab(matchingItem.name);
+        lastActiveTabRef.current = matchingItem.name;
+        
+        // Store the scroll action to be performed after animation completes
+        pendingScrollRef.current = { sectionId, hash: true };
+      } else {
+        // If we're already on this tab, no animation needed - scroll immediately
+        const section = document.getElementById(sectionId);
+        if (section) {
+          const offsetTop = section.getBoundingClientRect().top + window.scrollY;
+          window.scrollTo({
+            top: offsetTop - 80,
+            behavior: 'smooth'
+          });
+        }
+        
+        // Update URL hash
+        if (history.pushState) {
+          history.pushState(null, '', `#${sectionId}`);
+        } else {
+          window.location.hash = sectionId;
+        }
+      }
     }
   };
 
@@ -295,12 +342,12 @@ const Header: React.FC = () => {
                       className="nav-indicator"
                       layout="position"
                       initial={false}
+                      onAnimationStart={handleAnimationStart}
+                      onAnimationComplete={handleAnimationComplete}
                       transition={{
-                        type: "spring",
-                        stiffness: 300,
-                        damping: 26,
-                        mass: 0.8,
-                        duration: 0.3
+                        type: "tween",
+                        duration: 0.25,
+                        ease: "easeInOut",
                       }}
                     >
                       <div className="nav-glow"></div>
