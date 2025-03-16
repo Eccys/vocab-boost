@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import '../styles/Header.css';
 import { Home, Download, Menu, X, BookOpenText } from 'lucide-react';
 
@@ -286,25 +286,22 @@ const Header: React.FC = () => {
                   <span className="nav-icon">{item.icon}</span>
                   <span className="nav-text">{item.name}</span>
                   
-                  {isActive && (
-                    <motion.div
-                      layoutId="navbar-active-indicator"
-                      className="nav-indicator"
-                      initial={false}
-                      transition={{
-                        type: "spring",
-                        stiffness: 500,
-                        damping: 40,
-                        mass: 1.2,
-                        duration: 0.3,
-                        layout: {
-                          duration: 0.3
-                        }
-                      }}
-                    >
-                      <div className="nav-glow"></div>
-                    </motion.div>
-                  )}
+                  <AnimatePresence>
+                    {isActive && (
+                      <motion.div
+                        className="nav-indicator"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{
+                          duration: 0.12,
+                          ease: "easeOut"
+                        }}
+                      >
+                        <div className="nav-glow"></div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </a>
               );
             })}

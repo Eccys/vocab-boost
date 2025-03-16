@@ -20,6 +20,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  height: 60px;
 }
 
 /* Logo styling */
@@ -44,6 +45,10 @@
   left: 50%;
   transform: translateX(-50%);
   z-index: 1000;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .modern-navbar {
@@ -58,6 +63,8 @@
   box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
   transition: all 0.3s ease;
   position: relative; /* Ensure relative positioning for absolute children */
+  transform: translateZ(0); /* Force GPU acceleration */
+  will-change: transform; /* Hint for browser optimization */
 }
 
 .nav-item {
@@ -71,9 +78,13 @@
   font-weight: 600;
   font-size: 15px;
   color: rgba(255, 255, 255, 0.8);
-  transition: all 0.3s ease;
+  transition: color 0.3s ease; /* Only transition color, not layout properties */
   cursor: pointer;
   z-index: 1; /* Ensure nav items are above indicators */
+  /* Fixed height and width calculations to prevent layout shifts */
+  height: 36px;
+  box-sizing: border-box;
+  transform: translateZ(0); /* Force GPU acceleration */
 }
 
 .nav-item:hover {
@@ -97,6 +108,10 @@
   border-radius: 50px;
   background: rgba(255, 255, 255, 0.05);
   pointer-events: none; /* Ensure it doesn't interfere with clicks */
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
 }
 
 .nav-glow {
@@ -158,8 +173,8 @@
 }
 
 .header-cta-btn:hover {
-  transform: translateY(-3px);
   box-shadow: 0 8px 15px rgba(106, 17, 203, 0.4);
+  transform: none;
 }
 
 .mobile-menu-toggle {
