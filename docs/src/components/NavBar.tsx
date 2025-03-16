@@ -3,7 +3,8 @@ import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Home, Book, Download, Star, Menu, X } from 'lucide-react';
 import '../styles/NavBar.css';
-import { useActiveSection, scrollToSection } from '../hooks/useActiveSection';
+import { useActiveSection } from '../hooks/useActiveSection';
+import { scrollToSection } from '../utils/navigationUtils';
 
 // Define the navigation items
 const navItems = [
@@ -22,10 +23,10 @@ const NavBar: React.FC = () => {
   const mobileMenuRef = useRef<HTMLDivElement>(null);
 
   // Use our custom hook to track the active section
-  const activeSection = useActiveSection({
-    sectionIds: navItems.map(item => item.sectionId),
-    rootMargin: '-20% 0px -30% 0px',
-  });
+  const activeSection = useActiveSection(
+    navItems.map(item => item.sectionId),
+    { rootMargin: '-20% 0px -30% 0px' }
+  );
 
   // Function to update indicator position based on active nav item
   const updateIndicator = (itemIndex: number) => {
@@ -120,10 +121,22 @@ const NavBar: React.FC = () => {
 
   // Handle navigation link click
   const handleNavLinkClick = (e: React.MouseEvent, item: typeof navItems[0]) => {
-    // If we're already on the homepage, scroll to the section
-    if (location.pathname === '/' && item.sectionId) {
+    // If we're already on the homepage, handle scrolling
+    if (location.pathname === '/') {
       e.preventDefault();
-      scrollToSection(item.sectionId);
+      
+      // Special case for Home item - scroll to top of the page
+      if (item.name === 'Home') {
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth'
+        });
+      } 
+      // For other items, scroll to corresponding section
+      else if (item.sectionId) {
+        scrollToSection(item.sectionId);
+      }
+      
       setMobileMenuOpen(false);
     }
     // If we're on a different page, don't prevent default to allow navigation
