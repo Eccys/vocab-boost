@@ -1,6 +1,6 @@
 .footer {
   background: linear-gradient(to top, rgba(18, 18, 18, 1), rgba(18, 18, 18, 0.9));
-  padding: 80px 0 30px;
+  padding: 80px 0 20px;
   position: relative;
   overflow: hidden;
 }
@@ -166,14 +166,19 @@
 
 .footer-bottom {
   text-align: center;
-  padding-top: 30px;
+  padding-top: 25px;
+  padding-bottom: 5px;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   color: var(--text-secondary);
   font-size: 0.9rem;
 }
 
 .footer-bottom p {
-  margin-bottom: 10px;
+  margin-bottom: 5px;
+}
+
+.footer-bottom p:last-child {
+  margin-bottom: 0;
 }
 
 .footer-bottom a {
