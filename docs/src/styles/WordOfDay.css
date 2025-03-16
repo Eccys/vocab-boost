@@ -136,6 +136,42 @@
   margin-top: 40px;
 }
 
+/* Make sure button styles apply to anchor tags too */
+.primary-btn,
+.secondary-btn {
+  display: inline-block;
+  padding: 12px 25px;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+  text-align: center;
+  text-decoration: none;
+}
+
+.primary-btn {
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+  color: white;
+  border: none;
+}
+
+.primary-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 7px 15px rgba(106, 17, 203, 0.4);
+}
+
+.secondary-btn {
+  background: transparent;
+  color: var(--text-color);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.secondary-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-3px);
+}
+
 .previous-words {
   margin-top: 60px;
 }

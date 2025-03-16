@@ -19,6 +19,13 @@ const WordOfDay: React.FC = () => {
     // Set to loaded immediately on mount
     setIsLoaded(true);
   }, []);
+
+  // Generate Merriam-Webster dictionary URL for the current word
+  const getMerriamWebsterUrl = (word: string) => {
+    // Convert to lowercase and handle any spaces
+    const formattedWord = word.toLowerCase().replace(/\s+/g, '-');
+    return `https://www.merriam-webster.com/dictionary/${formattedWord}`;
+  };
   
   return (
     <section className="word-of-day-section">
@@ -64,7 +71,14 @@ const WordOfDay: React.FC = () => {
           </div>
           
           <div className="word-actions">
-            <button className="primary-btn">Add to Favorites</button>
+            <a 
+              href={getMerriamWebsterUrl(wordData.word)} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="primary-btn"
+            >
+              View Context
+            </a>
             <button className="secondary-btn">Practice Quiz</button>
           </div>
         </div>
