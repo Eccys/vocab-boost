@@ -35,12 +35,6 @@ const Header: React.FC = () => {
       sectionId: 'features'
     },
     {
-      name: 'How It Works',
-      url: '/#how-it-works',
-      icon: <BookOpenText size={18} strokeWidth={2.5} />,
-      sectionId: 'how-it-works'
-    },
-    {
       name: 'Download',
       url: '/#download',
       icon: <Download size={18} strokeWidth={2.5} />,
