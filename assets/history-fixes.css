@@ -1,0 +1,29 @@
+/* History screen text alignment fixes */
+.word-entry,
+.word-header h3,
+.definition,
+.user-answer,
+.correct-answer,
+.correct-label {
+  text-align: left !important;
+}
+
+/* Reduce space between word header and definition */
+.word-header {
+  margin-bottom: 3px !important;
+}
+
+/* Fix for improved text rendering */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Fix for mobile viewport */
+@media screen and (max-width: 768px) {
+  .word-entry {
+    padding: 12px;
+    text-align: left !important;
+  }
+} 
