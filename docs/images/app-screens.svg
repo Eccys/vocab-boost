@@ -1,0 +1,145 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
+  <style>
+    .phone {
+      fill: #222;
+      stroke: #444;
+      stroke-width: 3;
+    }
+    .screen {
+      fill: #1a1a2e;
+    }
+    .word-card {
+      fill: #fff;
+      rx: 15;
+      ry: 15;
+    }
+    .word-title {
+      font-family: Arial, sans-serif;
+      font-size: 12px;
+      fill: #6a11cb;
+    }
+    .word {
+      font-family: Arial, sans-serif;
+      font-size: 20px;
+      font-weight: bold;
+      fill: #2575fc;
+    }
+    .definition {
+      font-family: Arial, sans-serif;
+      font-size: 12px;
+      fill: #333;
+    }
+    .example {
+      font-family: Arial, sans-serif;
+      font-size: 10px;
+      font-style: italic;
+      fill: #666;
+    }
+    .stats-card {
+      fill: #fff;
+      rx: 15;
+      ry: 15;
+    }
+    .quiz-card {
+      fill: #fff;
+      rx: 15;
+      ry: 15;
+    }
+    .quiz-option {
+      fill: #f5f7fa;
+      stroke: #ddd;
+      stroke-width: 1;
+      rx: 8;
+      ry: 8;
+    }
+    .quiz-option-text {
+      font-family: Arial, sans-serif;
+      font-size: 10px;
+      fill: #333;
+    }
+    .chart-bar {
+      fill: #6a11cb;
+      rx: 3;
+      ry: 3;
+    }
+  </style>
+  
+  <!-- Phone 1 - Daily Word -->
+  <g transform="translate(100, 100)">
+    <rect class="phone" x="0" y="0" width="180" height="380" rx="20" ry="20" />
+    <rect class="screen" x="10" y="10" width="160" height="360" rx="10" ry="10" />
+    
+    <!-- Word Card -->
+    <rect class="word-card" x="20" y="50" width="140" height="180" />
+    <text class="word-title" x="35" y="75">TODAY'S WORD</text>
+    <text class="word" x="35" y="105">Ephemeral</text>
+    <text class="definition" x="35" y="130">Lasting for a very short time</text>
+    <line x1="35" y1="145" x2="145" y2="145" stroke="#eee" stroke-width="1" />
+    <text class="example" x="35" y="165">The beauty of cherry</text>
+    <text class="example" x="35" y="180">blossoms is ephemeral,</text>
+    <text class="example" x="35" y="195">lasting only a few days.</text>
+    
+    <!-- Navigation Bar -->
+    <rect fill="#1a1a2e" x="20" y="330" width="140" height="30" rx="15" ry="15" />
+    <circle fill="#6a11cb" cx="50" cy="345" r="8" />
+    <circle fill="#444" cx="90" cy="345" r="8" />
+    <circle fill="#444" cx="130" cy="345" r="8" />
+  </g>
+  
+  <!-- Phone 2 - Quiz -->
+  <g transform="translate(320, 150)">
+    <rect class="phone" x="0" y="0" width="180" height="380" rx="20" ry="20" />
+    <rect class="screen" x="10" y="10" width="160" height="360" rx="10" ry="10" />
+    
+    <!-- Quiz Card -->
+    <rect class="quiz-card" x="20" y="50" width="140" height="240" />
+    <text class="word-title" x="35" y="75">VOCABULARY QUIZ</text>
+    <text class="definition" x="35" y="100">What is the meaning of</text>
+    <text class="word" x="35" y="125">Serendipity</text>
+    
+    <!-- Quiz Options -->
+    <rect class="quiz-option" x="35" y="145" width="110" height="30" />
+    <text class="quiz-option-text" x="45" y="165">A. An ancient artifact</text>
+    
+    <rect class="quiz-option" x="35" y="185" width="110" height="30" />
+    <text class="quiz-option-text" x="45" y="205">B. A fortunate discovery</text>
+    
+    <rect class="quiz-option" x="35" y="225" width="110" height="30" />
+    <text class="quiz-option-text" x="45" y="245">C. A type of medicine</text>
+    
+    <!-- Navigation Bar -->
+    <rect fill="#1a1a2e" x="20" y="330" width="140" height="30" rx="15" ry="15" />
+    <circle fill="#444" cx="50" cy="345" r="8" />
+    <circle fill="#6a11cb" cx="90" cy="345" r="8" />
+    <circle fill="#444" cx="130" cy="345" r="8" />
+  </g>
+  
+  <!-- Phone 3 - Statistics -->
+  <g transform="translate(540, 100)">
+    <rect class="phone" x="0" y="0" width="180" height="380" rx="20" ry="20" />
+    <rect class="screen" x="10" y="10" width="160" height="360" rx="10" ry="10" />
+    
+    <!-- Stats Card -->
+    <rect class="stats-card" x="20" y="50" width="140" height="210" />
+    <text class="word-title" x="35" y="75">YOUR PROGRESS</text>
+    
+    <!-- Progress Chart -->
+    <rect class="chart-bar" x="45" y="100" width="15" height="80" />
+    <rect class="chart-bar" x="70" y="90" width="15" height="90" />
+    <rect class="chart-bar" x="95" y="70" width="15" height="110" />
+    <rect class="chart-bar" x="120" y="60" width="15" height="120" />
+    
+    <line x1="35" y1="180" x2="145" y2="180" stroke="#ccc" stroke-width="1" />
+    
+    <!-- Stats Text -->
+    <text class="definition" x="35" y="205">Words learned: 127</text>
+    <text class="definition" x="35" y="225">Quizzes completed: 42</text>
+    <text class="definition" x="35" y="245">Current streak: 7 days</text>
+    
+    <!-- Navigation Bar -->
+    <rect fill="#1a1a2e" x="20" y="330" width="140" height="30" rx="15" ry="15" />
+    <circle fill="#444" cx="50" cy="345" r="8" />
+    <circle fill="#444" cx="90" cy="345" r="8" />
+    <circle fill="#6a11cb" cx="130" cy="345" r="8" />
+  </g>
+</svg> 

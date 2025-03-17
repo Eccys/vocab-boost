@@ -1,0 +1,412 @@
+.download {
+  padding: 100px 0;
+  background: radial-gradient(circle at 50% 100%, rgba(106, 17, 203, 0.05) 0%, rgba(37, 117, 252, 0.05) 5%, transparent 45%);
+}
+
+.download .container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 50px;
+}
+
+.download-content {
+  flex: 1;
+  max-width: 550px;
+}
+
+.download-content p {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  margin-bottom: 30px;
+  line-height: 1.6;
+}
+
+.download-buttons {
+  display: flex;
+  gap: 15px;
+  margin-top: 30px;
+  flex-wrap: wrap;
+}
+
+.download-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 12px 20px;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.google-play {
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+}
+
+.github {
+  background: #24292e;
+}
+
+.google-play:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(106, 17, 203, 0.5);
+}
+
+.google-play:active {
+  transform: translateY(1px);
+}
+
+.github:hover {
+  background: #2f363d;
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-3px);
+}
+
+.github:active {
+  transform: translateY(1px);
+}
+
+.download-btn img {
+  width: 24px;
+  height: 24px;
+}
+
+.download-image {
+  flex: 1;
+  max-width: 500px;
+}
+
+/* App Mockup Display */
+.app-mockup-display {
+  position: relative;
+  width: 100%;
+  max-width: 350px;
+  margin: 0 auto;
+  perspective: 1000px;
+}
+
+.app-screens-carousel {
+  position: relative;
+  width: 100%;
+  height: 600px;
+  background: #1a1a1a;
+  border-radius: 35px;
+  padding: 10px;
+  box-shadow: 
+    0 40px 80px rgba(0, 0, 0, 0.2),
+    0 30px 50px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  transform: perspective(800px) rotateY(-15deg) rotateX(5deg);
+  transition: transform 0.5s ease;
+}
+
+.app-screens-carousel:hover {
+  transform: perspective(800px) rotateY(-10deg) rotateX(2deg) scale(1.02);
+}
+
+.screen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #121212;
+  border-radius: 25px;
+  padding: 15px;
+  opacity: 0;
+  transform: translateX(50px);
+  transition: all 0.5s ease;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.screen.active {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+.screen-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 20px;
+}
+
+.back-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary);
+}
+
+.back-button svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2.5;
+}
+
+.back-button span {
+  font-weight: 500;
+  font-size: 16px;
+}
+
+.actions svg {
+  width: 20px;
+  height: 20px;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.screen-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 0;
+}
+
+.screen-placeholder {
+  font-size: 1.2rem;
+  color: var(--text-secondary);
+  text-align: center;
+  padding: 40px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  width: 100%;
+}
+
+/* Carousel Navigation */
+.carousel-nav {
+  position: absolute;
+  bottom: 20px;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  z-index: 10;
+}
+
+.nav-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.nav-dot.active {
+  background: var(--primary-color);
+  transform: scale(1.2);
+}
+
+/* Carousel Arrows */
+.carousel-arrows {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 20;
+  pointer-events: none;
+}
+
+.carousel-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+  box-shadow: 0 4px 15px rgba(106, 17, 203, 0.4);
+  opacity: 0.9;
+  pointer-events: auto;
+  z-index: 25;
+}
+
+.prev-arrow {
+  left: -70px;
+}
+
+.next-arrow {
+  right: -70px;
+}
+
+.carousel-arrow svg {
+  width: 24px;
+  height: 24px;
+  stroke-width: 2.5;
+}
+
+.carousel-arrow:hover {
+  transform: translateY(-50%) scale(1.1);
+  border-color: rgba(255, 255, 255, 0.8);
+  opacity: 1;
+  box-shadow: 0 6px 25px rgba(106, 17, 203, 0.6);
+}
+
+.carousel-arrow:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+/* Large tablets and small desktops */
+@media (max-width: 1200px) {
+  .prev-arrow {
+    left: -60px;
+  }
+  
+  .next-arrow {
+    right: -60px;
+  }
+}
+
+/* Tablets and large phones */
+@media (max-width: 992px) {
+  .carousel-arrow {
+    width: 45px;
+    height: 45px;
+  }
+  
+  .prev-arrow {
+    left: -50px;
+  }
+  
+  .next-arrow {
+    right: -50px;
+  }
+  
+  .carousel-arrow svg {
+    width: 22px;
+    height: 22px;
+  }
+}
+
+/* Medium-sized phones */
+@media (max-width: 768px) {
+  .carousel-arrow {
+    width: 40px;
+    height: 40px;
+    background: rgba(106, 17, 203, 0.85);
+  }
+  
+  .prev-arrow {
+    left: -40px;
+  }
+  
+  .next-arrow {
+    right: -40px;
+  }
+  
+  .carousel-arrow svg {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .download-buttons {
+    flex-direction: column;
+    width: 100%;
+    max-width: 300px;
+    margin: 30px auto 0;
+  }
+  
+  .download-btn {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+    padding: 12px 24px;
+  }
+}
+
+/* Small phones */
+@media (max-width: 576px) {
+  /* Move arrows to overlay on the edges of the phone mockup */
+  .carousel-arrow {
+    width: 36px;
+    height: 36px;
+    background: rgba(106, 17, 203, 0.9);
+    border-width: 1px;
+  }
+  
+  .prev-arrow {
+    left: 5px; /* Position at the edge of the phone */
+  }
+  
+  .next-arrow {
+    right: 5px; /* Position at the edge of the phone */
+  }
+  
+  .carousel-arrow svg {
+    width: 18px;
+    height: 18px;
+  }
+  
+  .download-buttons {
+    max-width: 280px;
+  }
+  
+  .download-btn {
+    padding: 12px 20px;
+    font-size: 0.95rem;
+  }
+}
+
+/* Very small phones */
+@media (max-width: 400px) {
+  /* Further adjust for very small screens */
+  .carousel-arrow {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .carousel-arrow svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+/* Media Queries */
+@media (max-width: 1024px) {
+  .download .container {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .download-content {
+    max-width: 100%;
+  }
+  
+  .download-buttons {
+    justify-content: center;
+  }
+  
+  .app-mockup-display {
+    margin-top: 50px;
+  }
+}
+
+@media (max-width: 576px) {
+  .download-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .download-btn {
+    width: 100%;
+    justify-content: center;
+  }
+} 
