@@ -188,7 +188,11 @@
 
 .header-cta-btn:hover {
   box-shadow: 0 8px 15px rgba(106, 17, 203, 0.4);
-  transform: none;
+  transform: translateY(-3px);
+}
+
+.header-cta-btn:active {
+  transform: translateY(1px);
 }
 
 .mobile-menu-toggle {

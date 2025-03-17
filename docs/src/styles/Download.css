@@ -228,12 +228,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(106, 17, 203, 0.8);
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
   border: 2px solid rgba(255, 255, 255, 0.5);
   color: white;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 4px 15px rgba(106, 17, 203, 0.4);
   opacity: 0.9;
   pointer-events: auto;
   z-index: 25;
@@ -255,10 +255,9 @@
 
 .carousel-arrow:hover {
   transform: translateY(-50%) scale(1.1);
-  background: rgba(106, 17, 203, 0.9);
   border-color: rgba(255, 255, 255, 0.8);
   opacity: 1;
-  box-shadow: 0 6px 25px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 6px 25px rgba(106, 17, 203, 0.6);
 }
 
 .carousel-arrow:active {

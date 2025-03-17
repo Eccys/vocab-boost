@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import '../styles/Header.css';
 import { Home, Download, Menu, X, BookOpenText } from 'lucide-react';
@@ -23,6 +23,7 @@ interface SectionInfo {
 
 const Header: React.FC = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<string>('Home');
@@ -271,37 +272,87 @@ const Header: React.FC = () => {
     }, 1250); // 1.25 seconds (animation duration + scroll time)
   };
   
-  // Smooth scroll to section - immediate action regardless of animation
+  // Handle navigation state for cross-page navigation
+  useEffect(() => {
+    // This handles the case when we navigate from another page (like Word of Day)
+    if (location.state && location.state.scrollTo) {
+      const sectionId = location.state.scrollTo;
+      
+      // Need to wait for the page to fully render before scrolling
+      setTimeout(() => {
+        // Lock navigation to prevent scroll events from changing the active tab
+        lockNavigation();
+        
+        // Find the matching nav item and update active tab
+        const matchingItem = navItems.find(item => item.sectionId === sectionId);
+        if (matchingItem) {
+          setActiveTab(matchingItem.name);
+          lastActiveTabRef.current = matchingItem.name;
+        }
+        
+        // Scroll to the section
+        const section = document.getElementById(sectionId);
+        if (section) {
+          const offsetTop = section.getBoundingClientRect().top + window.scrollY;
+          window.scrollTo({
+            top: offsetTop - 80,
+            behavior: 'smooth'
+          });
+          
+          // Update URL hash
+          if (history.pushState) {
+            history.pushState(null, '', `#${sectionId}`);
+          } else {
+            window.location.hash = sectionId;
+          }
+        }
+        
+        // Clear the navigation state to prevent scrolling on refresh
+        navigate('/', { replace: true, state: {} });
+      }, 100);
+    }
+  }, [location.state, navigate]);
+  
+  // Smooth scroll to section - updated to handle cross-page navigation
   const scrollToSection = (e: React.MouseEvent, sectionId: string) => {
     e.preventDefault();
     closeMobileMenu();
     
-    // Find the matching nav item and update active tab
-    const matchingItem = navItems.find(item => item.sectionId === sectionId);
-    if (matchingItem) {
-      // Lock navigation to prevent scroll events from changing the active tab
-      lockNavigation();
+    // Check if we're on the homepage or not
+    const isHomePage = location.pathname === '/' || location.pathname === '';
+    
+    if (isHomePage) {
+      // If we're already on the homepage, just scroll to the section
+      // Find the matching nav item and update active tab
+      const matchingItem = navItems.find(item => item.sectionId === sectionId);
+      if (matchingItem) {
+        // Lock navigation to prevent scroll events from changing the active tab
+        lockNavigation();
+        
+        // Update active tab (animation will happen independently)
+        setActiveTab(matchingItem.name);
+        lastActiveTabRef.current = matchingItem.name;
+      }
       
-      // Update active tab (animation will happen independently)
-      setActiveTab(matchingItem.name);
-      lastActiveTabRef.current = matchingItem.name;
-    }
-    
-    // Handle scrolling immediately (don't wait for animation)
-    const section = document.getElementById(sectionId);
-    if (section) {
-      const offsetTop = section.getBoundingClientRect().top + window.scrollY;
-      window.scrollTo({
-        top: offsetTop - 80,
-        behavior: 'smooth'
-      });
-    }
-    
-    // Update URL hash immediately
-    if (history.pushState) {
-      history.pushState(null, '', `#${sectionId}`);
+      // Handle scrolling immediately (don't wait for animation)
+      const section = document.getElementById(sectionId);
+      if (section) {
+        const offsetTop = section.getBoundingClientRect().top + window.scrollY;
+        window.scrollTo({
+          top: offsetTop - 80,
+          behavior: 'smooth'
+        });
+      }
+      
+      // Update URL hash immediately
+      if (history.pushState) {
+        history.pushState(null, '', `#${sectionId}`);
+      } else {
+        window.location.hash = sectionId;
+      }
     } else {
-      window.location.hash = sectionId;
+      // We're on another page, navigate to homepage with state
+      navigate('/', { state: { scrollTo: sectionId } });
     }
   };
 

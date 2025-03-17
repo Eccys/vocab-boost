@@ -167,8 +167,12 @@ input:checked + .toggle-slider:before {
 
 /* Slider styling */
 .slider-container {
-  padding: 0 0 20px 0;
+  padding: 0 10px 20px 10px;
   margin-top: -10px;
+  width: calc(100% - 20px);
+  margin-left: auto;
+  margin-right: auto;
+  position: relative;
 }
 
 .slider {
@@ -177,6 +181,23 @@ input:checked + .toggle-slider:before {
   height: 4px;
   border-radius: 2px;
   outline: none;
+  margin: 10px 0; /* Add vertical margin for better touch target */
+  background: rgba(255, 255, 255, 0.15); /* Default track background */
+}
+
+/* For WebKit browsers (Chrome, Safari) */
+.slider::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 2px;
+  border: none;
+}
+
+/* For Firefox */
+.slider::-moz-range-track {
+  height: 4px;
+  border-radius: 2px;
+  border: none;
+  background: rgba(255, 255, 255, 0.15);
 }
 
 .slider::-webkit-slider-thumb {
@@ -188,6 +209,8 @@ input:checked + .toggle-slider:before {
   background: #65b4ff;
   cursor: pointer;
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+  position: relative;
+  z-index: 2;
 }
 
 .slider::-moz-range-thumb {
@@ -198,6 +221,8 @@ input:checked + .toggle-slider:before {
   cursor: pointer;
   border: none;
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+  position: relative;
+  z-index: 2;
 }
 
 /* Arrow icon on items that act as buttons */

@@ -100,7 +100,10 @@ const SettingsScreen: React.FC = () => {
             onChange={handleSliderChange} 
             className="slider" 
             style={{
-              background: `linear-gradient(to right, #65b4ff, #65b4ff ${sliderValue * 20}%, rgba(255, 255, 255, 0.15) ${sliderValue * 20}%)`
+              background: `linear-gradient(to right, 
+                #65b4ff ${(sliderValue - 1) * 25}%, 
+                #65b4ff ${(sliderValue - 1) * 25 + 5}%, 
+                rgba(255, 255, 255, 0.15) ${(sliderValue - 1) * 25 + 5}%)`
             }}
           />
         </div>
