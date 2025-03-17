@@ -7,6 +7,8 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -19,7 +21,7 @@
   "bugs": {
     "url": "https://github.com/Eccys/vocab-boost/issues"
   },
-  "homepage": "https://github.com/Eccys/vocab-boost#readme",
+  "homepage": "https://vocab.ecys.xyz",
   "dependencies": {
     "@types/aos": "^3.0.7",
     "aos": "^2.3.4",
@@ -32,6 +34,7 @@
     "@types/react": "^18.2.57",
     "@types/react-dom": "^18.2.19",
     "@vitejs/plugin-react": "^4.2.1",
+    "gh-pages": "^6.1.1",
     "typescript": "^5.3.3",
     "vite": "^5.1.4"
   }

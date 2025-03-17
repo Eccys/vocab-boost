@@ -16,9 +16,15 @@ export default defineConfig({
   },
   root: './docs',
   publicDir: 'public',
+  base: '/',
   build: {
     outDir: '../dist',
     assetsDir: 'assets',
     emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        manualChunks: undefined
+      }
+    }
   },
 }); 
