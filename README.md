@@ -30,6 +30,21 @@ Vocab is a feature-rich, fully open source Android application designed to help 
   - Vocab-latest.apk
   - Enable "Install from Unknown Sources" in your device settings if installing via APK
 
+## Documentation
+
+### Wiki
+For comprehensive documentation, visit our [Wiki](https://github.com/Eccys/vocab-boost/wiki) which includes:
+- [Installation Guide](https://github.com/Eccys/vocab-boost/wiki/Installation-Guide)
+- [User Interface Guide](https://github.com/Eccys/vocab-boost/wiki/User-Interface)
+- [Spaced Repetition System](https://github.com/Eccys/vocab-boost/wiki/Spaced-Repetition-System)
+- [Developer Guide](https://github.com/Eccys/vocab-boost/wiki/Developer-Guide)
+- [API Integration](https://github.com/Eccys/vocab-boost/wiki/API-Integration)
+- [FAQ](https://github.com/Eccys/vocab-boost/wiki/FAQ)
+
+### Additional Resources
+- [Official Website](https://vocab.ecys.xyz)
+- [Version History](VERSION_HISTORY.md)
+
 ## Detailed Features
 
 ### Daily Word
