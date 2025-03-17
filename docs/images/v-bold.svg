@@ -19,7 +19,7 @@
         stroke: #fff;
         stroke-linecap: round;
         stroke-linejoin: round;
-        stroke-width: 32px;
+        stroke-width: 42px;
       }
     </style>
     <radialGradient id="b" cx="256.5" cy="256.5" fx="256.5" fy="256.5" r="256" gradientUnits="userSpaceOnUse">

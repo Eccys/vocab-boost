@@ -1,0 +1,250 @@
+.footer {
+  background: linear-gradient(to top, rgba(18, 18, 18, 1), rgba(18, 18, 18, 0.9));
+  padding: 80px 0 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.footer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, 
+    rgba(106, 17, 203, 0), 
+    rgba(106, 17, 203, 0.5), 
+    rgba(37, 117, 252, 0.5), 
+    rgba(37, 117, 252, 0)
+  );
+}
+
+.footer-content {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 60px;
+  flex-wrap: wrap;
+  gap: 40px;
+}
+
+.footer-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.footer-logo img {
+  width: 40px;
+  height: 40px;
+  transition: transform 0.3s ease;
+  border-radius: 5px;
+}
+
+.footer-logo img:hover {
+  transform: rotate(10deg);
+}
+
+.footer-logo span {
+  font-size: 1.8rem;
+  font-weight: 700;
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.footer-links {
+  display: flex;
+  gap: 60px;
+  flex-wrap: wrap;
+}
+
+.footer-column h4 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+  position: relative;
+  display: inline-block;
+}
+
+.footer-column h4::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 30px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+}
+
+/* New styling for footer navigation links with gradient underline animation */
+.footer-nav-link {
+  display: block;
+  margin-bottom: 12px;
+  color: var(--text-secondary);
+  transition: color 0.3s ease, transform 0.3s ease;
+  position: relative;
+  padding-left: 0;
+  text-decoration: none;
+  width: fit-content;
+}
+
+.footer-nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, 
+    #FF5E3A, /* Vibrant orange */
+    #FF9500, /* Amber orange */
+    #FF2D55  /* Hot pink */
+  );
+  transition: width 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  transform-origin: left;
+  box-shadow: 0 0 8px rgba(255, 94, 58, 0.5);
+  border-radius: 2px;
+  right: auto;
+}
+
+.footer-nav-link:hover {
+  color: #fff;
+  transform: translateX(5px);
+}
+
+.footer-nav-link:hover::after {
+  width: 100%;
+  box-shadow: 0 0 15px rgba(255, 94, 58, 0.7);
+  animation: pulseShadow 1.5s infinite alternate;
+}
+
+@keyframes pulseShadow {
+  0% {
+    box-shadow: 0 0 5px rgba(255, 94, 58, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 15px rgba(255, 94, 58, 0.7), 0 0 20px rgba(255, 149, 0, 0.3);
+  }
+  100% {
+    box-shadow: 0 0 10px rgba(255, 45, 85, 0.6);
+  }
+}
+
+/* Remove old footer-column a styles as they're replaced by footer-nav-link */
+.footer-column a:not(.footer-nav-link) {
+  display: block;
+  margin-bottom: 12px;
+  color: var(--text-secondary);
+  transition: all 0.3s ease;
+  position: relative;
+  padding-left: 0;
+}
+
+.footer-column a:not(.footer-nav-link):hover {
+  color: var(--text-color);
+  transform: translateX(5px);
+}
+
+.footer-column a:not(.footer-nav-link)::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 1px;
+  background: var(--primary-color);
+  transition: width 0.3s ease;
+}
+
+.footer-column a:not(.footer-nav-link):hover::before {
+  width: 0;
+}
+
+.footer-bottom {
+  text-align: center;
+  padding-top: 25px;
+  padding-bottom: 5px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.footer-bottom p {
+  margin-bottom: 5px;
+}
+
+.footer-bottom p:last-child {
+  margin-bottom: 0;
+}
+
+.footer-bottom a {
+  color: var(--text-color);
+  position: relative;
+}
+
+.footer-bottom a:hover {
+  color: var(--primary-color);
+}
+
+.footer-bottom a::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: var(--primary-color);
+  transition: width 0.3s ease;
+}
+
+.footer-bottom a:hover::after {
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .footer-content {
+    flex-direction: column;
+    gap: 30px;
+  }
+  
+  .footer-links {
+    gap: 30px;
+    width: 100%;
+  }
+  
+  .footer-logo {
+    align-self: center;
+  }
+}
+
+@media (max-width: 576px) {
+  .footer {
+    padding: 60px 0 20px;
+  }
+  
+  .footer-links {
+    flex-direction: column;
+    gap: 40px;
+  }
+  
+  .footer-column {
+    width: 100%;
+  }
+  
+  .footer-column h4 {
+    margin-bottom: 15px;
+  }
+  
+  .footer-column a {
+    margin-bottom: 10px;
+    padding-left: 10px;
+  }
+  
+  .footer-bottom {
+    font-size: 0.8rem;
+  }
+} 
