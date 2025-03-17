@@ -39,6 +39,7 @@
   position: relative;
   margin-bottom: 2px;
   transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+  text-align: left;
 }
 
 .word-entry:hover {
@@ -76,6 +77,7 @@
   font-size: 16px;
   font-weight: 600;
   margin: 0;
+  text-align: left;
 }
 
 .bookmark-btn {
@@ -97,22 +99,26 @@
   font-size: 13px;
   color: #ccc;
   margin: 0 0 6px 0;
+  text-align: left;
 }
 
 .user-answer {
   font-size: 13px;
   color: #F44336;
   margin: 6px 0 0 0;
+  text-align: left;
 }
 
 .correct-answer {
   font-size: 13px;
   color: #4CAF50;
   margin: 4px 0 0 0;
+  text-align: left;
 }
 
 .correct-label {
   font-size: 13px;
   color: #4CAF50;
   margin: 6px 0 0 0;
+  text-align: left;
 } 

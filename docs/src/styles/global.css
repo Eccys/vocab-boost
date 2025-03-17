@@ -28,6 +28,15 @@
   box-sizing: border-box;
 }
 
+html {
+  /* Improve text rendering */
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+  font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+}
+
 body {
   font-family: 'Poppins', sans-serif;
   background-color: var(--background-color);
@@ -52,6 +61,12 @@ button {
 
 img {
   max-width: 100%;
+}
+
+/* Ensure sharp text in all elements */
+h1, h2, h3, h4, h5, h6, p, span, div, li, a, button {
+  text-shadow: 0 0 1px rgba(0, 0, 0, 0.01);
+  letter-spacing: -0.01em;
 }
 
 .container {
@@ -152,4 +167,19 @@ img {
   .container {
     padding: 0 15px;
   }
-} 
+}
+
+/* Fix font rendering on mobile devices */
+@media (max-width: 768px) {
+  html, body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  /* Prevent auto-scaling of text on mobile */
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+}
+
+/* Let's check the content */ 
