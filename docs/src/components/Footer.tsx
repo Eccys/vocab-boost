@@ -87,8 +87,9 @@ const Footer: React.FC = () => {
             <div className="footer-column">
               <h4>Resources</h4>
               <a href="#" className="footer-nav-link">Documentation</a>
+              <a href="https://github.com/Eccys/vocab-boost/wiki" target="_blank" rel="noopener noreferrer" className="footer-nav-link">Wiki</a>
               <a href="#" className="footer-nav-link">Contributing</a>
-              <a href="#" className="footer-nav-link">Releases</a>
+              <a href="https://github.com/Eccys/vocab-boost/releases" target="_blank" rel="noopener noreferrer" className="footer-nav-link">Releases</a>
             </div>
             <div className="footer-column">
               <h4>Connect</h4>
