@@ -171,4 +171,14 @@ object AppIcons {
     fun historySolid(): Painter {
         return painterResource(id = R.drawable.history_solid)
     }
+
+    @Composable
+    fun robotSolid(): Painter {
+        return painterResource(id = R.drawable.robot_solid)
+    }
+
+    @Composable
+    fun checkSolid(): Painter {
+        return painterResource(id = R.drawable.check_solid)
+    }
 } 

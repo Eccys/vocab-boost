@@ -26,6 +26,8 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.ui.Alignment
 import androidx.compose.runtime.rememberCoroutineScope
 import xyz.ecys.vocab.utils.TransitionUtils
+import androidx.compose.ui.platform.LocalContext
+import xyz.ecys.vocab.data.SubscriptionManager
 
 @OptIn(ExperimentalMaterial3Api::class)
 class DebugActivity : ComponentActivity() {
@@ -151,6 +153,70 @@ class DebugActivity : ComponentActivity() {
                             .padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
+                        // Premium Debug Section
+                        item {
+                            val context = LocalContext.current
+                            val subscriptionManager = SubscriptionManager.getInstance(context)
+                            val isPremium by subscriptionManager.isPremium.collectAsState()
+                            
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = if (isPremium) Color(0xFF007AFF) else Color(0xFF18191E)
+                                )
+                            ) {
+                                Column(
+                                    modifier = Modifier
+                                        .padding(16.dp)
+                                        .fillMaxWidth()
+                                ) {
+                                    Text(
+                                        text = "Premium Subscription",
+                                        style = MaterialTheme.typography.titleMedium.copy(
+                                            fontWeight = FontWeight.Bold,
+                                            color = if (isPremium) Color.White else Color(0xFFFCFCFC)
+                                        )
+                                    )
+                                    
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(
+                                            text = "Status:", 
+                                            color = if (isPremium) Color.White.copy(alpha = 0.8f) else Color(0xFFAAAAAA)
+                                        )
+                                        Text(
+                                            text = if (isPremium) "Active" else "Inactive",
+                                            color = if (isPremium) Color.White else Color(0xFFFCFCFC)
+                                        )
+                                    }
+                                    
+                                    Spacer(modifier = Modifier.height(16.dp))
+                                    
+                                    Button(
+                                        onClick = { 
+                                            subscriptionManager.togglePremiumForDebug()
+                                        },
+                                        modifier = Modifier.fillMaxWidth(),
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = if (isPremium) Color.White else Color(0xFF007AFF)
+                                        )
+                                    ) {
+                                        Text(
+                                            text = if (isPremium) "Disable Premium" else "Enable Premium",
+                                            color = if (isPremium) Color(0xFF007AFF) else Color.White
+                                        )
+                                    }
+                                }
+                            }
+                            
+                            Spacer(modifier = Modifier.height(16.dp))
+                        }
+                        
                         items(filteredWords) { word ->
                             Card(
                                 modifier = Modifier.fillMaxWidth(),

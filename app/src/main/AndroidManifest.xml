@@ -67,6 +67,10 @@
             android:name=".QuizHistoryActivity"
             android:exported="false"
             android:theme="@style/Theme.VocabularyBooster" />
+        <activity
+            android:name=".SubscriptionActivity"
+            android:exported="false"
+            android:theme="@style/Theme.VocabularyBooster" />
     </application>
 
 </manifest>
