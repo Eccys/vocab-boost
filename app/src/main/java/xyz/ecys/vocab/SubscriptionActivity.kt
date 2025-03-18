@@ -353,8 +353,8 @@ class SubscriptionActivity : ComponentActivity() {
             SubscriptionPlanCard(
                 title = "Annual",
                 price = "$54.99/yr",
-                period = "Cancel anytime.",
-                equivalentPrice = "$4.58/mo",
+                period = "Save 💰 by paying the equivalent of. Cancel anytime.",
+                secondLine = "$4.58/mo",
                 isSelected = selectedPlan == SubscriptionManager.SubscriptionType.YEARLY,
                 savePercentage = 49,
                 onSelect = {
@@ -512,7 +512,8 @@ class SubscriptionActivity : ComponentActivity() {
         title: String,
         price: String,
         period: String,
-        equivalentPrice: String? = null, // For showing "$4.58/mo" on Annual plan
+        secondLine: String? = null,
+        thirdLine: String? = null,
         isSelected: Boolean,
         savePercentage: Int? = null, // For "SAVE 49%" label
         onSelect: () -> Unit
@@ -610,12 +611,13 @@ class SubscriptionActivity : ComponentActivity() {
                         // Row with checkbox, title/period at the same height as price
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically
+                            verticalAlignment = Alignment.Top
                         ) {
-                            // Checkbox
+                            // Checkbox - added padding to align with text
                             Box(
                                 modifier = Modifier
-                                    .size(18.dp)
+                                    .padding(top = 6.dp)
+                                    .size(21.dp) 
                                     .border(
                                         width = 1.5.dp,
                                         color = if (isSelected) Color.White else Color.Gray,
@@ -632,7 +634,7 @@ class SubscriptionActivity : ComponentActivity() {
                                         painter = AppIcons.checkSolid(),
                                         contentDescription = null,
                                         tint = Color.White,
-                                        modifier = Modifier.size(12.dp)
+                                        modifier = Modifier.size(14.dp)
                                     )
                                 }
                             }
@@ -654,31 +656,24 @@ class SubscriptionActivity : ComponentActivity() {
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = Color.Gray
                                 )
-                            }
-                        }
-                        
-                        // Equivalent price with money bag emoji for annual plan, with white text for the price
-                        if (equivalentPrice != null) {
-                            Spacer(modifier = Modifier.height(12.dp))
-                            Row(
-                                modifier = Modifier.padding(start = 40.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = "Save 💰 by paying the equivalent of ",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = Color.Gray
-                                )
-                                Text(
-                                    text = equivalentPrice,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = Color.White
-                                )
-                                Text(
-                                    text = ".",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = Color.Gray
-                                )
+                                
+                                if (secondLine != null) {
+                                    Text(
+                                        text = secondLine,
+                                        style = MaterialTheme.typography.bodyMedium.copy(
+                                            fontWeight = FontWeight.Bold
+                                        ),
+                                        color = Color.White
+                                    )
+                                }
+                                
+                                if (thirdLine != null) {
+                                    Text(
+                                        text = thirdLine,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = Color.Gray
+                                    )
+                                }
                             }
                         }
                     }
