@@ -353,8 +353,8 @@ class SubscriptionActivity : ComponentActivity() {
             SubscriptionPlanCard(
                 title = "Annual",
                 price = "$54.99/yr",
-                period = "Save 💰 by paying the equivalent of. Cancel anytime.",
-                secondLine = "$4.58/mo",
+                period = "Save 💰 by paying the equivalent of",
+                hasCustomSecondLine = true,
                 isSelected = selectedPlan == SubscriptionManager.SubscriptionType.YEARLY,
                 savePercentage = 49,
                 onSelect = {
@@ -428,41 +428,46 @@ class SubscriptionActivity : ComponentActivity() {
             Spacer(modifier = Modifier.height(16.dp))
             
             // Terms and Privacy
-            Row(
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "By subscribing, you agree to our ",
+                    text = "By subscribing you agree to our",
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.Gray
                 )
-                Text(
-                    text = "Terms of Use",
-                    style = MaterialTheme.typography.bodySmall.copy(
-                        fontWeight = FontWeight.Bold,
-                        textDecoration = androidx.compose.ui.text.style.TextDecoration.Underline
-                    ),
-                    color = Color.White,
-                    modifier = Modifier.clickable { /* Handle terms click */ }
-                )
-                Text(
-                    text = " and ",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color.Gray
-                )
-                Text(
-                    text = "Privacy Policy",
-                    style = MaterialTheme.typography.bodySmall.copy(
-                        fontWeight = FontWeight.Bold,
-                        textDecoration = androidx.compose.ui.text.style.TextDecoration.Underline
-                    ),
-                    color = Color.White,
-                    modifier = Modifier.clickable { /* Handle privacy click */ }
-                )
+                
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Terms of Use",
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            fontWeight = FontWeight.Bold,
+                            textDecoration = androidx.compose.ui.text.style.TextDecoration.Underline
+                        ),
+                        color = Color.White,
+                        modifier = Modifier.clickable { /* Handle terms click */ }
+                    )
+                    Text(
+                        text = " and ",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.Gray
+                    )
+                    Text(
+                        text = "Privacy Policy",
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            fontWeight = FontWeight.Bold,
+                            textDecoration = androidx.compose.ui.text.style.TextDecoration.Underline
+                        ),
+                        color = Color.White,
+                        modifier = Modifier.clickable { /* Handle privacy click */ }
+                    )
+                }
             }
             
             Spacer(modifier = Modifier.height(32.dp))
@@ -513,6 +518,7 @@ class SubscriptionActivity : ComponentActivity() {
         price: String,
         period: String,
         secondLine: String? = null,
+        hasCustomSecondLine: Boolean = false,
         thirdLine: String? = null,
         isSelected: Boolean,
         savePercentage: Int? = null, // For "SAVE 49%" label
@@ -642,7 +648,9 @@ class SubscriptionActivity : ComponentActivity() {
                             Spacer(modifier = Modifier.width(16.dp))
                             
                             // Title and period in a Column
-                            Column {
+                            Column(
+                                modifier = Modifier.padding(end = 16.dp)
+                            ) {
                                 Text(
                                     text = title,
                                     style = MaterialTheme.typography.titleLarge.copy(
@@ -651,13 +659,39 @@ class SubscriptionActivity : ComponentActivity() {
                                     color = Color.White
                                 )
                                 
+                                Spacer(modifier = Modifier.height(4.dp))
+                                
                                 Text(
                                     text = period,
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = Color.Gray
                                 )
                                 
-                                if (secondLine != null) {
+                                if (hasCustomSecondLine) {
+                                    Spacer(modifier = Modifier.height(2.dp))
+                                    
+                                    // Custom row for Annual plan with price and cancel text side by side
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Text(
+                                            text = "$4.58/mo",
+                                            style = MaterialTheme.typography.bodyMedium.copy(
+                                                fontWeight = FontWeight.Bold
+                                            ),
+                                            color = Color.White
+                                        )
+                                                                                
+                                        Text(
+                                            text = ". Cancel anytime.",
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = Color.Gray
+                                        )
+                                    }
+                                } else if (secondLine != null) {
+                                    Spacer(modifier = Modifier.height(2.dp))
+                                    
                                     Text(
                                         text = secondLine,
                                         style = MaterialTheme.typography.bodyMedium.copy(
@@ -668,6 +702,8 @@ class SubscriptionActivity : ComponentActivity() {
                                 }
                                 
                                 if (thirdLine != null) {
+                                    Spacer(modifier = Modifier.height(2.dp))
+                                    
                                     Text(
                                         text = thirdLine,
                                         style = MaterialTheme.typography.bodyMedium,
