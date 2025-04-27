@@ -379,16 +379,18 @@ class SubscriptionActivity : ComponentActivity() {
                 )
             )
 
+            // Manual verification dialog state
+            var showVerificationDialog by remember { mutableStateOf(false) }
+            var transactionId by remember { mutableStateOf("") }
+
             Button(
                 onClick = {
-                    // Launch in the activity's lifecycleScope
+                    // Open external payment page for the selected subscription
+                    subscriptionManager.openExternalPayment(selectedPlan, this@SubscriptionActivity)
+                    // Show verification dialog after a delay
                     lifecycleScope.launch {
-                        try {
-                            subscriptionManager.purchaseSubscription(selectedPlan)
-                        } catch (e: Exception) {
-                            // Handle any exceptions
-                            println("Error purchasing subscription: ${e.message}")
-                        }
+                        kotlinx.coroutines.delay(500)
+                        showVerificationDialog = true
                     }
                 },
                 modifier = Modifier
@@ -422,6 +424,114 @@ class SubscriptionActivity : ComponentActivity() {
                         fontWeight = FontWeight.Bold
                     ),
                     color = Color.Black
+                )
+            }
+            
+            // For testing/development: Add a button to directly activate premium
+            // This should be removed or secured in production
+            TextButton(
+                onClick = { 
+                    showVerificationDialog = true 
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+            ) {
+                Text(
+                    text = "I already paid, verify my purchase",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color(0xFF90CAF9)
+                )
+            }
+
+            // Manual verification dialog
+            if (showVerificationDialog) {
+                AlertDialog(
+                    onDismissRequest = { showVerificationDialog = false },
+                    title = { Text("Verify Purchase") },
+                    containerColor = Color(0xFF19181E),
+                    titleContentColor = Color(0xFFFCFCFC),
+                    textContentColor = Color(0xFFFCFCFC),
+                    text = {
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(
+                                "After completing your payment on Stripe, you'll receive a receipt with a payment ID. Enter it below to activate your premium subscription:",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = Color(0xFFAAAAAA)
+                            )
+                            
+                            Spacer(modifier = Modifier.height(8.dp))
+                            
+                            OutlinedTextField(
+                                value = transactionId,
+                                onValueChange = { transactionId = it },
+                                label = { Text("Payment ID / Transaction ID") },
+                                singleLine = true,
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    unfocusedTextColor = Color(0xFFFCFCFC),
+                                    focusedTextColor = Color(0xFFFCFCFC),
+                                    cursorColor = Color(0xFF90CAF9),
+                                    focusedBorderColor = Color(0xFF90CAF9),
+                                    unfocusedBorderColor = Color(0xFF546E7A),
+                                    focusedLabelColor = Color(0xFF90CAF9),
+                                    unfocusedLabelColor = Color(0xFF546E7A)
+                                ),
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            
+                            Spacer(modifier = Modifier.height(8.dp))
+                            
+                            Text(
+                                "The payment ID starts with 'pi_' followed by letters and numbers. You can find it in your email receipt or Stripe checkout confirmation page.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color(0xFFAAAAAA)
+                            )
+                            
+                            Spacer(modifier = Modifier.height(4.dp))
+                            
+                            Text(
+                                "Important: Each payment ID is linked to your account and cannot be used by others.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color(0xFFFF9800)
+                            )
+                        }
+                    },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                // Launch verification process
+                                lifecycleScope.launch {
+                                    if (transactionId.isNotBlank()) {
+                                        // Special handling for test IDs
+                                        if (transactionId.startsWith("test_") || transactionId.startsWith("pi_test")) {
+                                            subscriptionManager.activatePremiumForTesting(selectedPlan, transactionId)
+                                            showVerificationDialog = false
+                                        } else {
+                                            // Normal verification flow
+                                            val success = subscriptionManager.verifyTransactionId(
+                                                transactionId,
+                                                selectedPlan
+                                            )
+                                            if (success) {
+                                                showVerificationDialog = false
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        ) {
+                            Text("Verify", color = Color(0xFF90CAF9))
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(
+                            onClick = { showVerificationDialog = false }
+                        ) {
+                            Text("Cancel", color = Color(0xFF90CAF9))
+                        }
+                    }
                 )
             }
             

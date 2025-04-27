@@ -2,6 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Internet permission for external payment processing -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
     <application
         android:name=".VocabApplication"
         android:allowBackup="true"
@@ -16,6 +20,7 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
+            android:screenOrientation="portrait"
             android:label="@string/app_name"
             android:theme="@style/Theme.VocabularyBooster">
             <intent-filter>
@@ -27,49 +32,61 @@
         <activity
             android:name=".QuizActivity"
             android:exported="false"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.VocabularyBooster" />
         <activity
             android:name=".BookmarksActivity"
             android:exported="false"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.VocabularyBooster" />
         <activity
             android:name=".DailyWordActivity"
             android:exported="false"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.VocabularyBooster" />
         <activity
             android:name=".QuizResultsActivity"
             android:exported="false"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.VocabularyBooster" />
         <activity
             android:name=".StatsActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".SettingsActivity"
             android:exported="false"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.VocabularyBooster" />
         <activity
             android:name=".AccountsActivity"
             android:exported="false"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.VocabularyBooster" />
         <activity
             android:name=".debug.DebugActivity"
             android:exported="false"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.VocabularyBooster" />
         <activity
             android:name=".PreviousWordsActivity"
             android:exported="false"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.VocabularyBooster" />
         <activity
             android:name=".QuizResultDetailsActivity"
             android:exported="false"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.VocabularyBooster" />
         <activity
             android:name=".QuizHistoryActivity"
             android:exported="false"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.VocabularyBooster" />
         <activity
             android:name=".SubscriptionActivity"
             android:exported="false"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.VocabularyBooster" />
     </application>
 

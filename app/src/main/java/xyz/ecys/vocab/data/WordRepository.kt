@@ -234,7 +234,8 @@ class WordRepository private constructor(
             if (availableOverdueWords.isNotEmpty()) {
                 // Calculate overdue ratio for each word
                 val wordsWithRatio = availableOverdueWords.map { word ->
-                    val overdueRatio = (currentTime - word.nextReviewDate) / (Math.max(1, word.interval) * 86400000.0)
+                    val dueDate = word.lastReviewed + (word.interval * 86400000L)
+                    val overdueRatio = (currentTime - dueDate) / (Math.max(1, word.interval) * 86400000.0)
                     Pair(word, overdueRatio)
                 }
                 
@@ -260,10 +261,31 @@ class WordRepository private constructor(
                 return unseenWords.random()
             }
             
-            // PRIORITY 3: ONLY AS LAST RESORT, USE OTHER WORDS
-            android.util.Log.d("WordPriority", "No overdue or unseen words, selecting random word")
+            // PRIORITY 3: All words seen, none overdue - find closest to becoming overdue
+            android.util.Log.d("WordPriority", "All words seen, none overdue - finding closest to becoming overdue")
             
-            // If no overdue or unseen words, just get a random word
+            val allWords = wordDao.getAllWords().filter { it.id != excludeWord?.id && it.lastReviewed > 0 && it.interval > 0 }
+            if (allWords.isNotEmpty()) {
+                val wordsWithPseudoRatio = allWords.map { word ->
+                    val dueDate = word.lastReviewed + (word.interval * 86400000L)
+                    val pseudoRatio = (dueDate - currentTime) / (Math.max(1, word.interval) * 86400000.0)
+                    Pair(word, pseudoRatio)
+                }
+                // Get the top 3 words closest to becoming overdue (smallest positive values)
+                val topClosestWords = wordsWithPseudoRatio
+                    .sortedBy { it.second }
+                    .take(3)
+                    .map { it.first }
+                
+                // Pick one of the top words randomly
+                if (topClosestWords.isNotEmpty()) {
+                    android.util.Log.d("WordPriority", "Selected from top ${topClosestWords.size} words closest to becoming overdue")
+                    return topClosestWords.random()
+                }
+            }
+            
+            // LAST RESORT: Random word if something went wrong
+            android.util.Log.d("WordPriority", "Falling back to completely random word")
             return if (excludeWord == null) {
                 wordDao.getRandomWords(1).first()
             } else {

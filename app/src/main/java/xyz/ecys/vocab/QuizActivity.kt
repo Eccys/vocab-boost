@@ -111,13 +111,6 @@ class QuizActivity : ComponentActivity() {
         // Start tracking quiz session
         appUsageManager.startQuizSession()
 
-        // Initialize database with sample words if empty
-        lifecycleScope.launch {
-            if (wordRepository.getAllWords().isEmpty()) {
-                wordRepository.insertInitialWords()
-            }
-        }
-
         setContent {
             VocabularyBoosterTheme {
                 val currentWord = remember { mutableStateOf<Word?>(null) }
@@ -131,6 +124,31 @@ class QuizActivity : ComponentActivity() {
                 var expandedExamples by remember { mutableStateOf(setOf<String>()) }
                 // Add a state to track if hint was used for current question
                 var hintUsedForCurrentQuestionState by remember { mutableStateOf(false) }
+                
+                // Add loading state
+                var isLoading by remember { mutableStateOf(true) }
+                
+                // Initialize database with sample words if empty
+                LaunchedEffect(Unit) {
+                    try {
+                        val allWords = wordRepository.getAllWords()
+                        if (allWords.isEmpty()) {
+                            wordRepository.insertInitialWords()
+                            // Verify words were inserted successfully
+                            val wordsAfterInsert = wordRepository.getAllWords()
+                            if (wordsAfterInsert.isEmpty()) {
+                                // If still empty, there's an issue with the JSON or database
+                                throw Exception("Failed to load words into database")
+                            }
+                        }
+                        isLoading = false
+                    } catch (e: Exception) {
+                        // Log the error and show a message to the user
+                        android.util.Log.e("QuizActivity", "Error initializing words: ${e.message}", e)
+                        // You could set an error state here to show to the user
+                        isLoading = false
+                    }
+                }
                 
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
@@ -167,26 +185,38 @@ class QuizActivity : ComponentActivity() {
                         )
                     }
                 ) { innerPadding ->
-                    QuizScreen(
-                        modifier = Modifier.padding(innerPadding),
-                        wordRepository = wordRepository,
-                        appUsageManager = appUsageManager,
-                        isBookmarkMode = isBookmarkMode,
-                        currentWord = currentWord,
-                        lives = lives,
-                        hintsRemaining = hintsRemaining,
-                        selectedAnswer = selectedAnswerState,
-                        setSelectedAnswer = { newValue -> selectedAnswerState = newValue },
-                        hintUsedForCurrentQuestion = hintUsedForCurrentQuestionState,
-                        setHintUsedForCurrentQuestion = { newValue -> hintUsedForCurrentQuestionState = newValue },
-                        onGameOver = {
-                            lifecycleScope.launch {
-                                appUsageManager.endSession()
-                            }
-                        },
-                        settingsManager = settingsManager,
-                        quizResultRepository = quizResultRepository
-                    )
+                    if (isLoading) {
+                        // Show loading indicator
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(innerPadding),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator()
+                        }
+                    } else {
+                        QuizScreen(
+                            modifier = Modifier.padding(innerPadding),
+                            wordRepository = wordRepository,
+                            appUsageManager = appUsageManager,
+                            isBookmarkMode = isBookmarkMode,
+                            currentWord = currentWord,
+                            lives = lives,
+                            hintsRemaining = hintsRemaining,
+                            selectedAnswer = selectedAnswerState,
+                            setSelectedAnswer = { newValue -> selectedAnswerState = newValue },
+                            hintUsedForCurrentQuestion = hintUsedForCurrentQuestionState,
+                            setHintUsedForCurrentQuestion = { newValue -> hintUsedForCurrentQuestionState = newValue },
+                            onGameOver = {
+                                lifecycleScope.launch {
+                                    appUsageManager.endSession()
+                                }
+                            },
+                            settingsManager = settingsManager,
+                            quizResultRepository = quizResultRepository
+                        )
+                    }
                 }
             }
         }
@@ -316,6 +346,100 @@ fun QuizScreen(
     var totalBookmarkedWords by remember { mutableStateOf(0) }
     var showHint by remember { mutableStateOf(false) }
     var showNextButton by remember { mutableStateOf(false) }
+    var isInitializing by remember { mutableStateOf(true) }
+
+    // Initialize the first word when the screen is first displayed
+    LaunchedEffect(Unit) {
+        try {
+            if (currentWord.value == null) {
+                val wordsInDatabase = wordRepository.getAllWords()
+                if (wordsInDatabase.isEmpty()) {
+                    android.util.Log.e("QuizScreen", "No words available in the database")
+                    return@LaunchedEffect
+                }
+                
+                val initialWord = if (isBookmarkMode) {
+                    val bookmarkedWords = wordRepository.getBookmarkedWordsFlow().first()
+                    if (bookmarkedWords.isEmpty()) {
+                        android.util.Log.e("QuizScreen", "No bookmarked words available")
+                        return@LaunchedEffect
+                    }
+                    bookmarkedWords.random()
+                } else {
+                    wordRepository.getNextWord()
+                }
+                
+                // Get other words for options using the settings for number of options
+                val totalOptionsCount = settingsManager.getMultipleChoiceOptionsCount()
+                val wrongOptionsCount = totalOptionsCount - 1
+                
+                val otherWords = if (isBookmarkMode) {
+                    wordRepository.getRandomBookmarkedWordsExcluding(wrongOptionsCount, initialWord.id)
+                } else {
+                    wordRepository.getRandomWordsByCategory(initialWord.category, wrongOptionsCount)
+                        .filter { word -> word.id != initialWord.id }
+                        .take(wrongOptionsCount)
+                }
+                
+                currentBatch = listOf(initialWord) + otherWords
+                currentWord.value = initialWord
+                
+                val (newOptions, newSynonymSet) = generateOptions(currentBatch, initialWord)
+                options = newOptions
+                currentSynonymSet = newSynonymSet
+                
+                // Start timing the question
+                questionStartTime = System.currentTimeMillis()
+                
+                // We'll load the next batch in a separate LaunchedEffect
+            }
+            isInitializing = false
+        } catch (e: Exception) {
+            android.util.Log.e("QuizScreen", "Error initializing first word: ${e.message}", e)
+            isInitializing = false
+        }
+    }
+    
+    // Function to load the next batch of words
+    fun loadNextBatch() {
+        coroutineScope.launch {
+            // Get the next word using the existing selection logic
+            val nextWord = if (isBookmarkMode) {
+                if (totalBookmarkedWords > 1) {
+                    val bookmarkedWords = wordRepository.getBookmarkedWordsFlow().first()
+                    val filteredWords = bookmarkedWords.filter { it.id != currentWord.value?.id }
+                    if (filteredWords.isNotEmpty()) filteredWords.random() else bookmarkedWords.random()
+                } else {
+                    wordRepository.getRandomBookmarkedWords(1).firstOrNull() ?: return@launch
+                }
+            } else {
+                wordRepository.getNextWord(currentWord.value)
+            }
+            
+            // Get other words for options using the settings for number of options
+            val totalOptionsCount = settingsManager.getMultipleChoiceOptionsCount()
+            val wrongOptionsCount = totalOptionsCount - 1 // Subtract 1 for the correct answer
+            
+            val otherWords = if (isBookmarkMode) {
+                wordRepository.getRandomBookmarkedWordsExcluding(10, nextWord.id)
+                    .filter { it.category == nextWord.category }
+                    .take(wrongOptionsCount)  // Use the number of wrong options from settings
+            } else {
+                wordRepository.getRandomWordsByCategory(nextWord.category, totalOptionsCount)  // Get total words needed
+                    .filter { word -> word.id != nextWord.id }
+                    .take(wrongOptionsCount)  // Use the number of wrong options from settings
+            }
+            
+            nextBatch = listOf(nextWord) + otherWords
+        }
+    }
+    
+    // Add the LaunchedEffect here, after loadNextBatch is defined
+    LaunchedEffect(isInitializing) {
+        if (!isInitializing && currentWord.value != null) {
+            loadNextBatch()
+        }
+    }
 
     // Add the lookupWord function
     fun lookupWord(word: String) {
@@ -416,40 +540,6 @@ fun QuizScreen(
         }
     }
 
-    // Function to load the next batch of words
-    fun loadNextBatch() {
-        coroutineScope.launch {
-            // Get the next word using the existing selection logic
-            val nextWord = if (isBookmarkMode) {
-                if (totalBookmarkedWords > 1) {
-                    val bookmarkedWords = wordRepository.getBookmarkedWordsFlow().first()
-                    val filteredWords = bookmarkedWords.filter { it.id != currentWord.value?.id }
-                    if (filteredWords.isNotEmpty()) filteredWords.random() else bookmarkedWords.random()
-                } else {
-                    wordRepository.getRandomBookmarkedWords(1).firstOrNull() ?: return@launch
-                }
-            } else {
-                wordRepository.getNextWord(currentWord.value)
-            }
-            
-            // Get other words for options using the settings for number of options
-            val totalOptionsCount = settingsManager.getMultipleChoiceOptionsCount()
-            val wrongOptionsCount = totalOptionsCount - 1 // Subtract 1 for the correct answer
-            
-            val otherWords = if (isBookmarkMode) {
-                wordRepository.getRandomBookmarkedWordsExcluding(10, nextWord.id)
-                    .filter { it.category == nextWord.category }
-                    .take(wrongOptionsCount)  // Use the number of wrong options from settings
-            } else {
-                wordRepository.getRandomWordsByCategory(nextWord.category, totalOptionsCount)  // Get total words needed
-                    .filter { word -> word.id != nextWord.id }
-                    .take(wrongOptionsCount)  // Use the number of wrong options from settings
-            }
-            
-            nextBatch = listOf(nextWord) + otherWords
-        }
-    }
-
     // Function to advance to next question
     fun advanceToNextQuestion() {
         // If we have a preloaded batch, use it
@@ -509,47 +599,20 @@ fun QuizScreen(
         questionStartTime = System.currentTimeMillis()
     }
 
-    // Initial load
-    LaunchedEffect(Unit) {
-        // Get the initial word
-        val initialWord = if (isBookmarkMode) {
-            wordRepository.getRandomBookmarkedWords(1).firstOrNull() ?: return@LaunchedEffect
-        } else {
-            wordRepository.getNextWord(null)
-        }
-
-        // Get other words for options using the settings for number of options
-        val totalOptionsCount = settingsManager.getMultipleChoiceOptionsCount()
-        val wrongOptionsCount = totalOptionsCount - 1 // Subtract 1 for the correct answer
-        
-        // Get other words of the same category
-        val otherWords = if (isBookmarkMode) {
-            wordRepository.getRandomBookmarkedWordsExcluding(10, initialWord.id)
-                .filter { it.category == initialWord.category }
-                .take(wrongOptionsCount)  // Use the number of wrong options from settings
-        } else {
-            wordRepository.getRandomWordsByCategory(initialWord.category, totalOptionsCount)  // Get total words needed
-                .filter { word -> word.id != initialWord.id }
-                .take(wrongOptionsCount)  // Use the number of wrong options from settings
-        }
-
-        currentBatch = listOf(initialWord) + otherWords
-        if (currentBatch.isNotEmpty()) {
-            currentWord.value = currentBatch[0]
-            val (newOptions, newSynonymSet) = generateOptions(currentBatch, currentWord.value!!)
-            options = newOptions
-            currentSynonymSet = newSynonymSet
-            loadNextBatch()
-            questionStartTime = System.currentTimeMillis()
-        }
-    }
-
-    if (currentBatch.isEmpty() || currentWord.value == null) {
+    if (isInitializing || currentBatch.isEmpty() || currentWord.value == null) {
         Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            if (isBookmarkMode) {
+            if (isInitializing) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    CircularProgressIndicator()
+                    Text("Loading quiz words...")
+                }
+            } else if (isBookmarkMode) {
                 Text("No bookmarked words available")
             } else {
-                CircularProgressIndicator()
+                Text("No words available. Please try again.")
             }
         }
         return

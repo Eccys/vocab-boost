@@ -140,7 +140,7 @@ class StatsActivity : ComponentActivity() {
                 // Load updated statistics and update the cache
                 LaunchedEffect(Unit) {
                     // Use the repositories to get the latest data
-                    val freshTotalReviewed = words.count { it.timesReviewed > 0 }
+                    val freshTotalReviewed = words.count { it.nextReviewDate > 0 } // Count words with nextReviewDate > 0
                     val freshTimeSpentToday = appUsageManager.getQuizTimeSpentToday()
                     val freshTotalTimeSpent = appUsageManager.getTotalQuizTimeSpent()
                     val freshBestStreak = appUsageManager.getBestStreak()
@@ -236,7 +236,7 @@ class StatsActivity : ComponentActivity() {
                 )
 
                 WordListDialog(
-                    words = words.filter { it.timesReviewed > 0 },
+                    words = words.filter { it.nextReviewDate > 0 },
                     showDialog = showStudiedWords,
                     onDismiss = { showStudiedWords = false },
                     wordRepository = wordRepository,
