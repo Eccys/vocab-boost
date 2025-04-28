@@ -20,29 +20,69 @@ object WordLoader {
      */
     suspend fun loadWordsFromJson(context: Context): List<Word> = withContext(Dispatchers.IO) {
         try {
-            val jsonString = context.assets.open("words.json").bufferedReader().use { it.readText() }
-            val wordType = object : TypeToken<List<JsonWord>>() {}.type
-            val jsonWords: List<JsonWord> = Gson().fromJson(jsonString, wordType)
+            // First check if the file exists
+            val assetFiles = context.assets.list("")
+            if (assetFiles?.contains("words.json") != true) {
+                Log.e(TAG, "words.json file not found in assets")
+                return@withContext emptyList<Word>()
+            }
             
-            return@withContext jsonWords.map { jsonWord ->
-                Word(
-                    word = jsonWord.word,
-                    definition = jsonWord.definition,
-                    exampleSentence = jsonWord.exampleSentence ?: "",
-                    synonym1 = jsonWord.synonym1,
-                    synonym1Definition = jsonWord.synonym1Definition,
-                    synonym1ExampleSentence = jsonWord.synonym1ExampleSentence,
-                    synonym2 = jsonWord.synonym2,
-                    synonym2Definition = jsonWord.synonym2Definition,
-                    synonym2ExampleSentence = jsonWord.synonym2ExampleSentence,
-                    synonym3 = jsonWord.synonym3,
-                    synonym3Definition = jsonWord.synonym3Definition,
-                    synonym3ExampleSentence = jsonWord.synonym3ExampleSentence,
-                    category = jsonWord.category
-                )
+            // Read the file
+            val jsonString = context.assets.open("words.json").bufferedReader().use { it.readText() }
+            Log.d(TAG, "Successfully read ${jsonString.length} characters from words.json")
+            
+            if (jsonString.isBlank()) {
+                Log.e(TAG, "words.json file is empty")
+                return@withContext emptyList<Word>()
+            }
+            
+            try {
+                // Check if it's valid JSON (basic check)
+                com.google.gson.JsonParser.parseString(jsonString)
+            } catch (e: Exception) {
+                Log.e(TAG, "Invalid JSON format in words.json: ${e.message}", e)
+                return@withContext emptyList<Word>()
+            }
+            
+            // Now parse the full JSON
+            try {
+                val wordType = object : TypeToken<List<JsonWord>>() {}.type
+                val jsonWords: List<JsonWord> = Gson().fromJson(jsonString, wordType)
+                Log.d(TAG, "Successfully parsed ${jsonWords.size} words from JSON")
+                
+                if (jsonWords.isEmpty()) {
+                    Log.e(TAG, "No words parsed from JSON")
+                    return@withContext emptyList<Word>()
+                }
+                
+                return@withContext jsonWords.map { jsonWord ->
+                    try {
+                        Word(
+                            word = jsonWord.word,
+                            definition = jsonWord.definition,
+                            exampleSentence = jsonWord.exampleSentence ?: "",
+                            synonym1 = jsonWord.synonym1,
+                            synonym1Definition = jsonWord.synonym1Definition,
+                            synonym1ExampleSentence = jsonWord.synonym1ExampleSentence,
+                            synonym2 = jsonWord.synonym2,
+                            synonym2Definition = jsonWord.synonym2Definition,
+                            synonym2ExampleSentence = jsonWord.synonym2ExampleSentence,
+                            synonym3 = jsonWord.synonym3,
+                            synonym3Definition = jsonWord.synonym3Definition,
+                            synonym3ExampleSentence = jsonWord.synonym3ExampleSentence,
+                            category = jsonWord.category
+                        )
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Error mapping JSON word '${jsonWord.word}': ${e.message}", e)
+                        null // Skip this word if there's an error
+                    }
+                }.filterNotNull() // Remove any nulls from mapping errors
+            } catch (e: Exception) {
+                Log.e(TAG, "Error parsing JSON words: ${e.message}", e)
+                return@withContext emptyList<Word>()
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error loading words from JSON", e)
+            Log.e(TAG, "Error loading words from JSON: ${e.message}", e)
             return@withContext emptyList<Word>()
         }
     }

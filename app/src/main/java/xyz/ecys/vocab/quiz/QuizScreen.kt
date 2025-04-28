@@ -58,6 +58,8 @@ import xyz.ecys.vocab.quiz.QuizResult
 import java.util.Date
 import android.util.Log
 import xyz.ecys.vocab.data.GlobalQuizState
+import androidx.compose.ui.text.style.TextAlign
+import xyz.ecys.vocab.quiz.components.HintManager
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -70,11 +72,29 @@ fun QuizScreen(
     selectedAnswer: String?,
     setSelectedAnswer: (String?) -> Unit,
     settingsManager: SettingsManager,
-    quizResultRepository: QuizResultRepository
+    quizResultRepository: QuizResultRepository,
+    hintUsedForCurrentQuestion: Boolean = false,
+    getHintUsed: () -> Boolean = { hintUsedForCurrentQuestion },
+    resetHintUsed: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val view = LocalView.current
     val coroutineScope = rememberCoroutineScope()
+    
+    // Create a local copy of hintUsedForCurrentQuestion to ensure it's properly captured in handleAnswer
+    var localHintUsed by remember { mutableStateOf(hintUsedForCurrentQuestion) }
+    
+    // Check if hint is used and show hint content
+    var showHint by remember { mutableStateOf(false) }
+    
+    // Keep local hint state in sync with prop
+    LaunchedEffect(hintUsedForCurrentQuestion) {
+        android.util.Log.e("CRITICAL_HINT", "===== LaunchedEffect(hintUsedForCurrentQuestion) in QuizScreen =====")
+        android.util.Log.e("CRITICAL_HINT", "BEFORE: localHintUsed=$localHintUsed, incoming prop=$hintUsedForCurrentQuestion")
+        localHintUsed = hintUsedForCurrentQuestion
+        android.util.Log.e("CRITICAL_HINT", "AFTER: localHintUsed=$localHintUsed")
+        android.util.Log.d("HintTrace", "QuizScreen: Updating localHintUsed to $localHintUsed (from prop: $hintUsedForCurrentQuestion)")
+    }
     
     // State variables
     var quizResults by remember { mutableStateOf<List<QuizResult>>(emptyList()) }
@@ -132,6 +152,25 @@ fun QuizScreen(
     // Move handleAnswer function here
     fun handleAnswer(selectedSynonym: String) {
         if (selectedAnswer == null) {
+            // Get current word ID
+            val wordId = currentWord.value!!.id
+            
+            // Check if hint was used for this specific word (most reliable)
+            val wordSpecificHintUsed = HintManager.wasHintUsedForWord(wordId)
+            
+            // CRITICAL: Only use the word-specific hint tracking from HintManager for maximum reliability
+            val hintWasUsed = wordSpecificHintUsed
+            
+            // Log EVERYTHING for debugging
+            android.util.Log.e("CRITICAL_HINT", "===== ANSWER SUBMISSION START =====")
+            android.util.Log.e("CRITICAL_HINT", "WordID: $wordId")
+            android.util.Log.e("CRITICAL_HINT", "Current states: showHint=$showHint, getHintUsed()=${getHintUsed()}, global=${HintManager.hintWasUsed}")
+            android.util.Log.e("CRITICAL_HINT", "Word-specific hint map check: $wordSpecificHintUsed")
+            android.util.Log.e("CRITICAL_HINT", "FINAL hint value being used: $hintWasUsed")
+            
+            // Force capture this value at answer time
+            val capturedHintState = hintWasUsed
+            
             setSelectedAnswer(selectedSynonym)
             
             // Use the tracked currentSynonymSet to determine the correct answer
@@ -145,24 +184,29 @@ fun QuizScreen(
             
             val now = System.currentTimeMillis()
             val responseTime = now - questionStartTime
-            android.util.Log.d("QuizTimer", "Question start time: $questionStartTime")
-            android.util.Log.d("QuizTimer", "Answer time: $now")
-            android.util.Log.d("QuizTimer", "Response time: $responseTime")
             
-            if (isCorrect) {
-                coroutineScope.launch {
-                    appUsageManager.recordCorrectAnswer()
-                }
-            }
-            
-            // Update word statistics with timing information
+            // Update word statistics with timing information AND hint usage
             coroutineScope.launch {
-                wordRepository.updateWordStats(
-                    wordId = currentWord.value!!.id,
-                    wasCorrect = isCorrect,
-                    timestamp = now,
-                    responseTime = responseTime
-                )
+                android.util.Log.e("CRITICAL_HINT", "handleAnswer: BEFORE updateWordStats - captured hint=$capturedHintState, current showHint=$showHint")
+                
+                // IMPORTANT DIRECT WRITE: Immediately modify repository stats with hint info
+                try {
+                    android.util.Log.e("CRITICAL_HINT", "FINAL hint state being passed to updateWordStats: $capturedHintState")
+                    wordRepository.updateWordStats(
+                        wordId = currentWord.value!!.id,
+                        wasCorrect = isCorrect,
+                        timestamp = now,
+                        responseTime = responseTime,
+                        hintUsed = capturedHintState
+                    )
+                    android.util.Log.e("CRITICAL_HINT", "handleAnswer: updateWordStats called with hintUsed=$capturedHintState")
+                } catch (e: Exception) {
+                    android.util.Log.e("CRITICAL_HINT", "handleAnswer: Exception in updateWordStats: ${e.message}")
+                    e.printStackTrace()
+                }
+                
+                android.util.Log.e("CRITICAL_HINT", "handleAnswer: AFTER updateWordStats - hint value: $capturedHintState")
+                android.util.Log.e("CRITICAL_HINT", "===== ANSWER SUBMISSION END =====")
             }
             
             val newResult = QuizResult(
@@ -281,6 +325,14 @@ fun QuizScreen(
             expandedExamples = emptySet()
             showTooltip = false
             questionStartTime = System.currentTimeMillis()
+            showHint = false  // Reset the visual hint state
+            android.util.Log.e("CRITICAL_HINT", "===== ADVANCING TO NEXT QUESTION =====")
+            android.util.Log.e("CRITICAL_HINT", "BEFORE resetHintUsed: showHint=$showHint, localHintUsed=$localHintUsed, getHintUsed()=${getHintUsed()}, global=${HintManager.hintWasUsed}")
+            android.util.Log.d("HintTrace", "QuizScreen.advanceToNextQuestion: Reset showHint to false")
+            android.util.Log.d("HintTrace", "QuizScreen.advanceToNextQuestion: About to call resetHintUsed(), current value: $localHintUsed")
+            resetHintUsed()
+            android.util.Log.e("CRITICAL_HINT", "AFTER resetHintUsed: showHint=$showHint, localHintUsed=$localHintUsed, getHintUsed()=${getHintUsed()}, global=${HintManager.hintWasUsed}")
+            android.util.Log.d("HintTrace", "QuizScreen.advanceToNextQuestion: After resetHintUsed(), value should be false")
             
             // Update debug info
             val currentTime = System.currentTimeMillis()
@@ -347,6 +399,29 @@ fun QuizScreen(
             quizStartTime = System.currentTimeMillis() // Set the quiz start time
             android.util.Log.d("QuizTimer", "Setting initial question start time: $questionStartTime")
         }
+    }
+
+    // Add debug effect to log when hintUsedForCurrentQuestion changes
+    LaunchedEffect(localHintUsed) {
+        android.util.Log.d("HintTrace", "QuizScreen: hintUsedForCurrentQuestion changed to $localHintUsed")
+    }
+
+    // Display hint immediately when hint usage changes
+    LaunchedEffect(getHintUsed()) {
+        val hintStatus = getHintUsed()
+        android.util.Log.e("CRITICAL_HINT", "===== LaunchedEffect(getHintUsed) in QuizScreen =====")
+        android.util.Log.e("CRITICAL_HINT", "getHintUsed() returned: $hintStatus")
+        android.util.Log.e("CRITICAL_HINT", "Current states: showHint=$showHint, localHintUsed=$localHintUsed, HintManager.hintWasUsed=${HintManager.hintWasUsed}")
+        android.util.Log.e("CRITICAL_HINT", "LaunchedEffect(getHintUsed): Current value: $hintStatus, showHint=$showHint")
+        if (hintStatus) {
+            android.util.Log.e("CRITICAL_HINT", "QuizScreen: getHintUsed() returned true, setting showHint=true")
+            showHint = true
+        }
+    }
+
+    // Track showHint changes
+    LaunchedEffect(showHint) {
+        android.util.Log.e("CRITICAL_HINT", "LaunchedEffect(showHint): Value changed to $showHint")
     }
 
     if (currentBatch.isEmpty() || currentWord.value == null) {
@@ -435,10 +510,22 @@ fun QuizScreen(
                         }}",
                         style = MaterialTheme.typography.bodySmall,
                         color = when {
-                            isOverdue -> Color(0xFFFF9800)
-                            isUnseen -> Color(0xFF2196F3)
-                            else -> Color(0xFF4CAF50)
+                            isOverdue -> Color(0xFFFF6B6B)
+                            isUnseen -> Color(0xFF5DD9C1)
+                            else -> Color.White.copy(alpha = 0.8f)
                         }
+                    )
+                    
+                    Text(
+                        "Hint Used: $localHintUsed",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (localHintUsed) Color(0xFFFFD166) else Color.White.copy(alpha = 0.8f)
+                    )
+                    
+                    Text(
+                        "Current Hint Used: ${getHintUsed()}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (getHintUsed()) Color(0xFFFFD166) else Color.White.copy(alpha = 0.8f)
                     )
                     
                     Text(
@@ -712,21 +799,84 @@ fun QuizScreen(
                 }
         )
 
-        // Add definition after answer is selected
-        AnimatedVisibility(
-            visible = selectedAnswer != null,
-            enter = expandVertically(
-                animationSpec = AppAnimations.tweenSpec()
-            ) + fadeIn(
-                animationSpec = AppAnimations.tweenSpec()
+        // Question card
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(
+                containerColor = Color(0xFF18191E)
             ),
-            exit = shrinkVertically() + fadeOut()
+            shape = RoundedCornerShape(16.dp)
         ) {
-            Text(
-                text = currentWord.value!!.definition,
-                style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier.padding(top = 8.dp, bottom = 16.dp)
-            )
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // Show "Definition" label
+                Text(
+                    text = "Definition",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = Color(0xFFFCFCFC).copy(alpha = 0.6f)
+                )
+                
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                // Definition
+                Text(
+                    text = currentWord.value!!.definition,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = Color(0xFFFCFCFC),
+                    textAlign = TextAlign.Center
+                )
+                
+                // Show hint if used
+                if (showHint) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color(0xFF2A2E31)
+                        ),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(12.dp)
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Icon(
+                                    painter = AppIcons.lightbulbSolid(),
+                                    contentDescription = "Hint",
+                                    tint = Color(0xFFFDC500)
+                                )
+                                Text(
+                                    "HINT", 
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = Color(0xFFFDC500)
+                                )
+                            }
+                            
+                            Spacer(modifier = Modifier.height(8.dp))
+                            
+                            // Display the hint - example sentence from the correct definition
+                            val correctExampleSentence = when (currentSynonymSet) {
+                                1 -> currentWord.value!!.synonym1ExampleSentence
+                                2 -> currentWord.value!!.synonym2ExampleSentence
+                                else -> currentWord.value!!.synonym3ExampleSentence
+                            }
+                            
+                            Text(
+                                text = correctExampleSentence,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = Color(0xFFFCFCFC).copy(alpha = 0.8f)
+                            )
+                        }
+                    }
+                }
+            }
         }
 
         // Tooltip for example sentence
@@ -916,12 +1066,12 @@ fun QuizScreen(
         // Update "Next" button styling to match
         if (showNextButton) {
             Button(
-                onClick = { 
-                    setSelectedAnswer(null)
+                onClick = {
+                    val currentHintUsed = getHintUsed()
+                    android.util.Log.d("HintDebug", "QuizScreen: NEXT button clicked, showNextButton=$showNextButton, localHintUsed=$localHintUsed, currentHintUsed=$currentHintUsed")
                     showNextButton = false
-                    expandedExamples = emptySet()
-                    showTooltip = false  // Also reset tooltip here for good measure
-                    advanceToNextQuestion() 
+                    
+                    advanceToNextQuestion()
                 },
                 modifier = Modifier
                     .padding(top = 16.dp)

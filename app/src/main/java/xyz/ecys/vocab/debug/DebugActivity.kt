@@ -132,7 +132,7 @@ class DebugActivity : ComponentActivity() {
                                     ) {
                                         Icon(
                                             painter = AppIcons.arrowLeft(),
-                                            contentDescription = "Close search",
+                                            contentDescription = "Back to list",
                                             tint = Color(0xFFFCFCFC)
                                         )
                                     }
@@ -277,5 +277,11 @@ class DebugActivity : ComponentActivity() {
     override fun onBackPressed() {
         super.onBackPressed()
         TransitionUtils.applyStandardTransitionOnFinish(this)
+    }
+    
+    override fun onResume() {
+        super.onResume()
+        // Force refresh data by recreating the repository instance
+        wordRepository = WordRepository.getInstance(this, true) // Pass true to force refresh
     }
 } 

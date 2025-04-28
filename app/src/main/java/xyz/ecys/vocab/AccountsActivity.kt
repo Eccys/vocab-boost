@@ -37,6 +37,8 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.fadeOut
 import xyz.ecys.vocab.utils.TransitionUtils
+import android.content.SharedPreferences
+import android.content.Context
 
 @OptIn(ExperimentalMaterial3Api::class)
 class AccountsActivity : ComponentActivity() {
@@ -243,7 +245,18 @@ class AccountsActivity : ComponentActivity() {
                                         authViewModel.downloadDataFromCloud { success ->
                                             if (success) {
                                                 lastSync = authViewModel.getLastSyncTime()
-                                                authViewModel.showMessage("Data downloaded successfully")
+                                                
+                                                // Clear all caches to ensure fresh data is displayed
+                                                // Clear stats cache
+                                                getSharedPreferences("stats_cache_prefs", MODE_PRIVATE).edit().clear().apply()
+                                                
+                                                // Clear quiz state cache
+                                                getSharedPreferences("quiz_state_prefs", MODE_PRIVATE).edit().clear().apply()
+                                                
+                                                // Clear global quiz state
+                                                xyz.ecys.vocab.data.GlobalQuizState.resetState()
+                                                
+                                                authViewModel.showMessage("Data downloaded and caches cleared successfully")
                                             } else {
                                                 authViewModel.showMessage(authError ?: "Download failed")
                                             }

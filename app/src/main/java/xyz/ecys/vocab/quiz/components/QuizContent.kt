@@ -47,6 +47,8 @@ data class QuizState(
     val timestamp: Long = System.currentTimeMillis() // Add a timestamp as we need at least one parameter
 )
 
+// Global hint state moved to HintManager.kt
+
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun QuizContent(
@@ -62,8 +64,27 @@ fun QuizContent(
     var selectedAnswer by remember { mutableStateOf<String?>(null) }
     var hintUsedForCurrentQuestion by remember { mutableStateOf(false) }
     
+    // Track direct hint usage with a separate flag for the database update
+    var directHintUsedForUpdate by remember { mutableStateOf(false) }
+    
     // Add debug UI state
     var showDebugPanel = remember { mutableStateOf(false) }
+
+    // Monitor state changes
+    LaunchedEffect(selectedAnswer) {
+        android.util.Log.d("StateTracker", "QuizContent: selectedAnswer changed to $selectedAnswer")
+    }
+    
+    LaunchedEffect(hintUsedForCurrentQuestion) {
+        android.util.Log.e("CRITICAL_HINT", "======== LaunchedEffect(hintUsedForCurrentQuestion) TRIGGERED ========")
+        android.util.Log.e("CRITICAL_HINT", "BEFORE: directHintUsedForUpdate=$directHintUsedForUpdate")
+        android.util.Log.e("CRITICAL_HINT", "QuizContent: hintUsedForCurrentQuestion changed to $hintUsedForCurrentQuestion")
+        if (hintUsedForCurrentQuestion) {
+            directHintUsedForUpdate = true
+            android.util.Log.e("CRITICAL_HINT", "AFTER: directHintUsedForUpdate=$directHintUsedForUpdate")
+            android.util.Log.e("CRITICAL_HINT", "QuizContent: Set directHintUsedForUpdate=true")
+        }
+    }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -85,9 +106,37 @@ fun QuizContent(
                 hintUsedForCurrentQuestion = hintUsedForCurrentQuestion,
                 selectedAnswer = selectedAnswer,
                 onHintClick = {
-                    // Hints are now unlimited, so just show the hint without any limits
-                    if (currentWord.value != null && !hintUsedForCurrentQuestion && selectedAnswer == null) {
+                    // Always log that the button was pressed, regardless of conditions
+                    android.util.Log.e("CRITICAL_HINT", "============ HINT BUTTON PRESSED ============")
+                    
+                    // Get the current word ID if available
+                    val wordId = currentWord.value?.id
+                    
+                    // Always log the current state, whether we take action or not
+                    android.util.Log.e("CRITICAL_HINT", "CURRENT STATE: currentWord=${wordId}, hintUsed=$hintUsedForCurrentQuestion, answer=$selectedAnswer")
+                    android.util.Log.e("CRITICAL_HINT", "CURRENT GLOBALS: directHintUsed=$directHintUsedForUpdate, global=${HintManager.hintWasUsed}")
+
+                    // Skip usual checks and forcibly set the hint state
+                    if (currentWord.value != null) {
+                        android.util.Log.e("CRITICAL_HINT", "FORCIBLY SETTING HINT STATE for word ${wordId}")
+                        
+                        // Set both the local and global hint state
                         hintUsedForCurrentQuestion = true
+                        HintManager.hintWasUsed = true
+                        
+                        // Mark hint used for this specific word
+                        if (wordId != null) {
+                            HintManager.markHintUsedForWord(wordId)
+                        }
+                        
+                        android.util.Log.e("CRITICAL_HINT", "AFTER FORCE: hintUsedForCurrentQuestion=$hintUsedForCurrentQuestion")
+                        android.util.Log.e("CRITICAL_HINT", "AFTER FORCE: directHintUsedForUpdate=$directHintUsedForUpdate")
+                        android.util.Log.e("CRITICAL_HINT", "AFTER FORCE: HintManager.hintWasUsed=${HintManager.hintWasUsed}")
+                        
+                        // Force log hint usage for debuggability
+                        android.util.Log.e("CRITICAL_HINT_USAGE", "HINT BUTTON FORCE CLICKED for word: $wordId, hint will be used, global=${HintManager.hintWasUsed}")
+                    } else {
+                        android.util.Log.e("CRITICAL_HINT", "Cannot set hint state: currentWord is null")
                     }
                 }
             )
@@ -107,7 +156,31 @@ fun QuizContent(
                 selectedAnswer = selectedAnswer,
                 setSelectedAnswer = { selectedAnswer = it },
                 settingsManager = settingsManager,
-                quizResultRepository = quizResultRepository
+                quizResultRepository = quizResultRepository,
+                hintUsedForCurrentQuestion = hintUsedForCurrentQuestion,
+                getHintUsed = { directHintUsedForUpdate },
+                resetHintUsed = { 
+                    android.util.Log.e("CRITICAL_HINT", "========== resetHintUsed CALLED ==========")
+                    android.util.Log.e("CRITICAL_HINT", "QuizContent: resetHintUsed called, setting from hintUsed=$hintUsedForCurrentQuestion, directHint=$directHintUsedForUpdate, global=${HintManager.hintWasUsed} to FALSE")
+                    
+                    // Capture stack trace to see where this is called from
+                    try {
+                        throw Exception("resetHintUsed stacktrace capture")
+                    } catch (e: Exception) {
+                        android.util.Log.e("CRITICAL_HINT", "resetHintUsed called from:", e)
+                    }
+                    
+                    // Also reset the word-specific hint state if we have a current word
+                    if (currentWord.value != null) {
+                        val wordId = currentWord.value!!.id
+                        android.util.Log.e("CRITICAL_HINT", "Resetting hint for word ID: $wordId")
+                        HintManager.resetHintForWord(wordId)
+                    }
+                    
+                    hintUsedForCurrentQuestion = false 
+                    directHintUsedForUpdate = false
+                    android.util.Log.e("CRITICAL_HINT", "QuizContent: AFTER reset: hintUsed=$hintUsedForCurrentQuestion, directHint=$directHintUsedForUpdate, global=${HintManager.hintWasUsed}")
+                }
             )
             
             // Debug content at the top of the Box, above everything (hidden by default now)

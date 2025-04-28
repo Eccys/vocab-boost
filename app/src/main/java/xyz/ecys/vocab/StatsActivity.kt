@@ -63,6 +63,9 @@ class StatsActivity : ComponentActivity() {
 
         // Initialize the stats cache
         val statsCache = getSharedPreferences(STATS_CACHE_PREFS, AndroidContext.MODE_PRIVATE)
+        
+        // Clear the cache to make sure we get fresh data
+        statsCache.edit().clear().apply()
 
         setContent {
             VocabularyBoosterTheme {
@@ -132,15 +135,10 @@ class StatsActivity : ComponentActivity() {
                     }
                 }
 
-                // Load word lists immediately from the cached list
-                LaunchedEffect(words) {
-                    updateWordLists(words)
-                }
-
                 // Load updated statistics and update the cache
-                LaunchedEffect(Unit) {
+                LaunchedEffect(words) {
                     // Use the repositories to get the latest data
-                    val freshTotalReviewed = words.count { it.timesReviewed > 0 }
+                    val freshTotalReviewed = words.count { it.timesReviewed > 0 } // Count words that have been reviewed
                     val freshTimeSpentToday = appUsageManager.getQuizTimeSpentToday()
                     val freshTotalTimeSpent = appUsageManager.getTotalQuizTimeSpent()
                     val freshBestStreak = appUsageManager.getBestStreak()
@@ -336,6 +334,14 @@ class StatsActivity : ComponentActivity() {
     override fun onBackPressed() {
         super.onBackPressed()
         TransitionUtils.applyStandardTransitionOnFinish(this)
+    }
+    
+    override fun onResume() {
+        super.onResume()
+        // Clear the cache and force refresh data when activity becomes visible again
+        // This ensures we display fresh data after downloading from the cloud
+        val statsCache = getSharedPreferences(STATS_CACHE_PREFS, MODE_PRIVATE)
+        statsCache.edit().clear().apply()
     }
 }
 

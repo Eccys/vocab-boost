@@ -58,10 +58,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import xyz.ecys.vocab.utils.TransitionUtils
 import android.app.Activity
+import xyz.ecys.vocab.data.SubscriptionManager
 
 @OptIn(ExperimentalMaterial3Api::class)
 class SettingsActivity : ComponentActivity() {
     private val authViewModel: AuthViewModel by viewModels()
+    private lateinit var subscriptionManager: SubscriptionManager
     private val googleSignInLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -83,6 +85,7 @@ class SettingsActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         enableEdgeToEdge()
+        subscriptionManager = SubscriptionManager.getInstance(this)
 
         // Observe sign-in intent
         lifecycleScope.launch {
@@ -183,6 +186,14 @@ class SettingsActivity : ComponentActivity() {
                 // Update the external variable when showAuthSheet changes
                 LaunchedEffect(showAuthSheet) {
                     authSheetVisible = showAuthSheet
+                }
+
+                // Get premium status from SubscriptionManager
+                val isPremiumUser by subscriptionManager.isPremium.collectAsState()
+                
+                // Only show the FAB debug button for non-premium users that have it enabled
+                val showDebugFab by remember(isPremiumUser, showDebugButton) { 
+                    mutableStateOf(showDebugButton && !isPremiumUser) 
                 }
 
                 if (showNeuralInfo) {
@@ -688,7 +699,7 @@ class SettingsActivity : ComponentActivity() {
                     },
                     floatingActionButton = {
                         AnimatedVisibility(
-                            visible = showDebugButton,
+                            visible = showDebugFab,
                             enter = fadeIn() + slideInVertically { it },
                             exit = fadeOut() + slideOutVertically { it }
                         ) {
@@ -877,6 +888,85 @@ class SettingsActivity : ComponentActivity() {
                                 }
                             }
 
+                            // Premium Button - Visible for all users
+                            Spacer(modifier = Modifier.height(16.dp))
+                            
+                            var isPremiumButtonPressed by remember { mutableStateOf(false) }
+                            val premiumButtonScale by animateFloatAsState(
+                                targetValue = if (isPremiumButtonPressed) 0.97f else 1f,
+                                animationSpec = spring(
+                                    dampingRatio = 0.75f,
+                                    stiffness = 300f
+                                )
+                            )
+                            
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .graphicsLayer {
+                                        scaleX = premiumButtonScale
+                                        scaleY = premiumButtonScale
+                                    },
+                                colors = CardDefaults.cardColors(
+                                    containerColor = if (!isPremiumUser) Color(0xFF007AFF) else Color(0xFF18191E)
+                                ),
+                                shape = RoundedCornerShape(12.dp),
+                                onClick = { 
+                                    startActivity(Intent(context, SubscriptionActivity::class.java))
+                                    TransitionUtils.applyStandardTransition(this@SettingsActivity)
+                                },
+                                interactionSource = remember { MutableInteractionSource() }
+                                    .also { interactionSource ->
+                                        LaunchedEffect(interactionSource) {
+                                            interactionSource.interactions.collect { interaction ->
+                                                when (interaction) {
+                                                    is PressInteraction.Press -> isPremiumButtonPressed = true
+                                                    is PressInteraction.Release -> isPremiumButtonPressed = false
+                                                    is PressInteraction.Cancel -> isPremiumButtonPressed = false
+                                                }
+                                            }
+                                        }
+                                    }
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 12.dp, horizontal = 16.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Row(
+                                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            painter = AppIcons.starSolid(),
+                                            contentDescription = "Premium",
+                                            tint = if (!isPremiumUser) Color.White else Color(0xFFFFD700),
+                                            modifier = Modifier.size(24.dp)
+                                        )
+                                        Column(
+                                            verticalArrangement = Arrangement.spacedBy(2.dp)
+                                        ) {
+                                            Text(
+                                                text = if (!isPremiumUser) "Upgrade to Premium" else "Premium Account",
+                                                color = if (!isPremiumUser) Color.White else Color(0xFFFCFCFC)
+                                            )
+                                            Text(
+                                                text = if (!isPremiumUser) "Unlock all features" else "Manage your subscription",
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                color = if (!isPremiumUser) Color.White.copy(alpha = 0.8f) else Color(0xFFAAAAAA)
+                                            )
+                                        }
+                                    }
+                                    Icon(
+                                        painter = AppIcons.arrowRight(),
+                                        contentDescription = "Open",
+                                        tint = if (!isPremiumUser) Color.White else Color(0xFFFCFCFC)
+                                    )
+                                }
+                            }
+
                             // Quiz Options Count Slider
                             Card(
                                 modifier = Modifier.fillMaxWidth(),
@@ -1041,6 +1131,89 @@ class SettingsActivity : ComponentActivity() {
                             }
 
                             // Database Section
+                            Spacer(modifier = Modifier.height(16.dp))
+                            
+                            Text(
+                                text = "Advanced",
+                                style = MaterialTheme.typography.titleLarge
+                            )
+
+                            // Premium Debug Button - Only shown for premium subscribers
+                            AnimatedVisibility(visible = isPremiumUser) {
+                                var isStatisticsPressed by remember { mutableStateOf(false) }
+                                val statisticsScale by animateFloatAsState(
+                                    targetValue = if (isStatisticsPressed) 0.97f else 1f,
+                                    animationSpec = spring(
+                                        dampingRatio = 0.75f,
+                                        stiffness = 300f
+                                    )
+                                )
+                                
+                                Card(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .graphicsLayer {
+                                            scaleX = statisticsScale
+                                            scaleY = statisticsScale
+                                        },
+                                    colors = CardDefaults.cardColors(
+                                        containerColor = Color(0xFF18191E)
+                                    ),
+                                    shape = RoundedCornerShape(12.dp),
+                                    onClick = { 
+                                        startActivity(Intent(context, DebugActivity::class.java))
+                                        TransitionUtils.applyStandardTransition(this@SettingsActivity)
+                                    },
+                                    interactionSource = remember { MutableInteractionSource() }
+                                        .also { interactionSource ->
+                                            LaunchedEffect(interactionSource) {
+                                                interactionSource.interactions.collect { interaction ->
+                                                    when (interaction) {
+                                                        is PressInteraction.Press -> isStatisticsPressed = true
+                                                        is PressInteraction.Release -> isStatisticsPressed = false
+                                                        is PressInteraction.Cancel -> isStatisticsPressed = false
+                                                    }
+                                                }
+                                            }
+                                        }
+                                ) {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(vertical = 12.dp, horizontal = 16.dp),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Row(
+                                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Icon(
+                                                painter = AppIcons.robotSolid(),
+                                                contentDescription = "Advanced Statistics",
+                                                tint = Color(0xFF90CAF9),
+                                                modifier = Modifier.size(24.dp)
+                                            )
+                                            Column(
+                                                verticalArrangement = Arrangement.spacedBy(2.dp)
+                                            ) {
+                                                Text("Advanced Statistics")
+                                                Text(
+                                                    text = "View detailed learning metrics",
+                                                    style = MaterialTheme.typography.bodyMedium,
+                                                    color = Color(0xFFAAAAAA)
+                                                )
+                                            }
+                                        }
+                                        Icon(
+                                            painter = AppIcons.arrowRight(),
+                                            contentDescription = "Open",
+                                            tint = Color(0xFFFCFCFC)
+                                        )
+                                    }
+                                }
+                            }
+
                             var isResetDatabasePressed by remember { mutableStateOf(false) }
                             val resetDatabaseScale by animateFloatAsState(
                                 targetValue = if (isResetDatabasePressed) 0.97f else 1f,

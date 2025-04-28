@@ -30,6 +30,23 @@ service cloud.firestore {
       allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
     }
     
+    // Allow authenticated users to read/write their own transactions
+    match /transactions/{transactionId} {
+      allow read, write: if request.auth != null && 
+                         (request.resource.data.userId == request.auth.uid ||
+                          resource.data.userId == request.auth.uid);
+    }
+    
+    // Allow authenticated users to read/write to pending transactions
+    match /pending_transactions/{transactionId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Allow authenticated users to read/write to the timestamps collection
+    match /timestamps/{documentId} {
+      allow read, write: if request.auth != null;
+    }
+    
     // Deny access to all other documents
     match /{document=**} {
       allow read, write: if false;

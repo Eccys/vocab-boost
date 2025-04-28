@@ -15,8 +15,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.padding
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun QuizTopBar(
     onBackClick: () -> Unit,
@@ -26,6 +28,16 @@ fun QuizTopBar(
     selectedAnswer: String?,
     onHintClick: () -> Unit
 ) {
+    android.util.Log.d("HintDebug", "QuizTopBar recomposed with hintUsedForCurrentQuestion=$hintUsedForCurrentQuestion, selectedAnswer=$selectedAnswer")
+    
+    // Debug hint button state
+    val hintButtonEnabled = !hintUsedForCurrentQuestion && selectedAnswer == null
+    android.util.Log.e("CRITICAL_HINT", "=== QUIZ TOP BAR RECOMPOSED ===")
+    android.util.Log.e("CRITICAL_HINT", "Hint button enabled: $hintButtonEnabled")
+    android.util.Log.e("CRITICAL_HINT", "hintUsedForCurrentQuestion: $hintUsedForCurrentQuestion")
+    android.util.Log.e("CRITICAL_HINT", "selectedAnswer: $selectedAnswer")
+    android.util.Log.e("CRITICAL_HINT", "currentWord: ${currentWord?.id}")
+    
     TopAppBar(
         title = { 
             Text(
@@ -40,7 +52,8 @@ fun QuizTopBar(
             IconButton(onClick = onBackClick) {
                 Icon(
                     painter = AppIcons.arrowLeft(),
-                    contentDescription = "Back"
+                    contentDescription = "Back",
+                    tint = Color(0xFFFCFCFC)
                 )
             }
         },
@@ -51,14 +64,18 @@ fun QuizTopBar(
             ) {
                 if (currentWord != null) {
                     IconButton(
-                        onClick = { onHintClick() },
+                        onClick = { 
+                            onHintClick() 
+                        },
                         enabled = !hintUsedForCurrentQuestion && selectedAnswer == null
                     ) {
                         Icon(
                             painter = AppIcons.lightbulbSolid(),
                             contentDescription = "Show hint",
-                            tint = if (!hintUsedForCurrentQuestion && selectedAnswer == null) 
-                                Color(0xFFFFC107) else Color.Gray
+                            tint = if (!hintUsedForCurrentQuestion && selectedAnswer == null)
+                                Color(0xFFFDC500)
+                            else
+                                Color(0xFFFCFCFC).copy(alpha = 0.3f)
                         )
                     }
                     

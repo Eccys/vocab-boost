@@ -90,7 +90,18 @@ object GlobalQuizState {
      * Reset the state to defaults (no-op since there are no lives or hint limits now)
      */
     fun resetState() {
-        // No-op
+        if (::sharedPreferences.isInitialized) {
+            // Clear preferences and reset in-memory state
+            sharedPreferences.edit().clear().apply()
+            _lives = DEFAULT_LIVES
+            _hints = DEFAULT_HINTS
+            
+            // Re-set default values
+            setLives(DEFAULT_LIVES)
+            setHints(DEFAULT_HINTS)
+            
+            Log.d(TAG, "Quiz state has been reset")
+        }
     }
     
     /**

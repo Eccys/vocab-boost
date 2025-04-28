@@ -93,11 +93,11 @@ interface WordDao {
 
     @Query("""
     SELECT * FROM words 
-    WHERE nextReviewDate <= :currentTime AND nextReviewDate > 0
+    WHERE (lastReviewed + (interval * 86400000)) < :currentTime 
+    AND lastReviewed > 0 AND interval > 0
     ORDER BY 
-      ((:currentTime - nextReviewDate) * 1.0 / ((CASE WHEN interval = 0 THEN 1 ELSE interval END) * 86400000)) DESC,
-      easeFactor ASC, 
-      lastReviewed ASC
+      ((:currentTime - (lastReviewed + (interval * 86400000))) * 1.0 / ((CASE WHEN interval = 0 THEN 1 ELSE interval END) * 86400000)) DESC,
+      easeFactor ASC
     """)
     suspend fun getOverdueWords(currentTime: Long): List<Word>
 

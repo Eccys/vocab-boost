@@ -47,6 +47,9 @@ fun generateOptions(words: List<Word>, currentWord: Word, context: Context? = nu
     // Create list of wrong answers
     val wrongAnswers = mutableListOf<String>()
     
+    // Track word sources of selected wrong answers for synonym checking
+    val selectedWordSources = mutableListOf<Word>()
+    
     // Get words of the same category as potential sources for wrong answers
     val sameCategoryWords = words.filter { it.id != currentWord.id && it.category == currentWord.category }
     
@@ -68,7 +71,8 @@ fun generateOptions(words: List<Word>, currentWord: Word, context: Context? = nu
         
         // Try each synonym in random order
         val synonymNumbers = (1..3).shuffled()
-        for (num in synonymNumbers) {
+        
+        outerLoop@ for (num in synonymNumbers) {
             val synonym = when (num) {
                 1 -> word.synonym1
                 2 -> word.synonym2
@@ -77,9 +81,26 @@ fun generateOptions(words: List<Word>, currentWord: Word, context: Context? = nu
             
             // Check if this synonym is valid (not a duplicate and not from the current word)
             if (synonym !in usedSynonyms && synonym !in currentWordSynonyms) {
+                // NEW CHECK: Ensure this synonym isn't a synonym of any already selected wrong answer
+                for (selectedWord in selectedWordSources) {
+                    // Check if the new synonym is a synonym of any selected word
+                    if (synonym == selectedWord.synonym1 || 
+                        synonym == selectedWord.synonym2 || 
+                        synonym == selectedWord.synonym3 ||
+                        word.synonym1 == selectedWord.word ||
+                        word.synonym2 == selectedWord.word ||
+                        word.synonym3 == selectedWord.word ||
+                        selectedWord.synonym1 == word.word ||
+                        selectedWord.synonym2 == word.word ||
+                        selectedWord.synonym3 == word.word) {
+                        // Skip this synonym as it's related to an already selected word
+                        continue@outerLoop
+                    }
+                }
+                
                 wrongAnswers.add(synonym)
                 usedSynonyms.add(synonym)
-                // Log.w(TAG, "Added wrong answer: $synonym (from word: ${word.word}, category: ${word.category}, synonym$num)")
+                selectedWordSources.add(word)
                 break // Move to next word after finding a valid synonym
             }
         }
@@ -95,7 +116,8 @@ fun generateOptions(words: List<Word>, currentWord: Word, context: Context? = nu
             if (wrongAnswers.size >= preferredWrongOptionsCount) break
             
             val synonymNumbers = (1..3).shuffled()
-            for (num in synonymNumbers) {
+            
+            outerLoop@ for (num in synonymNumbers) {
                 val synonym = when (num) {
                     1 -> word.synonym1
                     2 -> word.synonym2
@@ -103,8 +125,26 @@ fun generateOptions(words: List<Word>, currentWord: Word, context: Context? = nu
                 }
                 
                 if (synonym !in usedSynonyms && synonym !in currentWordSynonyms) {
+                    // NEW CHECK: Ensure this synonym isn't a synonym of any already selected wrong answer
+                    for (selectedWord in selectedWordSources) {
+                        // Check if the new synonym is a synonym of any selected word
+                        if (synonym == selectedWord.synonym1 || 
+                            synonym == selectedWord.synonym2 || 
+                            synonym == selectedWord.synonym3 ||
+                            word.synonym1 == selectedWord.word ||
+                            word.synonym2 == selectedWord.word ||
+                            word.synonym3 == selectedWord.word ||
+                            selectedWord.synonym1 == word.word ||
+                            selectedWord.synonym2 == word.word ||
+                            selectedWord.synonym3 == word.word) {
+                            // Skip this synonym as it's related to an already selected word
+                            continue@outerLoop
+                        }
+                    }
+                    
                     wrongAnswers.add(synonym)
                     usedSynonyms.add(synonym)
+                    selectedWordSources.add(word)
                     Log.e(TAG, "Added fallback answer: $synonym (from word: ${word.word}, category: ${word.category}, synonym$num)")
                     break
                 }
