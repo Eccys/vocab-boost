@@ -88,6 +88,15 @@
             android:exported="false"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.VocabularyBooster" />
+        <activity
+            android:name=".QuizResultDetailsActivity"
+            android:exported="false"
+            android:theme="@style/Theme.VocabularyBooster" />
+        <activity
+            android:name=".QuizHistoryActivity"
+            android:exported="false"
+
+            android:theme="@style/Theme.VocabularyBooster" />
     </application>
 
 </manifest>
