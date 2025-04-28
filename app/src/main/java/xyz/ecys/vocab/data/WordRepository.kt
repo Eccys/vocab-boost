@@ -27,6 +27,16 @@ class WordRepository private constructor(
                 }
             }
         }
+        
+        fun getInstance(context: Context, forceRefresh: Boolean): WordRepository {
+            if (forceRefresh) {
+                synchronized(this) {
+                    // Clear the instance to force recreating it
+                    INSTANCE = null
+                }
+            }
+            return getInstance(context)
+        }
     }
 
     // Basic word operations
@@ -73,28 +83,63 @@ class WordRepository private constructor(
         wordId: Int, 
         wasCorrect: Boolean, 
         timestamp: Long = System.currentTimeMillis(),
-        responseTime: Long = 0
+        responseTime: Long = 0,
+        hintUsed: Boolean = false
     ) = withContext(Dispatchers.IO) {
         // Get current word to access its repetition count
         val word = wordDao.getWordById(wordId) ?: return@withContext
+        
+        android.util.Log.e("CRITICAL_HINT", "WordRepository.updateWordStats: word=$wordId, correct=$wasCorrect, time=$responseTime, hint=$hintUsed")
+        android.util.Log.d("WordStats", "Updating stats for word $wordId: correct=$wasCorrect, time=$responseTime, hint=$hintUsed")
         
         // Check if spaced repetition is enabled
         val isSpacedRepetitionEnabled = settingsManager?.isSpacedRepetitionEnabled() ?: true
         
         if (isSpacedRepetitionEnabled) {
             // Full spaced repetition algorithm
-            // Calculate quality based on correctness and response time
+            // Calculate quality based on correctness, response time, and hint usage
             val quality = when {
+                hintUsed -> {
+                    android.util.Log.e("CRITICAL_HINT", "Quality calculation: hintUsed=true branch selected!")
+                    when {
+                        wasCorrect -> {
+                            android.util.Log.e("CRITICAL_HINT", "Final decision: hintUsed=true AND wasCorrect=true => quality=2")
+                            2  // correct with hint
+                        }
+                        else -> {
+                            android.util.Log.e("CRITICAL_HINT", "Final decision: hintUsed=true AND wasCorrect=false => quality=0")
+                            0  // incorrect even with hint
+                        }
+                    }
+                }
                 wasCorrect -> when {
-                    responseTime < 3000 -> 5  // fast response
-                    responseTime <= 5000 -> 4  // medium response
-                    else -> 3  // slow but correct
+                    responseTime < 3000 -> {
+                        android.util.Log.e("CRITICAL_HINT", "Final decision: NO hint, wasCorrect=true, fast => quality=5")
+                        5  // fast response
+                    }
+                    responseTime <= 5000 -> {
+                        android.util.Log.e("CRITICAL_HINT", "Final decision: NO hint, wasCorrect=true, medium => quality=4")
+                        4  // medium response
+                    }
+                    else -> {
+                        android.util.Log.e("CRITICAL_HINT", "Final decision: NO hint, wasCorrect=true, slow => quality=3")
+                        3  // slow but correct
+                    }
                 }
                 else -> when {
-                    word.repetitionCount == 1 -> 2  // failed but had one successful rep before
-                    else -> 1  // complete fail
+                    word.repetitionCount == 1 -> {
+                        android.util.Log.e("CRITICAL_HINT", "Final decision: NO hint, wasCorrect=false, rep=1 => quality=2")
+                        2  // failed but had one successful rep before
+                    }
+                    else -> {
+                        android.util.Log.e("CRITICAL_HINT", "Final decision: NO hint, wasCorrect=false, rep!=1 => quality=1")
+                        1  // complete fail
+                    }
                 }
             }
+            
+            android.util.Log.e("CRITICAL_HINT", "WordRepository.updateWordStats: Quality calculated: $quality (hint=$hintUsed)")
+            android.util.Log.d("WordStats", "Calculated quality for word $wordId: $quality (hint=$hintUsed)")
 
             // Calculate new ease factor
             val newEaseFactor = if (wasCorrect) {

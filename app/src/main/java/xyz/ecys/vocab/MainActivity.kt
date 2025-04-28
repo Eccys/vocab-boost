@@ -98,6 +98,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelChildren
 import androidx.compose.runtime.rememberCoroutineScope
 import xyz.ecys.vocab.utils.TransitionUtils
+import xyz.ecys.vocab.data.SubscriptionManager
 
 data class CalendarDay(
     val date: LocalDate,
@@ -122,6 +123,9 @@ class MainActivity : ComponentActivity() { // Calendar Card
         wordDatabase = WordDatabase.getDatabase(this)
         appUsageManager = AppUsageManager.getInstance(this)
         dailyWordManager = DailyWordManager.getInstance(this)
+
+        // Check for pending premium transactions
+        SubscriptionManager.getInstance(this).checkPendingTransactions()
 
         // Start session
         appUsageManager.startSession()
@@ -570,14 +574,58 @@ class MainActivity : ComponentActivity() { // Calendar Card
                             ),
                             shape = RoundedCornerShape(20.dp),
                             onClick = { 
-                                // Start activity immediately
-                                lifecycleScope.launch(Dispatchers.IO) {
-                                    // Ensure the word is preloaded before navigating
-                                    dailyWordManager.getTodaysWord()
-                                    
-                                    withContext(Dispatchers.Main) {
-                                        startActivity(Intent(this@MainActivity, DailyWordActivity::class.java))
-                                        TransitionUtils.applyStandardTransition(this@MainActivity)
+                                // Completely revised approach for safer navigation
+                                lifecycleScope.launch {
+                                    try {
+                                        // Show a loading indicator if needed
+                                        // (we could add a loading state and UI for this)
+                                        
+                                        // Ensure word data is fully loaded with fallbacks
+                                        withContext(Dispatchers.IO) {
+                                            // Force a refresh of the daily word
+                                            val wordToDisplay = dailyWordManager.getTodaysWord()
+                                            
+                                            // Double-check that we have a valid word with safe text
+                                            if (wordToDisplay != null && 
+                                                !wordToDisplay.word.isNullOrBlank() && 
+                                                !wordToDisplay.short_definition.isNullOrBlank()) {
+                                                
+                                                // Store the current word in preferences to ensure it's loaded in DailyWordActivity
+                                                val prefs = getSharedPreferences("vocab_settings", Context.MODE_PRIVATE)
+                                                prefs.edit()
+                                                    .putString("daily_word_id", wordToDisplay.word)
+                                                    .putLong("daily_word_timestamp", System.currentTimeMillis())
+                                                    .apply()
+                                                
+                                                // Now safely navigate to the activity
+                                                withContext(Dispatchers.Main) {
+                                                    val intent = Intent(this@MainActivity, DailyWordActivity::class.java)
+                                                    // We don't need to pass the word data in the intent anymore
+                                                    // as it's stored in preferences and will be loaded by DailyWordActivity
+                                                    startActivity(intent)
+                                                    TransitionUtils.applyStandardTransition(this@MainActivity)
+                                                }
+                                            } else {
+                                                withContext(Dispatchers.Main) {
+                                                    // Show a toast or snackbar message if the word couldn't be loaded
+                                                    android.widget.Toast.makeText(
+                                                        this@MainActivity,
+                                                        "Could not load daily word. Please try again later.",
+                                                        android.widget.Toast.LENGTH_SHORT
+                                                    ).show()
+                                                }
+                                            }
+                                        }
+                                    } catch (e: Exception) {
+                                        withContext(Dispatchers.Main) {
+                                            println("Error loading daily word: ${e.message}")
+                                            // Show an error message to the user
+                                            android.widget.Toast.makeText(
+                                                this@MainActivity,
+                                                "Error loading daily word: ${e.message}",
+                                                android.widget.Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
                                     }
                                 }
                             },
@@ -615,15 +663,19 @@ class MainActivity : ComponentActivity() { // Calendar Card
                                         color = Color.Gray
                                     )
                                     
-                                    // Use the simplifiedWord state that is refreshed through our observer
+                                    // Use even more cautious text handling
+                                    val wordText = simplifiedWord.value?.word.orEmpty().trim()
                                     Text(
-                                        text = simplifiedWord.value?.word ?: "Loading...",
+                                        text = if (wordText.isEmpty()) "Loading..." else wordText,
                                         style = MaterialTheme.typography.headlineMedium,
                                         fontWeight = FontWeight.Bold,
                                         color = Color(0xFFFCFCFC)
                                     )
+                                    
+                                    // Use more cautious text handling for definition 
+                                    val definitionText = simplifiedWord.value?.short_definition.orEmpty().trim()
                                     Text(
-                                        text = simplifiedWord.value?.short_definition ?: "Tap to see today's word",
+                                        text = if (definitionText.isEmpty()) "Tap to see today's word" else definitionText,
                                         style = MaterialTheme.typography.bodyMedium,
                                         fontWeight = FontWeight.Bold,
                                         color = Color.Gray,

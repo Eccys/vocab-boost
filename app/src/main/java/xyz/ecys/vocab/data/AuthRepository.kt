@@ -288,14 +288,14 @@ class AuthRepository private constructor(private val context: Context) {
                         wordDao.updateWordLearningData(
                             wordId = word.id,
                             isBookmarked = remoteWord["isBookmarked"] as? Boolean ?: word.isBookmarked,
-                            timesReviewed = remoteWord["timesReviewed"] as? Int ?: word.timesReviewed,
-                            timesCorrect = remoteWord["timesCorrect"] as? Int ?: word.timesCorrect,
-                            lastReviewed = remoteWord["lastReviewed"] as? Long ?: word.lastReviewed,
-                            easeFactor = (remoteWord["easeFactor"] as? Double)?.toFloat() ?: word.easeFactor,
-                            interval = remoteWord["interval"] as? Int ?: word.interval,
-                            repetitionCount = remoteWord["repetitionCount"] as? Int ?: word.repetitionCount,
-                            nextReviewDate = remoteWord["nextReviewDate"] as? Long ?: word.nextReviewDate,
-                            quality = remoteWord["quality"] as? Int ?: word.quality
+                            timesReviewed = (remoteWord["timesReviewed"] as? Number)?.toInt() ?: word.timesReviewed,
+                            timesCorrect = (remoteWord["timesCorrect"] as? Number)?.toInt() ?: word.timesCorrect,
+                            lastReviewed = (remoteWord["lastReviewed"] as? Number)?.toLong() ?: word.lastReviewed,
+                            easeFactor = (remoteWord["easeFactor"] as? Number)?.toFloat() ?: word.easeFactor,
+                            interval = (remoteWord["interval"] as? Number)?.toInt() ?: word.interval,
+                            repetitionCount = (remoteWord["repetitionCount"] as? Number)?.toInt() ?: word.repetitionCount,
+                            nextReviewDate = (remoteWord["nextReviewDate"] as? Number)?.toLong() ?: word.nextReviewDate,
+                            quality = (remoteWord["quality"] as? Number)?.toInt() ?: word.quality
                         )
                     } else {
                         // Upload local word data to Firestore
@@ -392,22 +392,34 @@ class AuthRepository private constructor(private val context: Context) {
                     val existingWord = wordDao.getWordByText(wordText)
                     
                     if (existingWord != null) {
+                        // Log the data we're getting from Firestore
+                        Log.d(TAG, "Updating word from Firestore: $wordText")
+                        Log.d(TAG, "  timesReviewed: ${wordData["timesReviewed"]} (type: ${wordData["timesReviewed"]?.javaClass?.simpleName})")
+                        Log.d(TAG, "  timesCorrect: ${wordData["timesCorrect"]} (type: ${wordData["timesCorrect"]?.javaClass?.simpleName})")
+                        Log.d(TAG, "  interval: ${wordData["interval"]} (type: ${wordData["interval"]?.javaClass?.simpleName})")
+                        Log.d(TAG, "  repetitionCount: ${wordData["repetitionCount"]} (type: ${wordData["repetitionCount"]?.javaClass?.simpleName})")
+                        
                         // Update existing word with remote learning data
                         wordDao.updateWordLearningData(
                             wordId = existingWord.id,
                             isBookmarked = wordData["isBookmarked"] as? Boolean ?: existingWord.isBookmarked,
-                            timesReviewed = wordData["timesReviewed"] as? Int ?: existingWord.timesReviewed,
-                            timesCorrect = wordData["timesCorrect"] as? Int ?: existingWord.timesCorrect,
-                            lastReviewed = wordData["lastReviewed"] as? Long ?: existingWord.lastReviewed,
-                            easeFactor = (wordData["easeFactor"] as? Double)?.toFloat() ?: existingWord.easeFactor,
-                            interval = wordData["interval"] as? Int ?: existingWord.interval,
-                            repetitionCount = wordData["repetitionCount"] as? Int ?: existingWord.repetitionCount,
-                            nextReviewDate = wordData["nextReviewDate"] as? Long ?: existingWord.nextReviewDate,
-                            quality = wordData["quality"] as? Int ?: existingWord.quality
+                            timesReviewed = (wordData["timesReviewed"] as? Number)?.toInt() ?: existingWord.timesReviewed,
+                            timesCorrect = (wordData["timesCorrect"] as? Number)?.toInt() ?: existingWord.timesCorrect,
+                            lastReviewed = (wordData["lastReviewed"] as? Number)?.toLong() ?: existingWord.lastReviewed,
+                            easeFactor = (wordData["easeFactor"] as? Number)?.toFloat() ?: existingWord.easeFactor,
+                            interval = (wordData["interval"] as? Number)?.toInt() ?: existingWord.interval,
+                            repetitionCount = (wordData["repetitionCount"] as? Number)?.toInt() ?: existingWord.repetitionCount,
+                            nextReviewDate = (wordData["nextReviewDate"] as? Number)?.toLong() ?: existingWord.nextReviewDate,
+                            quality = (wordData["quality"] as? Number)?.toInt() ?: existingWord.quality
                         )
+                        
+                        // Log what we're putting into the database
+                        Log.d(TAG, "Updated word in database: $wordText")
+                        Log.d(TAG, "  timesReviewed: ${(wordData["timesReviewed"] as? Number)?.toInt() ?: existingWord.timesReviewed}")
+                        Log.d(TAG, "  timesCorrect: ${(wordData["timesCorrect"] as? Number)?.toInt() ?: existingWord.timesCorrect}")
+                        Log.d(TAG, "  interval: ${(wordData["interval"] as? Number)?.toInt() ?: existingWord.interval}")
+                        Log.d(TAG, "  repetitionCount: ${(wordData["repetitionCount"] as? Number)?.toInt() ?: existingWord.repetitionCount}")
                     } else {
-                        // We can't create a new word from just the learning data
-                        // Instead, log that we found a word in the cloud that doesn't exist locally
                         Log.w(TAG, "Found word in cloud that doesn't exist locally: $wordText")
                     }
                 }
