@@ -27,6 +27,16 @@ class WordRepository private constructor(
                 }
             }
         }
+        
+        fun getInstance(context: Context, forceRefresh: Boolean): WordRepository {
+            if (forceRefresh) {
+                synchronized(this) {
+                    // Clear the instance to force recreating it
+                    INSTANCE = null
+                }
+            }
+            return getInstance(context)
+        }
     }
 
     // Basic word operations
@@ -73,28 +83,63 @@ class WordRepository private constructor(
         wordId: Int, 
         wasCorrect: Boolean, 
         timestamp: Long = System.currentTimeMillis(),
-        responseTime: Long = 0
+        responseTime: Long = 0,
+        hintUsed: Boolean = false
     ) = withContext(Dispatchers.IO) {
         // Get current word to access its repetition count
         val word = wordDao.getWordById(wordId) ?: return@withContext
+        
+        android.util.Log.e("CRITICAL_HINT", "WordRepository.updateWordStats: word=$wordId, correct=$wasCorrect, time=$responseTime, hint=$hintUsed")
+        android.util.Log.d("WordStats", "Updating stats for word $wordId: correct=$wasCorrect, time=$responseTime, hint=$hintUsed")
         
         // Check if spaced repetition is enabled
         val isSpacedRepetitionEnabled = settingsManager?.isSpacedRepetitionEnabled() ?: true
         
         if (isSpacedRepetitionEnabled) {
             // Full spaced repetition algorithm
-            // Calculate quality based on correctness and response time
+            // Calculate quality based on correctness, response time, and hint usage
             val quality = when {
+                hintUsed -> {
+                    android.util.Log.e("CRITICAL_HINT", "Quality calculation: hintUsed=true branch selected!")
+                    when {
+                        wasCorrect -> {
+                            android.util.Log.e("CRITICAL_HINT", "Final decision: hintUsed=true AND wasCorrect=true => quality=2")
+                            2  // correct with hint
+                        }
+                        else -> {
+                            android.util.Log.e("CRITICAL_HINT", "Final decision: hintUsed=true AND wasCorrect=false => quality=0")
+                            0  // incorrect even with hint
+                        }
+                    }
+                }
                 wasCorrect -> when {
-                    responseTime < 3000 -> 5  // fast response
-                    responseTime <= 5000 -> 4  // medium response
-                    else -> 3  // slow but correct
+                    responseTime < 3000 -> {
+                        android.util.Log.e("CRITICAL_HINT", "Final decision: NO hint, wasCorrect=true, fast => quality=5")
+                        5  // fast response
+                    }
+                    responseTime <= 5000 -> {
+                        android.util.Log.e("CRITICAL_HINT", "Final decision: NO hint, wasCorrect=true, medium => quality=4")
+                        4  // medium response
+                    }
+                    else -> {
+                        android.util.Log.e("CRITICAL_HINT", "Final decision: NO hint, wasCorrect=true, slow => quality=3")
+                        3  // slow but correct
+                    }
                 }
                 else -> when {
-                    word.repetitionCount == 1 -> 2  // failed but had one successful rep before
-                    else -> 1  // complete fail
+                    word.repetitionCount == 1 -> {
+                        android.util.Log.e("CRITICAL_HINT", "Final decision: NO hint, wasCorrect=false, rep=1 => quality=2")
+                        2  // failed but had one successful rep before
+                    }
+                    else -> {
+                        android.util.Log.e("CRITICAL_HINT", "Final decision: NO hint, wasCorrect=false, rep!=1 => quality=1")
+                        1  // complete fail
+                    }
                 }
             }
+            
+            android.util.Log.e("CRITICAL_HINT", "WordRepository.updateWordStats: Quality calculated: $quality (hint=$hintUsed)")
+            android.util.Log.d("WordStats", "Calculated quality for word $wordId: $quality (hint=$hintUsed)")
 
             // Calculate new ease factor
             val newEaseFactor = if (wasCorrect) {
@@ -234,8 +279,7 @@ class WordRepository private constructor(
             if (availableOverdueWords.isNotEmpty()) {
                 // Calculate overdue ratio for each word
                 val wordsWithRatio = availableOverdueWords.map { word ->
-                    val dueDate = word.lastReviewed + (word.interval * 86400000L)
-                    val overdueRatio = (currentTime - dueDate) / (Math.max(1, word.interval) * 86400000.0)
+                    val overdueRatio = (currentTime - word.nextReviewDate) / (Math.max(1, word.interval) * 86400000.0)
                     Pair(word, overdueRatio)
                 }
                 
@@ -261,31 +305,10 @@ class WordRepository private constructor(
                 return unseenWords.random()
             }
             
-            // PRIORITY 3: All words seen, none overdue - find closest to becoming overdue
-            android.util.Log.d("WordPriority", "All words seen, none overdue - finding closest to becoming overdue")
+            // PRIORITY 3: ONLY AS LAST RESORT, USE OTHER WORDS
+            android.util.Log.d("WordPriority", "No overdue or unseen words, selecting random word")
             
-            val allWords = wordDao.getAllWords().filter { it.id != excludeWord?.id && it.lastReviewed > 0 && it.interval > 0 }
-            if (allWords.isNotEmpty()) {
-                val wordsWithPseudoRatio = allWords.map { word ->
-                    val dueDate = word.lastReviewed + (word.interval * 86400000L)
-                    val pseudoRatio = (dueDate - currentTime) / (Math.max(1, word.interval) * 86400000.0)
-                    Pair(word, pseudoRatio)
-                }
-                // Get the top 3 words closest to becoming overdue (smallest positive values)
-                val topClosestWords = wordsWithPseudoRatio
-                    .sortedBy { it.second }
-                    .take(3)
-                    .map { it.first }
-                
-                // Pick one of the top words randomly
-                if (topClosestWords.isNotEmpty()) {
-                    android.util.Log.d("WordPriority", "Selected from top ${topClosestWords.size} words closest to becoming overdue")
-                    return topClosestWords.random()
-                }
-            }
-            
-            // LAST RESORT: Random word if something went wrong
-            android.util.Log.d("WordPriority", "Falling back to completely random word")
+            // If no overdue or unseen words, just get a random word
             return if (excludeWord == null) {
                 wordDao.getRandomWords(1).first()
             } else {

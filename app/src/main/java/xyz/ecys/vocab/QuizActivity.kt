@@ -90,6 +90,7 @@ import kotlinx.parcelize.Parcelize
 import xyz.ecys.vocab.quiz.QuizResult
 import android.content.Context
 import xyz.ecys.vocab.utils.TransitionUtils
+import androidx.compose.ui.draw.clip
 
 class QuizActivity : ComponentActivity() {
     private lateinit var wordRepository: WordRepository
@@ -98,6 +99,9 @@ class QuizActivity : ComponentActivity() {
     private lateinit var settingsManager: SettingsManager
     private lateinit var quizResultRepository: QuizResultRepository
     private var isBookmarkMode = false
+    
+    // Add this class variable to fix the first compilation error
+    private var hintUsedForCurrentQuestionState by mutableStateOf(false)
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -122,8 +126,6 @@ class QuizActivity : ComponentActivity() {
                 var selectedAnswerState by remember { mutableStateOf<String?>(null) }
                 var showNextButton by remember { mutableStateOf(false) }
                 var expandedExamples by remember { mutableStateOf(setOf<String>()) }
-                // Add a state to track if hint was used for current question
-                var hintUsedForCurrentQuestionState by remember { mutableStateOf(false) }
                 
                 // Add loading state
                 var isLoading by remember { mutableStateOf(true) }
@@ -173,14 +175,7 @@ class QuizActivity : ComponentActivity() {
                             hintUsedForCurrentQuestion = hintUsedForCurrentQuestionState,
                             selectedAnswer = selectedAnswerState,
                             onHintClick = {
-                                // Hints are unlimited now
-                                // Only allow hint if it hasn't been used for this question and user hasn't answered
-                                if (currentWord.value != null && 
-                                    !hintUsedForCurrentQuestionState &&
-                                    selectedAnswerState == null) {
-                                    // Don't decrease hint count anymore
-                                    hintUsedForCurrentQuestionState = true
-                                }
+                                onHintClick()
                             }
                         )
                     }
@@ -237,6 +232,11 @@ class QuizActivity : ComponentActivity() {
     override fun onBackPressed() {
         super.onBackPressed()
         TransitionUtils.applyStandardTransitionOnFinish(this)
+    }
+
+    private fun onHintClick() {
+        hintUsedForCurrentQuestionState = true
+        xyz.ecys.vocab.quiz.components.HintManager.hintWasUsed = true
     }
 }
 
@@ -460,6 +460,9 @@ fun QuizScreen(
         if (selectedAnswer == null) {
             setSelectedAnswer(selectedSynonym)
             
+            // Check if hint was used
+            val hintWasUsed = hintUsedForCurrentQuestion || xyz.ecys.vocab.quiz.components.HintManager.hintWasUsed
+            
             // Find the correct answer based on currentSynonymSet
             val correctSynonym = when (currentSynonymSet) {
                 1 -> currentWord.value!!.synonym1
@@ -478,13 +481,14 @@ fun QuizScreen(
                 }
             }
             
-            // Update word statistics with timing information
+            // Update word statistics with timing information AND hint usage
             coroutineScope.launch {
                 wordRepository.updateWordStats(
                     wordId = currentWord.value!!.id,
                     wasCorrect = isCorrect,
                     timestamp = now,
-                    responseTime = responseTime
+                    responseTime = responseTime,
+                    hintUsed = hintWasUsed  // Pass the hint state
                 )
             }
             
@@ -596,6 +600,14 @@ fun QuizScreen(
         // Reset expandedExamples
         showHint = false
         setHintUsedForCurrentQuestion(false)  // Reset the hint used flag for the new question
+
+        // Also reset the word-specific hint tracking
+        if (currentWord.value != null) {
+            val wordId = currentWord.value!!.id
+            android.util.Log.e("CRITICAL_HINT", "Resetting word-specific hint for word $wordId")
+            xyz.ecys.vocab.quiz.components.HintManager.resetHintForWord(wordId)
+        }
+
         questionStartTime = System.currentTimeMillis()
     }
 
