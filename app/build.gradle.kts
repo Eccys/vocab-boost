@@ -109,7 +109,18 @@ dependencies {
     implementation("androidx.room:room-ktx:$roomVersion")
     kapt("androidx.room:room-compiler:$roomVersion")
 
-    // Firebase Dependencies
+    // Supabase Dependencies
+    implementation("io.github.jan-tennert.supabase:postgrest-kt:1.5.0")
+    implementation("io.github.jan-tennert.supabase:storage-kt:1.5.0")
+    implementation("io.github.jan-tennert.supabase:gotrue-kt:1.5.0")
+    implementation("io.ktor:ktor-client-android:2.3.7")
+    implementation("io.ktor:ktor-client-core:2.3.7")
+    implementation("io.ktor:ktor-client-cio:2.3.7")
+    implementation("io.ktor:ktor-client-content-negotiation:2.3.7")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.7")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
+    
+    // Firebase Dependencies (can be removed after migration is complete)
     implementation(platform("com.google.firebase:firebase-bom:32.7.2"))
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-auth-ktx")
