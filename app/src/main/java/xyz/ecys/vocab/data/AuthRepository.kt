@@ -23,6 +23,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import android.util.Log
 import kotlinx.coroutines.Dispatchers
+import com.google.android.gms.tasks.TaskCompletionSource
+import xyz.ecys.vocab.data.FirestoreAccessMonitor
 
 class AuthRepository private constructor(private val context: Context) {
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
@@ -228,6 +230,15 @@ class AuthRepository private constructor(private val context: Context) {
         val user = auth.currentUser ?: throw Exception("No user logged in")
         val userId = user.uid
         
+        // Validate Firestore write access
+        if (!FirestoreAccessMonitor.validateWrite("AuthRepository.syncData", 
+            "Sync user data to cloud", true)) {
+            Log.w(TAG, "Unauthorized attempt to write to Firestore, sync aborted")
+            val taskCompletionSource = TaskCompletionSource<Void>()
+            taskCompletionSource.setException(Exception("Unauthorized Firestore write attempt"))
+            return taskCompletionSource.task
+        }
+        
         // Get database instances
         val wordDatabase = WordDatabase.getDatabase(context)
         val wordDao = wordDatabase.wordDao()
@@ -237,7 +248,7 @@ class AuthRepository private constructor(private val context: Context) {
         val batch = firestore.batch()
         
         // Create a task that will be completed when all operations are done
-        val taskCompletionSource = com.google.android.gms.tasks.TaskCompletionSource<Void>()
+        val taskCompletionSource = TaskCompletionSource<Void>()
         
         // Launch a coroutine to perform the sync operations
         CoroutineScope(Dispatchers.IO).launch {
@@ -367,13 +378,22 @@ class AuthRepository private constructor(private val context: Context) {
         val user = auth.currentUser ?: throw Exception("No user logged in")
         val userId = user.uid
         
+        // Validate Firestore read access - this is allowed during initial load
+        if (!FirestoreAccessMonitor.validateRead("AuthRepository.downloadDataFromCloud", 
+            "Initial data download")) {
+            Log.w(TAG, "Unauthorized attempt to read from Firestore, download aborted")
+            val taskCompletionSource = TaskCompletionSource<Void>()
+            taskCompletionSource.setException(Exception("Unauthorized Firestore read attempt"))
+            return taskCompletionSource.task
+        }
+        
         // Get database instances
         val wordDatabase = WordDatabase.getDatabase(context)
         val wordDao = wordDatabase.wordDao()
         val appUsageDao = wordDatabase.appUsageDao()
         
         // Create a task that will be completed when all operations are done
-        val taskCompletionSource = com.google.android.gms.tasks.TaskCompletionSource<Void>()
+        val taskCompletionSource = TaskCompletionSource<Void>()
         
         // Launch a coroutine to perform the download operations
         CoroutineScope(Dispatchers.IO).launch {
