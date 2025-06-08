@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -300,6 +301,45 @@ class SyncManager private constructor(private val context: Context) {
     
     private fun isUserSignedIn(): Boolean {
         return FirebaseAuth.getInstance().currentUser != null
+    }
+    
+    /**
+     * Debug method to verify we're using the new data structure
+     * This should be called after sync operations for testing
+     */
+    suspend fun verifyWordStructure(): String {
+        return withContext(Dispatchers.IO) {
+            if (!isUserSignedIn()) {
+                return@withContext "Not signed in"
+            }
+            
+            try {
+                val userId = FirebaseAuth.getInstance().currentUser!!.uid
+                val userDoc = FirebaseFirestore.getInstance().collection("users").document(userId)
+                
+                // Get the user document
+                val userSnapshot = userDoc.get().await()
+                
+                // Check if it has a words map
+                val wordsMap = userSnapshot.get("words") as? Map<String, Any>
+                val mapSize = wordsMap?.size ?: 0
+                
+                // Also check for old structure
+                val wordsCollection = userDoc.collection("words")
+                val oldDocsSnapshot = wordsCollection.get().await()
+                val oldDocsCount = oldDocsSnapshot.documents.size
+                
+                // Return a diagnostic message
+                return@withContext "Data structure check:\n" +
+                    "- User document words map: ${if (wordsMap != null) "EXISTS" else "MISSING"}\n" +
+                    "- Words in map: $mapSize\n" +
+                    "- Words in old collection: $oldDocsCount\n" +
+                    "- Using new structure: ${wordsMap != null && mapSize > 0}\n" +
+                    "- Migration needed: ${wordsMap == null && oldDocsCount > 0}"
+            } catch (e: Exception) {
+                return@withContext "Error checking data structure: ${e.message}"
+            }
+        }
     }
     
     companion object {

@@ -25,6 +25,10 @@ import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import com.google.android.gms.tasks.TaskCompletionSource
 import xyz.ecys.vocab.data.FirestoreAccessMonitor
+import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.ServerTimestamp
+import com.google.firebase.firestore.FieldValue.serverTimestamp
+import java.util.Date
 
 class AuthRepository private constructor(private val context: Context) {
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
@@ -253,29 +257,32 @@ class AuthRepository private constructor(private val context: Context) {
         // Launch a coroutine to perform the sync operations
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                // 1. Sync words data - only for words that have been reviewed at least once
-                val allWords = wordDao.getAllWords().filter { it.timesReviewed > 0 }
-                val wordsCollection = firestore.collection("users").document(userId)
-                    .collection("words")
+                // Get the user document reference
+                val userDoc = firestore.collection("users").document(userId)
                 
-                // First check if we have remote data that's newer
-                val remoteWordsSnapshot = wordsCollection.get().await()
-                val remoteWords = mutableMapOf<String, Map<String, Any>>()
+                // 1. First check if we have remote data
+                val userSnapshot = userDoc.get().await()
+                var remoteWordsMap = mapOf<String, Map<String, Any>>()
                 
-                for (doc in remoteWordsSnapshot.documents) {
-                    val wordData = doc.data
-                    if (wordData != null) {
-                        remoteWords[doc.id] = wordData
-                    }
+                // Check if the user document contains the words map
+                if (userSnapshot.exists() && userSnapshot.get("words") != null) {
+                    remoteWordsMap = userSnapshot.get("words") as? Map<String, Map<String, Any>> ?: mapOf()
+                    Log.d(TAG, "Found ${remoteWordsMap.size} words in remote user document")
                 }
+                
+                // 2. Sync words data - only for words that have been reviewed at least once
+                val allWords = wordDao.getAllWords().filter { it.timesReviewed > 0 }
+                val updatedWordsMap = mutableMapOf<String, Map<String, Any>>()
+                
+                // Start with the existing remote data
+                updatedWordsMap.putAll(remoteWordsMap)
                 
                 // Process local words
                 for (word in allWords) {
                     val wordId = word.word.lowercase().trim()
-                    val wordDoc = wordsCollection.document(wordId)
                     
                     // Check if we have a remote version
-                    val remoteWord = remoteWords[wordId]
+                    val remoteWord = remoteWordsMap[wordId]
                     
                     // Prepare word data for Firestore - only include learning progress data, not content data
                     val wordData = hashMapOf(
@@ -294,7 +301,7 @@ class AuthRepository private constructor(private val context: Context) {
                     
                     // If remote word exists and has a newer lastUpdated timestamp, 
                     // we'll merge the data favoring the newer values for learning metadata
-                    if (remoteWord != null && remoteWord["lastUpdated"] as? Long ?: 0 > word.lastReviewed) {
+                    if (remoteWord != null && (remoteWord["lastUpdated"] as? Long ?: 0) > word.lastReviewed) {
                         // Update local word with remote learning data
                         wordDao.updateWordLearningData(
                             wordId = word.id,
@@ -309,12 +316,18 @@ class AuthRepository private constructor(private val context: Context) {
                             quality = (remoteWord["quality"] as? Number)?.toInt() ?: word.quality
                         )
                     } else {
-                        // Upload local word data to Firestore
-                        batch.set(wordDoc, wordData, SetOptions.merge())
+                        // Add the local word data to the map to be saved
+                        updatedWordsMap[wordId] = wordData
                     }
                 }
                 
-                // 2. Sync app usage data
+                // 3. Add all words data to the user document
+                if (updatedWordsMap.isNotEmpty()) {
+                    Log.d(TAG, "Updating user document with ${updatedWordsMap.size} words")
+                    batch.update(userDoc, "words", updatedWordsMap)
+                }
+                
+                // 4. Sync app usage data (this remains unchanged)
                 val startDate = System.currentTimeMillis() - (365L * 24 * 60 * 60 * 1000) // Last year
                 val usageData = appUsageDao.getUsageBetweenDatesSync(startDate, System.currentTimeMillis())
                 
@@ -335,12 +348,10 @@ class AuthRepository private constructor(private val context: Context) {
                     batch.set(usageDoc, usageDataMap, SetOptions.merge())
                 }
                 
-                // 3. Update last sync timestamp in user document
+                // 5. Update last sync timestamp in user document
                 lastSyncTimestamp = System.currentTimeMillis()
-                val userDoc = firestore.collection("users").document(userId)
                 
                 // Check if the user document exists, if not create it
-                val userSnapshot = userDoc.get().await()
                 if (!userSnapshot.exists()) {
                     // Create the user document first
                     val userData = hashMapOf(
@@ -352,9 +363,10 @@ class AuthRepository private constructor(private val context: Context) {
                 } else {
                     // Update existing user document
                     batch.update(userDoc, "lastSyncTimestamp", lastSyncTimestamp)
+                    batch.update(userDoc, "lastUpdated", serverTimestamp())
                 }
                 
-                // 4. Commit all changes
+                // 6. Commit all changes
                 batch.commit().addOnCompleteListener { task ->
                     if (task.isSuccessful) {
                         Log.d(TAG, "Data sync successful")
@@ -398,26 +410,24 @@ class AuthRepository private constructor(private val context: Context) {
         // Launch a coroutine to perform the download operations
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                // 1. Download words data
-                val wordsCollection = firestore.collection("users").document(userId)
-                    .collection("words")
+                // 1. First, try to get the user document which should contain the words map
+                Log.d(TAG, "Attempting to read words from user document")
+                val userDoc = firestore.collection("users").document(userId)
+                val userSnapshot = userDoc.get().await()
                 
-                val remoteWordsSnapshot = wordsCollection.get().await()
-                
-                for (doc in remoteWordsSnapshot.documents) {
-                    val wordData = doc.data ?: continue
+                if (userSnapshot.exists() && userSnapshot.get("words") != null) {
+                    // New format: words are stored in the user document
+                    val wordsMap = userSnapshot.get("words") as? Map<String, Map<String, Any>> ?: mapOf()
                     
-                    // Check if word already exists in local database
-                    val wordText = wordData["word"] as? String ?: continue
-                    val existingWord = wordDao.getWordByText(wordText)
+                    Log.d(TAG, "Found ${wordsMap.size} words in user document")
                     
-                    if (existingWord != null) {
-                        // Log the data we're getting from Firestore
-                        Log.d(TAG, "Updating word from Firestore: $wordText")
-                        Log.d(TAG, "  timesReviewed: ${wordData["timesReviewed"]} (type: ${wordData["timesReviewed"]?.javaClass?.simpleName})")
-                        Log.d(TAG, "  timesCorrect: ${wordData["timesCorrect"]} (type: ${wordData["timesCorrect"]?.javaClass?.simpleName})")
-                        Log.d(TAG, "  interval: ${wordData["interval"]} (type: ${wordData["interval"]?.javaClass?.simpleName})")
-                        Log.d(TAG, "  repetitionCount: ${wordData["repetitionCount"]} (type: ${wordData["repetitionCount"]?.javaClass?.simpleName})")
+                    // Process each word in the map
+                    for ((wordKey, wordData) in wordsMap) {
+                        // Check if word already exists in local database
+                        val existingWord = wordDao.getWordByText(wordKey)
+                        
+                        if (existingWord != null) {
+                            Log.d(TAG, "Updating word from user document: $wordKey")
                         
                         // Update existing word with remote learning data
                         wordDao.updateWordLearningData(
@@ -432,15 +442,74 @@ class AuthRepository private constructor(private val context: Context) {
                             nextReviewDate = (wordData["nextReviewDate"] as? Number)?.toLong() ?: existingWord.nextReviewDate,
                             quality = (wordData["quality"] as? Number)?.toInt() ?: existingWord.quality
                         )
+                        } else {
+                            Log.w(TAG, "Found word in cloud that doesn't exist locally: $wordKey")
+                        }
+                    }
+                } else {
+                    // Old format or no data: Check if we need to migrate from old format
+                    Log.d(TAG, "No words map found in user document, checking for old format...")
+                    
+                    val wordsCollection = firestore.collection("users").document(userId)
+                        .collection("words")
+                    
+                    val remoteWordsSnapshot = wordsCollection.get().await()
+                    
+                    if (remoteWordsSnapshot.documents.isNotEmpty()) {
+                        Log.d(TAG, "Found ${remoteWordsSnapshot.documents.size} words in old format. Migrating...")
                         
-                        // Log what we're putting into the database
-                        Log.d(TAG, "Updated word in database: $wordText")
-                        Log.d(TAG, "  timesReviewed: ${(wordData["timesReviewed"] as? Number)?.toInt() ?: existingWord.timesReviewed}")
-                        Log.d(TAG, "  timesCorrect: ${(wordData["timesCorrect"] as? Number)?.toInt() ?: existingWord.timesCorrect}")
-                        Log.d(TAG, "  interval: ${(wordData["interval"] as? Number)?.toInt() ?: existingWord.interval}")
-                        Log.d(TAG, "  repetitionCount: ${(wordData["repetitionCount"] as? Number)?.toInt() ?: existingWord.repetitionCount}")
+                        // Prepare a map to hold the migrated data
+                        val migratedWordsMap = mutableMapOf<String, Any>()
+                        
+                        // Process each word document from the old format
+                        for (doc in remoteWordsSnapshot.documents) {
+                            val wordData = doc.data ?: continue
+                            
+                            // The word ID in old format
+                            val wordText = wordData["word"] as? String ?: continue
+                            
+                            // Get or process the word data
+                            val existingWord = wordDao.getWordByText(wordText)
+                            
+                            if (existingWord != null) {
+                                Log.d(TAG, "Migrating word from old format: $wordText")
+                                
+                                // Update the local database with the remote data
+                                wordDao.updateWordLearningData(
+                                    wordId = existingWord.id,
+                                    isBookmarked = wordData["isBookmarked"] as? Boolean ?: existingWord.isBookmarked,
+                                    timesReviewed = (wordData["timesReviewed"] as? Number)?.toInt() ?: existingWord.timesReviewed,
+                                    timesCorrect = (wordData["timesCorrect"] as? Number)?.toInt() ?: existingWord.timesCorrect,
+                                    lastReviewed = (wordData["lastReviewed"] as? Number)?.toLong() ?: existingWord.lastReviewed,
+                                    easeFactor = (wordData["easeFactor"] as? Number)?.toFloat() ?: existingWord.easeFactor,
+                                    interval = (wordData["interval"] as? Number)?.toInt() ?: existingWord.interval,
+                                    repetitionCount = (wordData["repetitionCount"] as? Number)?.toInt() ?: existingWord.repetitionCount,
+                                    nextReviewDate = (wordData["nextReviewDate"] as? Number)?.toLong() ?: existingWord.nextReviewDate,
+                                    quality = (wordData["quality"] as? Number)?.toInt() ?: existingWord.quality
+                                )
+                                
+                                // Add the word data to the migrated map
+                                migratedWordsMap[wordText] = wordData
+                            }
+                        }
+                        
+                        // Save the migrated words map to the user document
+                        if (migratedWordsMap.isNotEmpty()) {
+                            Log.d(TAG, "Saving ${migratedWordsMap.size} migrated words to user document")
+                            
+                            val updateData = hashMapOf<String, Any>(
+                                "words" to migratedWordsMap,
+                                "lastSyncTimestamp" to System.currentTimeMillis(),
+                                "lastUpdated" to serverTimestamp(),
+                                "migrationCompleted" to true
+                            )
+                            
+                            userDoc.set(updateData, SetOptions.merge()).await()
+                            
+                            Log.d(TAG, "Migration complete. Words now stored in user document.")
+                        }
                     } else {
-                        Log.w(TAG, "Found word in cloud that doesn't exist locally: $wordText")
+                        Log.d(TAG, "No words found in either format. User may be new.")
                     }
                 }
                 
@@ -486,12 +555,9 @@ class AuthRepository private constructor(private val context: Context) {
                 
                 // 3. Update last sync timestamp
                 lastSyncTimestamp = System.currentTimeMillis()
-                val userDoc = firestore.collection("users").document(userId)
                 
-                // Check if the user document exists, if not create it
-                val userSnapshot = userDoc.get().await()
+                // Update user document if it doesn't exist yet
                 if (!userSnapshot.exists()) {
-                    // Create the user document first
                     val userData = hashMapOf(
                         "email" to auth.currentUser?.email,
                         "lastSyncTimestamp" to lastSyncTimestamp,
@@ -499,7 +565,7 @@ class AuthRepository private constructor(private val context: Context) {
                     )
                     userDoc.set(userData).await()
                 } else {
-                    // Update existing user document
+                    // Just update the timestamp
                     userDoc.update("lastSyncTimestamp", lastSyncTimestamp).await()
                 }
                 
