@@ -64,7 +64,7 @@ const Hero: React.FC = () => {
     <section className="hero" id="hero">
       <div className="container hero-container">
         <div className="hero-content" data-aos="fade-right">
-          <h1>Elevate Your Vocabulary <span className="gradient-text">One Word at a Time</span></h1>
+          <h1>Boost Your Vocabulary <span className="gradient-text">One Word at a Time</span></h1>
           <p className="subtitle">A free, open-source vocabulary builder that makes learning new words fun and effective with daily words, quizzes, and machine learning.</p>
           <div className="cta-buttons">
             <a href="#download" className="primary-btn">Download Now</a>
