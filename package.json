@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/Eccys/vocab-boost#readme",
   "dependencies": {
+    "@supabase/supabase-js": "^2.49.9",
     "@types/aos": "^3.0.7",
     "aos": "^2.3.4",
     "react": "^18.2.0",

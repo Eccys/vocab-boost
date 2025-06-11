@@ -120,6 +120,9 @@ dependencies {
     implementation("com.google.android.play:integrity:1.3.0")
     implementation("com.google.firebase:firebase-appcheck-playintegrity")
 
+    // WorkManager for background tasks
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
+
     implementation("com.google.accompanist:accompanist-systemuicontroller:0.32.0")
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")

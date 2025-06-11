@@ -5,4 +5,11 @@ To update your Firestore security rules, follow these steps:
 4. Click on the Rules tab
 5. Replace the existing rules with the rules from firestore.rules
 6. Click Publish
-This will fix the permission errors for quiz_results and history collections.
+
+Important note: This update moves quiz_results and history from top-level collections to subcollections under each user document. The new structure is:
+- /users/{userId}/words/{wordId}
+- /users/{userId}/app_usage/{dateId}
+- /users/{userId}/quiz_results/{resultId}
+- /users/{userId}/history/{historyId}
+
+This ensures better data isolation and security for each user's data.

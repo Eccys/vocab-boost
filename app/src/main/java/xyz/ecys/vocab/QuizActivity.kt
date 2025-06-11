@@ -91,6 +91,14 @@ import xyz.ecys.vocab.quiz.QuizResult
 import android.content.Context
 import xyz.ecys.vocab.utils.TransitionUtils
 import androidx.compose.ui.draw.clip
+import kotlinx.coroutines.runBlocking
+import android.util.Log
+import xyz.ecys.vocab.data.SyncManager
+import androidx.activity.OnBackPressedCallback
+import androidx.work.*
+import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 
 class QuizActivity : ComponentActivity() {
     private lateinit var wordRepository: WordRepository
@@ -98,7 +106,11 @@ class QuizActivity : ComponentActivity() {
     private lateinit var correctAnswerTracker: CorrectAnswerTracker
     private lateinit var settingsManager: SettingsManager
     private lateinit var quizResultRepository: QuizResultRepository
+    private lateinit var syncManager: SyncManager
     private var isBookmarkMode = false
+    
+    // Add flag to prevent multiple syncs
+    private var isSyncing = false
     
     // Add this class variable to fix the first compilation error
     private var hintUsedForCurrentQuestionState by mutableStateOf(false)
@@ -110,7 +122,37 @@ class QuizActivity : ComponentActivity() {
         correctAnswerTracker = CorrectAnswerTracker.getInstance(this)
         settingsManager = SettingsManager.getInstance(this)
         quizResultRepository = QuizResultRepository.getInstance(this)
+        syncManager = SyncManager.getInstance(this)
         isBookmarkMode = intent.getStringExtra("mode") == "bookmarks"
+
+        // Register back press handler
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                // Log that we're handling sync in the background
+                Log.d("QuizActivity", "Back pressed - triggering background sync")
+                
+                // Disable this callback to prevent loops
+                isEnabled = false
+                
+                // Start the session end and sync in the background
+                lifecycleScope.launch {
+                    appUsageManager.endSession()
+                    
+                    // Start the sync but don't wait for it
+                    launch {
+                        try {
+                            syncManager.performSync(true)
+                            Log.d("QuizActivity", "Background sync completed")
+                        } catch (e: Exception) {
+                            Log.e("QuizActivity", "Error during background sync", e)
+                        }
+                    }
+                }
+                
+                // Finish immediately without waiting for sync
+                finish()
+            }
+        })
 
         // Start tracking quiz session
         appUsageManager.startQuizSession()
@@ -157,11 +199,8 @@ class QuizActivity : ComponentActivity() {
                     topBar = {
                         QuizTopBar(
                             onBackClick = { 
-                                lifecycleScope.launch {
-                                    appUsageManager.endSession()
-                                }
-                                finish()
-                                TransitionUtils.applyStandardTransitionOnFinish(this@QuizActivity)
+                                // Use the onBackPressedDispatcher to ensure sync happens
+                                onBackPressedDispatcher.onBackPressed()
                             },
                             currentWord = currentWord.value,
                             onBookmarkClick = { word ->
@@ -219,8 +258,31 @@ class QuizActivity : ComponentActivity() {
 
     override fun onPause() {
         super.onPause()
-        lifecycleScope.launch {
-            appUsageManager.endSession()
+        
+        // If activity is finishing, trigger background sync
+        if (isFinishing) {
+            Log.d("QuizActivity", "Activity finishing - triggering background sync")
+            
+            // First end the session
+            lifecycleScope.launch {
+                appUsageManager.endSession()
+                
+                // Start a background sync that won't block UI
+                launch {
+                    try {
+                        syncManager.performSync(true)
+                        Log.d("QuizActivity", "Background sync completed in onPause")
+                    } catch (e: Exception) {
+                        Log.e("QuizActivity", "Error during background sync in onPause", e)
+                    }
+                }
+            }
+        } else {
+            // Not finishing, just end the session
+            lifecycleScope.launch {
+                Log.d("QuizActivity", "Activity paused but not finishing - just ending session")
+                appUsageManager.endSession()
+            }
         }
     }
 
@@ -229,9 +291,45 @@ class QuizActivity : ComponentActivity() {
         appUsageManager.startQuizSession()
     }
 
-    override fun onBackPressed() {
-        super.onBackPressed()
-        TransitionUtils.applyStandardTransitionOnFinish(this)
+    override fun onDestroy() {
+        super.onDestroy()
+        
+        // Schedule a background sync task that will run even if app is force-closed
+        if (isFinishing) {
+            Log.d("QuizActivity", "Activity destroyed - scheduling background sync work")
+            
+            // Create a background work request
+            val syncRequest = OneTimeWorkRequestBuilder<SyncWorker>()
+                .setConstraints(
+                    Constraints.Builder()
+                        .setRequiredNetworkType(NetworkType.CONNECTED)
+                        .build()
+                )
+                .setBackoffCriteria(
+                    BackoffPolicy.EXPONENTIAL,
+                    10, 
+                    TimeUnit.SECONDS
+                )
+                .build()
+                
+            // Queue the work
+            WorkManager.getInstance(applicationContext).enqueue(syncRequest)
+            
+            // Also try one immediate sync in a background thread
+            Thread {
+                try {
+                    runBlocking {
+                        Log.d("QuizActivity", "Performing one-time final sync in background thread")
+                        syncManager.performSync(true)
+                        Log.d("QuizActivity", "Final sync completed successfully")
+                    }
+                } catch (e: Exception) {
+                    Log.e("QuizActivity", "Error during final sync attempt", e)
+                }
+            }.start()
+        } else {
+            Log.d("QuizActivity", "Activity destroyed but not finishing")
+        }
     }
 
     private fun onHintClick() {
@@ -526,12 +624,12 @@ fun QuizScreen(
                     durationInSeconds = responseTime / 1000
                 )
                 
-                // Save to Firestore
+                // Save locally (SyncManager will handle syncing to Firestore later)
                 try {
                     quizResultRepository.saveQuizResult(firestoreQuizResult)
-                    println("Saved single question to Firestore for quiz history")
+                    println("Saved single question to local history")
                 } catch (e: Exception) {
-                    println("Error saving to Firestore: ${e.message}")
+                    println("Error saving quiz result: ${e.message}")
                 }
             }
         }
@@ -984,6 +1082,33 @@ fun QuizScreen(
         
         // Add some padding at the bottom to ensure scrollability
         Spacer(modifier = Modifier.height(32.dp))
+    }
+}
+
+// Add this Worker class at the end of the file
+// This will handle background sync operations
+class SyncWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
+    override suspend fun doWork(): Result {
+        return try {
+            Log.d("SyncWorker", "Starting background sync work")
+            
+            // Get the app context
+            val appContext = applicationContext
+            
+            // Get the repository instances
+            val appUsageManager = AppUsageManager.getInstance(appContext)
+            val syncManager = SyncManager.getInstance(appContext)
+            
+            // End any lingering sessions and sync data
+            appUsageManager.endSession()
+            val result = syncManager.performSync(true)
+            
+            Log.d("SyncWorker", "Background sync completed with result: $result")
+            Result.success()
+        } catch (e: Exception) {
+            Log.e("SyncWorker", "Error during background sync work", e)
+            Result.retry()
+        }
     }
 }
 

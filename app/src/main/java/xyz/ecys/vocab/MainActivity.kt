@@ -5,6 +5,7 @@ package xyz.ecys.vocab
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -84,6 +85,7 @@ import xyz.ecys.vocab.data.AppUsage
 import xyz.ecys.vocab.data.AppUsageManager
 import xyz.ecys.vocab.data.DailyWord
 import xyz.ecys.vocab.data.DailyWordManager
+import xyz.ecys.vocab.data.SyncManager
 import xyz.ecys.vocab.data.WordDatabase
 import xyz.ecys.vocab.ui.theme.AppIcons
 import xyz.ecys.vocab.ui.theme.VocabularyBoosterTheme
@@ -99,6 +101,7 @@ import kotlinx.coroutines.cancelChildren
 import androidx.compose.runtime.rememberCoroutineScope
 import xyz.ecys.vocab.utils.TransitionUtils
 import xyz.ecys.vocab.data.SubscriptionManager
+import kotlinx.coroutines.runBlocking
 
 data class CalendarDay(
     val date: LocalDate,
@@ -112,6 +115,10 @@ class MainActivity : ComponentActivity() { // Calendar Card
     private lateinit var wordDatabase: WordDatabase
     private lateinit var appUsageManager: AppUsageManager
     private lateinit var dailyWordManager: DailyWordManager
+    private lateinit var syncManager: SyncManager
+    
+    // Add flag to track navigation between activities
+    private var navigatingToOtherScreen = false
 
     // Add state variables at class level
     private var wordsToday = mutableStateOf(0)
@@ -123,6 +130,7 @@ class MainActivity : ComponentActivity() { // Calendar Card
         wordDatabase = WordDatabase.getDatabase(this)
         appUsageManager = AppUsageManager.getInstance(this)
         dailyWordManager = DailyWordManager.getInstance(this)
+        syncManager = SyncManager.getInstance(this)
 
         // Check for pending premium transactions
         SubscriptionManager.getInstance(this).checkPendingTransactions()
@@ -405,6 +413,7 @@ class MainActivity : ComponentActivity() { // Calendar Card
                                 )
                                 IconButton(
                                     onClick = {
+                                        navigatingToOtherScreen = true
                                         startActivity(Intent(this@MainActivity, StatsActivity::class.java))
                                         TransitionUtils.applyStandardTransition(this@MainActivity)
                                     },
@@ -428,6 +437,7 @@ class MainActivity : ComponentActivity() { // Calendar Card
                                 )
                                 IconButton(
                                     onClick = {
+                                        navigatingToOtherScreen = true
                                         startActivity(Intent(this@MainActivity, SettingsActivity::class.java))
                                         TransitionUtils.applyStandardTransition(this@MainActivity)
                                     },
@@ -599,6 +609,7 @@ class MainActivity : ComponentActivity() { // Calendar Card
                                                 
                                                 // Now safely navigate to the activity
                                                 withContext(Dispatchers.Main) {
+                                                    navigatingToOtherScreen = true
                                                     val intent = Intent(this@MainActivity, DailyWordActivity::class.java)
                                                     // We don't need to pass the word data in the intent anymore
                                                     // as it's stored in preferences and will be loaded by DailyWordActivity
@@ -848,6 +859,7 @@ class MainActivity : ComponentActivity() { // Calendar Card
                                             indication = rememberRipple(bounded = true)
                                         ) {
                                             // Start the activity immediately
+                                            navigatingToOtherScreen = true
                                             val intent = Intent(this@MainActivity, QuizActivity::class.java)
                                             this@MainActivity.startActivity(intent)
                                             TransitionUtils.applyStandardTransition(this@MainActivity)
@@ -874,6 +886,7 @@ class MainActivity : ComponentActivity() { // Calendar Card
                             // Bookmarks Button
                             Button(
                                 onClick = {
+                                    navigatingToOtherScreen = true
                                     startActivity(Intent(this@MainActivity, BookmarksActivity::class.java));
                                     TransitionUtils.applyStandardTransition(this@MainActivity)
                                 },
@@ -927,6 +940,7 @@ class MainActivity : ComponentActivity() { // Calendar Card
                             // History button
                             Button(
                                 onClick = {
+                                    navigatingToOtherScreen = true
                                     startActivity(Intent(this@MainActivity, QuizHistoryActivity::class.java));
                                     TransitionUtils.applyStandardTransition(this@MainActivity)
                                 },
@@ -977,8 +991,30 @@ class MainActivity : ComponentActivity() { // Calendar Card
 
     override fun onPause() {
         super.onPause()
-        lifecycleScope.launch {
-            appUsageManager.endSession()
+        
+        // If app is finishing, ensure sync completes before app closes
+        if (isFinishing) {
+            runBlocking {
+                Log.d("MainActivity", "App finishing - syncing data SYNCHRONOUSLY before exit")
+                appUsageManager.endSession()
+                
+                try {
+                    // Call the suspending function directly in runBlocking context
+                    val syncResult = syncManager.performSync(true)
+                    Log.d("MainActivity", "Final sync completed with result: $syncResult")
+                } catch (e: Exception) {
+                    Log.e("MainActivity", "Error syncing data on app close", e)
+                }
+            }
+        } else {
+            // Just end the session if not finishing, no sync needed
+            lifecycleScope.launch {
+                Log.d("MainActivity", "App paused but not finishing - just ending session")
+                appUsageManager.endSession()
+                
+                // Reset navigation flag
+                navigatingToOtherScreen = false
+            }
         }
     }
 
