@@ -240,10 +240,10 @@ fun QuizScreen(
                     durationInSeconds = responseTime / 1000
                 )
                 
-                // Save to Firestore
+                // Save locally (SyncManager will handle syncing to Firestore later)
                 try {
                     quizResultRepository.saveQuizResult(firestoreQuizResult)
-                    android.util.Log.d("QuizResult", "Saved quiz result to Firestore")
+                    android.util.Log.d("QuizResult", "Saved quiz result locally")
                 } catch (e: Exception) {
                     android.util.Log.e("QuizResult", "Error saving quiz result: ${e.message}")
                 }

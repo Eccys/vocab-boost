@@ -2,9 +2,11 @@ package xyz.ecys.vocab.data
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.util.Log
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import com.google.firebase.firestore.SetOptions
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
@@ -13,11 +15,10 @@ import kotlinx.coroutines.withContext
 import java.util.Date
 import kotlin.collections.ArrayList
 
-class QuizResultRepository private constructor(context: Context) {
+class QuizResultRepository private constructor(private val context: Context) {
     private val firestore = FirebaseFirestore.getInstance()
-    private val quizResultsCollection = firestore.collection("quiz_results")
-    private val historyCollection = firestore.collection("history")
     private val auth = FirebaseAuth.getInstance()
+    private val TAG = "QuizResultRepository"
 
     // Local storage using SharedPreferences
     private val sharedPreferences: SharedPreferences = context.getSharedPreferences(
@@ -102,7 +103,7 @@ class QuizResultRepository private constructor(context: Context) {
         }
     }
 
-    // Save a quiz result locally first, then to Firestore if signed in
+    // Save a quiz result locally only, don't immediately sync to Firestore
     suspend fun saveQuizResult(quizResult: QuizResult): String {
         return withContext(Dispatchers.IO) {
             try {
@@ -119,6 +120,9 @@ class QuizResultRepository private constructor(context: Context) {
                 
                 // Add to local cache first
                 localQuizResultsCache.add(resultWithUserId)
+                
+                // Log test event
+                SyncTestLogger.logLocalSave()
                 
                 // Also create history items from this quiz result
                 val historyItems = resultWithUserId.questions.map { question ->
@@ -155,48 +159,16 @@ class QuizResultRepository private constructor(context: Context) {
                 saveLocalCache()
                 saveHistoryCache()
                 
-                // Only attempt to sync with Firestore if the user is signed in
-                if (isUserSignedIn()) {
-                    try {
-                        // Save the quiz result
-            val docRef = quizResultsCollection.add(resultWithUserId).await()
-                        println("Successfully synced quiz result to Firestore with ID: ${docRef.id}")
-                        
-                        // Update the local cache with the Firestore ID
-                        val index = localQuizResultsCache.indexOfFirst { it.id == localId }
-                        if (index >= 0) {
-                            val updatedResult = localQuizResultsCache[index].copy(id = docRef.id)
-                            localQuizResultsCache[index] = updatedResult
-                            saveLocalCache()
-                        }
-                        
-                        // Also save history items to the history collection
-                        for (historyItem in historyItems) {
-                            val historyRef = historyCollection.add(historyItem).await()
-                            println("Saved history item to Firestore with ID: ${historyRef.id}")
-                            
-                            // Update the local history cache with the Firestore ID
-                            val historyIndex = localHistoryCache.indexOfFirst { it.id == historyItem.id }
-                            if (historyIndex >= 0) {
-                                val updatedHistoryItem = localHistoryCache[historyIndex].copy(id = historyRef.id)
-                                localHistoryCache[historyIndex] = updatedHistoryItem
-                            }
-                        }
-                        saveHistoryCache()
-                        
-                        // Try to enforce the limit of quiz results in Firestore
-                        enforceQuizResultLimit(MAX_FIRESTORE_RESULTS)
-                        enforceHistoryLimit(MAX_FIRESTORE_HISTORY)
-                        
-                        return@withContext docRef.id
+                // Notify SyncManager that a question was answered (for tracking sync conditions)
+                try {
+                    val syncManager = SyncManager.getInstance(context)
+                    syncManager.recordQuestionAnswered()
                     } catch (e: Exception) {
-                        println("Error syncing to Firestore: ${e.message}")
-                        return@withContext localId
-                    }
-                } else {
-                    println("User not signed in, result saved locally only")
-                    return@withContext localId
+                    Log.w(TAG, "Failed to notify SyncManager: ${e.message}")
                 }
+                
+                // Return the local ID
+                return@withContext localId
             } catch (e: Exception) {
                 println("Error in saveQuizResult: ${e.message}")
                 e.printStackTrace()
@@ -205,56 +177,223 @@ class QuizResultRepository private constructor(context: Context) {
         }
     }
 
-    // Method to enforce the limit of history items
-    private suspend fun enforceHistoryLimit(maxItems: Int) {
-        withContext(Dispatchers.IO) {
+    // Method to sync all cached results to Firestore (called by SyncManager)
+    suspend fun syncCachedResultsToFirestore(isExplicitSync: Boolean = false): Boolean {
+        if (!isUserSignedIn()) {
+            println("User not signed in, skipping sync")
+            return false
+        }
+        
+        // Validate Firestore write access
+        if (!FirestoreAccessMonitor.validateWrite("QuizResultRepository.syncCachedResultsToFirestore", 
+            "Sync quiz results to cloud", isExplicitSync)) {
+            Log.w(TAG, "Unauthorized attempt to write to Firestore, sync aborted")
+            return false
+        }
+        
+        return withContext(Dispatchers.IO) {
             try {
-                // Only enforce limit if user is signed in
-                if (isUserSignedIn()) {
-                    // Get all history items for the current user, ordered by timestamp (oldest first)
-                    val results = historyCollection
-                        .whereEqualTo("userId", getUserId())
-                        .orderBy("timestamp", Query.Direction.ASCENDING)
-                        .get()
-                        .await()
-                    
-                    // If we have more than the maximum allowed items
-                    if (results.size() > maxItems) {
-                        // Calculate how many to delete
-                        val numberToDelete = results.size() - maxItems
+                var success = true
+                
+                // Get proper collection references for the current user
+                val userId = getUserId()
+                // Store quiz_results in the user document directly
+                val userDocument = firestore.collection("users").document(userId)
+                
+                // Sync quiz results that don't have a Firebase ID yet
+                val localOnlyResults = localQuizResultsCache.filter { it.id.startsWith("local_") }
+                
+                for (result in localOnlyResults) {
+                    try {
+                        // Store in app_usage field as a map entry
+                        val resultMap = mapOf(
+                            "timestamp" to result.timestamp,
+                            "correctAnswers" to result.correctAnswers,
+                            "totalQuestions" to result.totalQuestions,
+                            "score" to result.score,
+                            "durationInSeconds" to result.durationInSeconds
+                        )
                         
-                        // Get the IDs of the oldest items
-                        val oldestIds = results.documents
-                            .take(numberToDelete)
-                            .map { it.id }
+                        // Use transaction to update or create the document
+                        firestore.runTransaction { transaction ->
+                            // Get the current user document
+                            val userDocSnapshot = transaction.get(userDocument)
+                            
+                            // Check if app_usage field exists
+                            val appUsageMap = userDocSnapshot.get("app_usage") as? Map<String, Any> ?: hashMapOf()
+                            
+                            // Get or create quiz_results list
+                            val quizResultsList = appUsageMap["quiz_results"] as? List<Map<String, Any>> ?: listOf()
+                            
+                            // Create updated list with new result
+                            val updatedResults = quizResultsList + resultMap
+                            
+                            // Limit the number of stored results
+                            val limitedResults = if (updatedResults.size > MAX_FIRESTORE_RESULTS) {
+                                updatedResults.takeLast(MAX_FIRESTORE_RESULTS)
+                            } else {
+                                updatedResults
+                            }
+                            
+                            // Create updated app_usage map
+                            val updatedAppUsage = appUsageMap + ("quiz_results" to limitedResults)
+                            
+                            // Update the document
+                            transaction.set(userDocument, mapOf("app_usage" to updatedAppUsage), SetOptions.merge())
+                        }.await()
                         
-                        // Delete each of the oldest items
-                        for (id in oldestIds) {
-                            historyCollection.document(id).delete().await()
+                        // Update the local cache with a Firestore-style ID to mark it as synced
+                        val index = localQuizResultsCache.indexOfFirst { it.id == result.id }
+                        if (index >= 0) {
+                            val updatedResult = localQuizResultsCache[index].copy(id = "synced_${System.currentTimeMillis()}")
+                            localQuizResultsCache[index] = updatedResult
                         }
+                    } catch (e: Exception) {
+                        println("Error syncing quiz result to Firestore: ${e.message}")
+                        success = false
                     }
                 }
+                
+                // Sync history items that don't have a Firebase ID yet
+                // Only sync the 30 most recent items to conserve Firestore operations
+                val localOnlyHistory = localHistoryCache.filter { it.id.startsWith("local_") }
+                    .sortedByDescending { it.timestamp }
+                    .take(MAX_FIRESTORE_HISTORY)
+                
+                for (item in localOnlyHistory) {
+                    try {
+                        // Store in words field as a map entry
+                        val historyItemMap = mapOf(
+                            "timestamp" to item.timestamp,
+                            "word" to item.word,
+                            "correctDefinition" to item.correctDefinition,
+                            "userAnswer" to item.userAnswer,
+                            "isCorrect" to item.isCorrect
+                        )
+                        
+                        // Use transaction to update or create the document
+                        firestore.runTransaction { transaction ->
+                            // Get the current user document
+                            val userDocSnapshot = transaction.get(userDocument)
+                            
+                            // Check if words field exists
+                            val wordsMap = userDocSnapshot.get("words") as? Map<String, Any> ?: hashMapOf()
+                            
+                            // Get or create history list
+                            val historyList = wordsMap["history"] as? List<Map<String, Any>> ?: listOf()
+                            
+                            // Create updated list with new history item
+                            val updatedHistory = historyList + historyItemMap
+                            
+                            // Limit the number of stored history items
+                            val limitedHistory = if (updatedHistory.size > MAX_FIRESTORE_HISTORY) {
+                                updatedHistory.takeLast(MAX_FIRESTORE_HISTORY)
+                            } else {
+                                updatedHistory
+                            }
+                            
+                            // Create updated words map
+                            val updatedWords = wordsMap + ("history" to limitedHistory)
+                            
+                            // Update the document
+                            transaction.set(userDocument, mapOf("words" to updatedWords), SetOptions.merge())
+                        }.await()
+                        
+                        // Update the local cache with a Firestore-style ID to mark it as synced
+                        val index = localHistoryCache.indexOfFirst { it.id == item.id }
+                        if (index >= 0) {
+                            val updatedItem = localHistoryCache[index].copy(id = "synced_${System.currentTimeMillis()}")
+                            localHistoryCache[index] = updatedItem
+                        }
+                    } catch (e: Exception) {
+                        println("Error syncing history item to Firestore: ${e.message}")
+                        success = false
+                    }
+                }
+                
+                // Save updated local caches with the new IDs
+                if (success) {
+                    saveLocalCache()
+                    saveHistoryCache()
+                }
+                
+                return@withContext success
             } catch (e: Exception) {
-                // Log the error but don't crash
-                println("Error enforcing history limit: ${e.message}")
+                println("Error in syncCachedResultsToFirestore: ${e.message}")
+                e.printStackTrace()
+                return@withContext false
             }
         }
     }
-
-    // Get quiz history specifically (focused format for history view)
-    suspend fun getQuizHistory(pageSize: Int = MAX_LOCAL_HISTORY): List<QuizHistoryItem> {
+    
+    // Get quiz history (use local cache unless forced refresh)
+    suspend fun getQuizHistory(
+        pageSize: Int = 50,
+        forceRefresh: Boolean = false
+    ): List<QuizHistoryItem> {
         return withContext(Dispatchers.IO) {
-            println("Fetching quiz history for user: ${getUserId()}")
-            
-            // If the user is signed in, try to sync with Firestore first
-            if (isUserSignedIn()) {
+            try {
+                // Check if we should use the local cache or do a refresh
+                val shouldRefresh = forceRefresh || isHistoryRefreshNeeded()
+                
+                if (!shouldRefresh) {
+                    // Log test event for local read
+                    SyncTestLogger.logLocalRead()
+                    
+                    // Use local cache data
+                    println("Using cached history data")
+                    return@withContext localHistoryCache
+                        .sortedByDescending { it.timestamp }
+                        .distinctBy { it.word.lowercase() } // Keep only the most recent attempt for each word
+                        .take(pageSize)
+                }
+                
+                // We need to refresh from Firestore
+                if (!isUserSignedIn()) {
+                    println("User not signed in, using only local history")
+                    return@withContext localHistoryCache
+                        .sortedByDescending { it.timestamp }
+                        .distinctBy { it.word.lowercase() }
+                        .take(pageSize)
+                }
+                
+                // Check if we're allowed to read from Firestore
+                if (!FirestoreAccessMonitor.validateRead("QuizResultRepository.getQuizHistory", 
+                    "Fetch history from cloud with forceRefresh=$forceRefresh")) {
+                    Log.w(TAG, "Unauthorized attempt to read from Firestore, using local cache instead")
+                    return@withContext localHistoryCache
+                        .sortedByDescending { it.timestamp }
+                        .distinctBy { it.word.lowercase() }
+                        .take(pageSize)
+                }
+                
                 try {
-                    val firestoreHistory = historyCollection
-                        .whereEqualTo("userId", getUserId())
-                        .orderBy("timestamp", Query.Direction.DESCENDING)
-                        .get()
-                        .await()
-                        .toObjects(QuizHistoryItem::class.java)
+                    Log.d(TAG, "Fetching history from Firestore due to refresh condition")
+                    // Log test event for Firestore read
+                    SyncTestLogger.logFirestoreRead()
+                    
+                    val userId = getUserId()
+                    val userDocument = firestore.collection("users").document(userId)
+                    
+                    // Get the user document
+                    val userDocSnapshot = userDocument.get().await()
+                    
+                    // Get words map and history list
+                    val wordsMap = userDocSnapshot.get("words") as? Map<String, Any> ?: hashMapOf()
+                    val historyList = wordsMap["history"] as? List<Map<String, Any>> ?: listOf()
+                    
+                    // Convert each item to QuizHistoryItem
+                    val firestoreHistory = historyList.map { item ->
+                        QuizHistoryItem(
+                            id = "synced_${System.currentTimeMillis()}_${(Math.random() * 10000).toInt()}",
+                            userId = userId,
+                            timestamp = (item["timestamp"] as? com.google.firebase.Timestamp)?.toDate() ?: Date(),
+                            word = (item["word"] as? String) ?: "",
+                            correctDefinition = (item["correctDefinition"] as? String) ?: "",
+                            userAnswer = (item["userAnswer"] as? String) ?: "",
+                            isCorrect = (item["isCorrect"] as? Boolean) ?: false
+                        )
+                    }
                     
                     println("Retrieved ${firestoreHistory.size} history items from Firestore")
                     
@@ -266,6 +405,9 @@ class QuizResultRepository private constructor(context: Context) {
                     localHistoryCache.addAll(mergedHistory)
                     saveHistoryCache()
                     
+                    // Update last refresh time
+                    updateLastHistoryRefreshTime()
+                    
                     // Return sorted history limited to page size
                     return@withContext mergedHistory
                         .sortedByDescending { it.timestamp }
@@ -274,20 +416,36 @@ class QuizResultRepository private constructor(context: Context) {
                 } catch (e: Exception) {
                     println("Error retrieving history from Firestore: ${e.message}")
                     e.printStackTrace()
-                }
             }
             
-            // If we couldn't get results from Firestore or user isn't signed in,
-            // return the local cache
-            println("Using local history cache with ${localHistoryCache.size} items")
+                // Fall back to local cache if Firestore fails
             return@withContext localHistoryCache
                 .sortedByDescending { it.timestamp }
-                .distinctBy { it.word.lowercase() } // Keep only the most recent attempt for each word
+                    .distinctBy { it.word.lowercase() }
                 .take(pageSize)
+            } catch (e: Exception) {
+                println("Error in getQuizHistory: ${e.message}")
+                e.printStackTrace()
+                return@withContext emptyList()
+            }
         }
     }
     
-    // Helper method to merge local and Firestore history
+    // Check if we need to refresh history from Firestore
+    private fun isHistoryRefreshNeeded(): Boolean {
+        val lastRefreshTime = sharedPreferences.getLong(KEY_LAST_HISTORY_REFRESH, 0)
+        val currentTime = System.currentTimeMillis()
+        return currentTime - lastRefreshTime > HISTORY_REFRESH_INTERVAL
+    }
+    
+    // Update the timestamp of when history was last refreshed from Firestore
+    private fun updateLastHistoryRefreshTime() {
+        sharedPreferences.edit()
+            .putLong(KEY_LAST_HISTORY_REFRESH, System.currentTimeMillis())
+            .apply()
+    }
+    
+    // Merge history from local storage and Firestore, giving preference to newer entries
     private fun mergeHistory(localHistory: List<QuizHistoryItem>, firestoreHistory: List<QuizHistoryItem>): List<QuizHistoryItem> {
         val historyMap = mutableMapOf<String, QuizHistoryItem>()
         
@@ -323,25 +481,39 @@ class QuizResultRepository private constructor(context: Context) {
         
         // Clear from Firestore if user is signed in
         if (isUserSignedIn()) {
+            // Validate Firestore write access
+            if (!FirestoreAccessMonitor.validateWrite("QuizResultRepository.clearAllQuizResults", 
+                "Clear all quiz data from cloud", true)) {
+                Log.w(TAG, "Unauthorized attempt to clear data from Firestore, skipping cloud clear")
+                return
+            }
+            
             try {
+                val userId = getUserId()
+                val userQuizResultsCollection = firestore.collection("users")
+                    .document(userId)
+                    .collection("quiz_results")
+                    
+                val userHistoryCollection = firestore.collection("users")
+                    .document(userId)
+                    .collection("history")
+                
                 // Clear quiz results
-                val results = quizResultsCollection
-                    .whereEqualTo("userId", getUserId())
+                val results = userQuizResultsCollection
                     .get()
                     .await()
                 
                 for (document in results.documents) {
-                    quizResultsCollection.document(document.id).delete().await()
+                    userQuizResultsCollection.document(document.id).delete().await()
                 }
                 
                 // Clear history
-                val history = historyCollection
-                    .whereEqualTo("userId", getUserId())
+                val history = userHistoryCollection
                     .get()
                     .await()
                 
                 for (document in history.documents) {
-                    historyCollection.document(document.id).delete().await()
+                    userHistoryCollection.document(document.id).delete().await()
                 }
                 
                 println("Cleared all quiz results and history from Firestore for user: ${getUserId()}")
@@ -380,49 +552,22 @@ class QuizResultRepository private constructor(context: Context) {
         return user != null && !user.isAnonymous
     }
 
-    // Method to enforce the limit of quiz results
-    private suspend fun enforceQuizResultLimit(maxResults: Int) {
-        withContext(Dispatchers.IO) {
-            try {
-                // Only enforce limit if user is signed in
-                if (isUserSignedIn()) {
-                // Get all quiz results for the current user, ordered by timestamp (oldest first)
-                val results = quizResultsCollection
-                    .whereEqualTo("userId", getUserId())
-                    .orderBy("timestamp", Query.Direction.ASCENDING)
-                    .get()
-                    .await()
-                
-                // If we have more than the maximum allowed results
-                if (results.size() > maxResults) {
-                    // Calculate how many to delete
-                    val numberToDelete = results.size() - maxResults
-                    
-                    // Get the IDs of the oldest quiz results
-                    val oldestResultIds = results.documents
-                        .take(numberToDelete)
-                        .map { it.id }
-                    
-                    // Delete each of the oldest results
-                    for (id in oldestResultIds) {
-                        quizResultsCollection.document(id).delete().await()
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                // Log the error but don't crash
-                println("Error enforcing quiz result limit: ${e.message}")
-            }
-        }
+    // Get a count of local items pending sync
+    fun getLocalItemsPendingSync(): PendingSyncCount {
+        val pendingQuizResults = localQuizResultsCache.count { it.id.startsWith("local_") }
+        val pendingHistoryItems = localHistoryCache.count { it.id.startsWith("local_") }
+        return PendingSyncCount(pendingQuizResults, pendingHistoryItems)
     }
 
     companion object {
         private const val KEY_LOCAL_RESULTS = "local_quiz_results"
         private const val KEY_LOCAL_HISTORY = "local_quiz_history"
+        private const val KEY_LAST_HISTORY_REFRESH = "last_history_refresh"
         private const val MAX_LOCAL_RESULTS = 100   // Store up to 100 results locally
         private const val MAX_LOCAL_HISTORY = 200   // Store up to 200 history items locally
         private const val MAX_FIRESTORE_RESULTS = 30 // Limit to 30 results in Firestore
-        private const val MAX_FIRESTORE_HISTORY = 100 // Limit to 100 history items in Firestore
+        private const val MAX_FIRESTORE_HISTORY = 30 // Limit to 30 history items in Firestore
+        private const val HISTORY_REFRESH_INTERVAL = 15 * 60 * 1000L // 15 minutes in milliseconds
         
         @Volatile
         private var INSTANCE: QuizResultRepository? = null
@@ -453,4 +598,10 @@ data class QuizHistoryItem(
     val correctDefinition: String = "",
     val userAnswer: String = "",
     val isCorrect: Boolean = false
+)
+
+// Data class to hold counts of pending sync items
+data class PendingSyncCount(
+    val quizResults: Int,
+    val historyItems: Int
 ) 

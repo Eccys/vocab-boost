@@ -142,13 +142,8 @@ class WordRepository private constructor(
             android.util.Log.d("WordStats", "Calculated quality for word $wordId: $quality (hint=$hintUsed)")
 
             // Calculate new ease factor
-            val newEaseFactor = if (wasCorrect) {
                 val adjustment = 0.1f - (5 - quality) * (0.08f + (5 - quality) * 0.02f)
-                kotlin.math.max(1.3f, word.easeFactor + adjustment)
-            } else {
-                val adjustment = 0.1f - (5 - quality) * (0.08f + (5 - quality) * 0.02f)
-                kotlin.math.max(1.3f, word.easeFactor + adjustment)
-            }
+            val newEaseFactor = kotlin.math.max(1.3f, word.easeFactor + adjustment)
 
             // Calculate new interval based on SM-2
             val newInterval = when {
@@ -305,15 +300,36 @@ class WordRepository private constructor(
                 return unseenWords.random()
             }
             
-            // PRIORITY 3: ONLY AS LAST RESORT, USE OTHER WORDS
-            android.util.Log.d("WordPriority", "No overdue or unseen words, selecting random word")
+            // PRIORITY 3: ONLY AS LAST RESORT, USE WORD WITH HIGHEST "SOON-TO-BE-DUE" RATIO
+            android.util.Log.d("WordPriority", "No overdue or unseen words, selecting word with highest due ratio")
             
-            // If no overdue or unseen words, just get a random word
-            return if (excludeWord == null) {
-                wordDao.getRandomWords(1).first()
+            // Get all words and calculate their overdue ratio (even though they're not officially overdue yet)
+            val allWords = if (excludeWord == null) {
+                wordDao.getAllWords()
             } else {
-                wordDao.getRandomWordsExcluding(1, excludeWord.id).first()
+                wordDao.getAllWords().filter { it.id != excludeWord.id }
             }
+            
+            // Calculate "overdue ratio" for each word (negative for words not yet due)
+            val wordsWithRatio = allWords.map { word ->
+                val dueRatio = if (word.nextReviewDate > 0) {
+                    // For words with a review date, calculate how close they are to being due
+                    (currentTime - word.nextReviewDate) / (Math.max(1, word.interval) * 86400000.0)
+                } else {
+                    // For words without a valid review date, use a default low priority
+                    -100.0
+                }
+                Pair(word, dueRatio)
+            }
+            
+            // Sort by ratio and get the word closest to being due (or least overdue if all have same nextReviewDate)
+            val wordClosestToDue = wordsWithRatio
+                .sortedByDescending { it.second }
+                .first()
+                .first
+            
+            android.util.Log.d("WordPriority", "Selected word closest to being due: ${wordClosestToDue.word}")
+            return wordClosestToDue
         } else {
             // When spaced repetition is disabled, simply return a random word
             android.util.Log.d("WordPriority", "Spaced repetition disabled, selecting fully random word")

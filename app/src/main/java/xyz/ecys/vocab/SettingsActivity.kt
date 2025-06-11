@@ -26,6 +26,7 @@ import xyz.ecys.vocab.data.AuthViewModel
 import xyz.ecys.vocab.data.WordRepository
 import xyz.ecys.vocab.data.AppUsageManager
 import xyz.ecys.vocab.debug.DebugActivity
+import xyz.ecys.vocab.debug.DebugMenuActivity
 import xyz.ecys.vocab.ui.theme.AppIcons
 import xyz.ecys.vocab.ui.theme.VocabularyBoosterTheme
 import androidx.compose.runtime.rememberCoroutineScope
@@ -705,7 +706,7 @@ class SettingsActivity : ComponentActivity() {
                         ) {
                             FloatingActionButton(
                                 onClick = {
-                                    startActivity(Intent(context, DebugActivity::class.java))
+                                    startActivity(Intent(context, DebugMenuActivity::class.java))
                                     TransitionUtils.applyStandardTransition(this@SettingsActivity)
                                 }
                             ) {
@@ -1161,7 +1162,7 @@ class SettingsActivity : ComponentActivity() {
                                     ),
                                     shape = RoundedCornerShape(12.dp),
                                     onClick = { 
-                                        startActivity(Intent(context, DebugActivity::class.java))
+                                        startActivity(Intent(context, DebugMenuActivity::class.java))
                                         TransitionUtils.applyStandardTransition(this@SettingsActivity)
                                     },
                                     interactionSource = remember { MutableInteractionSource() }

@@ -64,6 +64,11 @@
             android:screenOrientation="portrait"
             android:theme="@style/Theme.VocabularyBooster" />
         <activity
+            android:name=".debug.DebugMenuActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.VocabularyBooster" />
+        <activity
             android:name=".debug.DebugActivity"
             android:exported="false"
             android:screenOrientation="portrait"
@@ -89,13 +94,10 @@
             android:screenOrientation="portrait"
             android:theme="@style/Theme.VocabularyBooster" />
         <activity
-            android:name=".QuizResultDetailsActivity"
+            android:name=".FirestoreTestActivity"
             android:exported="false"
-            android:theme="@style/Theme.VocabularyBooster" />
-        <activity
-            android:name=".QuizHistoryActivity"
-            android:exported="false"
-
+            android:screenOrientation="portrait"
+            android:label="Firestore Test"
             android:theme="@style/Theme.VocabularyBooster" />
     </application>
 
