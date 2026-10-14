@@ -144,8 +144,6 @@ class DailyWordManager(private val context: Context) {
 
         try {
             // Extract date components using reflection to avoid direct API 26+ dependencies
-            val calendar = Calendar.getInstance()
-            
             // Use reflection to get year, month, and day of month
             val yearMethod = date.javaClass.getMethod("getYear")
             val year = yearMethod.invoke(date) as Int
@@ -156,17 +154,8 @@ class DailyWordManager(private val context: Context) {
             val dayMethod = date.javaClass.getMethod("getDayOfMonth")
             val day = dayMethod.invoke(date) as Int
             
-            calendar.set(Calendar.YEAR, year)
-            calendar.set(Calendar.MONTH, month - 1) // Calendar months are 0-based
-            calendar.set(Calendar.DAY_OF_MONTH, day)
-            calendar.set(Calendar.HOUR_OF_DAY, 0)
-            calendar.set(Calendar.MINUTE, 0)
-            calendar.set(Calendar.SECOND, 0)
-            calendar.set(Calendar.MILLISECOND, 0)
-            
-            // Calculate days since reference date
-            val diff = calendar.timeInMillis - referenceTimestamp
-            val daysSinceReference = (diff / (24 * 60 * 60 * 1000)).toInt()
+            // Calculate days since reference date using calendar-day math to avoid DST drift
+            val daysSinceReference = getDayOfEpoch(year, month, day)
             
             // Calculate which cycle we're in and position within cycle
             val cycleNumber = Math.floorDiv(daysSinceReference, allWords.size)
@@ -218,31 +207,8 @@ class DailyWordManager(private val context: Context) {
     }
     
     private fun updateDailyWord(year: Int, month: Int, day: Int) {
-        // Get the current word
-        val currentWordJson = prefs.getString("current_word", null)
-        val currentWord = if (currentWordJson != null) {
-            gson.fromJson(currentWordJson, DailyWord::class.java)
-        } else {
-            null
-        }
-        
-        // If there's a current word, add it to previous words
-        if (currentWord != null) {
-            addToPreviousWords(currentWord)
-        }
-        
-        // Get a new word for today using the string date format
         val todayStr = String.format("%04d-%02d-%02d", year, month, day)
-        val newWord = getWordForSpecificDate(todayStr)
-        
-        // Save the new word
-        prefs.edit()
-            .putString("current_word", gson.toJson(newWord))
-            .putString("last_updated", todayStr)
-            .apply()
-        
-        // Remove the new word from the previous words list if it exists
-        previousWords.removeIf { it.word.equals(newWord.word, ignoreCase = true) }
+        updateDailyWord(todayStr)
     }
     
     private fun updateDailyWord(today: LocalDate) {
@@ -260,28 +226,8 @@ class DailyWordManager(private val context: Context) {
             
             updateDailyWord(year, monthValue, dayOfMonth)
         } catch (e: Exception) {
-            // Fallback to basic implementation if LocalDate API access fails
-            val currentWordJson = prefs.getString("current_word", null)
-            val currentWord = if (currentWordJson != null) {
-                gson.fromJson(currentWordJson, DailyWord::class.java)
-            } else {
-                null
-            }
-            
-            if (currentWord != null) {
-                addToPreviousWords(currentWord)
-            }
-            
-            // Instead of directly accessing getWordForDate, get a string version of the date
-            val dateStr = today.toString()
-            val newWord = getWordForSpecificDate(dateStr)
-            
-            prefs.edit()
-                .putString("current_word", gson.toJson(newWord))
-                .putString("last_updated", dateStr)
-                .apply()
-            
-            previousWords.removeIf { it.word.equals(newWord.word, ignoreCase = true) }
+            // Fallback to string date implementation if LocalDate API access fails
+            updateDailyWord(today.toString())
         }
     }
     
@@ -508,9 +454,9 @@ class DailyWordManager(private val context: Context) {
         
         fun getInstance(context: Context): DailyWordManager {
             return INSTANCE ?: synchronized(this) {
-                val instance = DailyWordManager(context.applicationContext)
-                INSTANCE = instance
-                instance
+                INSTANCE ?: DailyWordManager(context.applicationContext).also {
+                    INSTANCE = it
+                }
             }
         }
     }
@@ -614,7 +560,7 @@ class DailyWordManager(private val context: Context) {
                 cachedDateStr = dateStr
                 
                 // Remove the new word from previous words list if it exists
-                val index = previousWords.indexOfFirst { it.word == newWord.word }
+                val index = previousWords.indexOfFirst { it.word.equals(newWord.word, ignoreCase = true) }
                 if (index >= 0) {
                     previousWords.removeAt(index)
                     prefs.edit().putString("previous_words", gson.toJson(previousWords)).apply()
@@ -625,4 +571,4 @@ class DailyWordManager(private val context: Context) {
             e.printStackTrace()
         }
     }
-} 
+}
