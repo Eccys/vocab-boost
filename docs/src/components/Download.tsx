@@ -112,7 +112,7 @@ const Download: React.FC = () => {
             ))}
             
             <div className="carousel-nav">
-              {screens.map((screen, index) => (
+              {screens.map((_screen, index) => (
                 <span 
                   key={index} 
                   className={`nav-dot ${index === currentScreenIndex ? 'active' : ''}`}

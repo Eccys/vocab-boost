@@ -1,3 +1,4 @@
+/// <reference types="vite/client" />
 // Dictionary and Thesaurus API service
 // This service handles all interactions with the Merriam-Webster APIs
 
