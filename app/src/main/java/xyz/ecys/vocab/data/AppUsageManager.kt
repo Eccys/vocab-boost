@@ -23,12 +23,14 @@ class AppUsageManager private constructor(
         
         fun getInstance(context: Context): AppUsageManager {
             return INSTANCE ?: synchronized(this) {
-                val database = WordDatabase.getDatabase(context)
-                AppUsageManager(
-                    database.appUsageDao(),
-                    CorrectAnswerTracker.getInstance(context)
-                ).also {
-                    INSTANCE = it
+                INSTANCE ?: run {
+                    val database = WordDatabase.getDatabase(context)
+                    AppUsageManager(
+                        database.appUsageDao(),
+                        CorrectAnswerTracker.getInstance(context)
+                    ).also {
+                        INSTANCE = it
+                    }
                 }
             }
         }
@@ -41,6 +43,11 @@ class AppUsageManager private constructor(
             calendar.set(Calendar.SECOND, 0)
             calendar.set(Calendar.MILLISECOND, 0)
             return calendar.timeInMillis
+        }
+
+        private fun daysBetweenTimestamps(laterTimestamp: Long, earlierTimestamp: Long): Long {
+            val dayInMillis = 24.0 * 60 * 60 * 1000
+            return Math.round((laterTimestamp - earlierTimestamp) / dayInMillis)
         }
     }
 
@@ -108,23 +115,23 @@ class AppUsageManager private constructor(
         try {
             val usages = appUsageDao.getUsageBetweenDates(0, System.currentTimeMillis()).first()
             
-            // Sort by date and get active dates
+            // Sort by date and get unique active dates
             val activeDates = usages
                 .filter { usage -> usage.correctAnswers > 0 }
                 .map { usage -> usage.date }
+                .distinct()
                 .sorted()
                 .toList()
             
             if (activeDates.isEmpty()) return@withContext 0
             
-            val dayInMillis = 24 * 60 * 60 * 1000
             val today = getStartOfDayTimestamp()
             
-            // Check if last active date was today or yesterday
+            // Check if last active date was today or yesterday (using DST-safe rounding)
             val lastActiveDate = activeDates.last()
-            val dayDiff = (today - lastActiveDate) / dayInMillis
+            val dayDiff = daysBetweenTimestamps(today, lastActiveDate)
             
-            if (dayDiff > 1) return@withContext 0 // Streak broken if last activity was before yesterday
+            if (dayDiff > 1L) return@withContext 0 // Streak broken if last activity was before yesterday
             
             // Count consecutive days backward from today/yesterday
             var streak = 1 // Start with 1 for today/yesterday
@@ -132,7 +139,7 @@ class AppUsageManager private constructor(
             
             for (i in activeDates.size - 2 downTo 0) {
                 val currentDate = activeDates[i]
-                val consecutiveDayDiff = (prevDate - currentDate) / dayInMillis
+                val consecutiveDayDiff = daysBetweenTimestamps(prevDate, currentDate)
                 
                 if (consecutiveDayDiff == 1L) {
                     streak++
@@ -155,10 +162,11 @@ class AppUsageManager private constructor(
             // Get all usage data
             val usages = appUsageDao.getUsageBetweenDates(0, System.currentTimeMillis()).first()
             
-            // Sort by date and filter for days with correct answers
+            // Sort by date and filter for unique days with correct answers
             val activeDates = usages
                 .filter { usage -> usage.correctAnswers > 0 }
                 .map { usage -> usage.date }
+                .distinct()
                 .sorted()
                 .toList()
 
@@ -170,12 +178,12 @@ class AppUsageManager private constructor(
 
             for (i in 1 until activeDates.size) {
                 val currentDate = activeDates[i]
-                val dayDiff = (currentDate - previousDate) / (24 * 60 * 60 * 1000)
+                val dayDiff = daysBetweenTimestamps(currentDate, previousDate)
 
                 if (dayDiff == 1L) {
                     streakCount++
                     bestStreak = maxOf(bestStreak, streakCount)
-                } else {
+                } else if (dayDiff > 1L) {
                     streakCount = 1
                 }
 

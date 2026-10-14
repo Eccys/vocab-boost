@@ -42,11 +42,18 @@ const hasBeenUsedRecently = (word: string): boolean => {
   return usedWordsCache.has(word.toLowerCase());
 };
 
+const hasValidApiKey = (key: string | undefined): boolean => {
+  return Boolean(key && !key.startsWith('your-') && key !== 'undefined');
+};
+
 // Thesaurus API
 export const getSynonyms = async (word: string): Promise<string[]> => {
   try {
+    if (!hasValidApiKey(THESAURUS_API_KEY)) {
+      return [];
+    }
     const response = await fetch(
-      `https://www.dictionaryapi.com/api/v3/references/thesaurus/json/${word}?key=${THESAURUS_API_KEY}`
+      `https://www.dictionaryapi.com/api/v3/references/thesaurus/json/${encodeURIComponent(word)}?key=${THESAURUS_API_KEY}`
     );
     const data = await response.json();
     
@@ -80,6 +87,9 @@ export const getRandomWordsOfSamePartOfSpeech = async (
   count: number = 3
 ): Promise<string[]> => {
   try {
+    if (!hasValidApiKey(DICTIONARY_API_KEY)) {
+      return getFallbackWords(partOfSpeech, count);
+    }
     // Map the part of speech to Merriam-Webster's format
     const normalizedPos = partOfSpeech.toLowerCase();
     const pos = normalizedPos === 'adj' || normalizedPos === 'adjective' ? 'adjective' : 
@@ -251,8 +261,11 @@ const getFallbackWords = (partOfSpeech: string, count: number): string[] => {
 // Helper function to get related words for a given word and part of speech
 const getRelatedWords = async (word: string, partOfSpeech: string): Promise<string[]> => {
   try {
+    if (!hasValidApiKey(DICTIONARY_API_KEY)) {
+      return [];
+    }
     const response = await fetch(
-      `https://www.dictionaryapi.com/api/v3/references/collegiate/json/${word}?key=${DICTIONARY_API_KEY}`
+      `https://www.dictionaryapi.com/api/v3/references/collegiate/json/${encodeURIComponent(word)}?key=${DICTIONARY_API_KEY}`
     );
     const data = await response.json();
     
@@ -390,9 +403,12 @@ const getContrastingWords = async (
   timestamp: number = Date.now()
 ): Promise<string[]> => {
   try {
+    if (!hasValidApiKey(THESAURUS_API_KEY)) {
+      return [];
+    }
     // First try to get antonyms via the thesaurus API with cache busting
     const response = await fetch(
-      `https://www.dictionaryapi.com/api/v3/references/thesaurus/json/${word}?key=${THESAURUS_API_KEY}&t=${timestamp}`
+      `https://www.dictionaryapi.com/api/v3/references/thesaurus/json/${encodeURIComponent(word)}?key=${THESAURUS_API_KEY}&t=${timestamp}`
     );
     const data = await response.json();
     
