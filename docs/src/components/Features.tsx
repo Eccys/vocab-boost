@@ -72,7 +72,7 @@ const Features: React.FC = () => {
     feature: typeof features[0];
     index: number;
   }> = ({ feature, index }) => {
-    const [isHovered, setIsHovered] = useState(false);
+    const [, setIsHovered] = useState(false);
     const [isLoaded, setIsLoaded] = useState(false);
     const cardRef = useRef<HTMLDivElement>(null);
     

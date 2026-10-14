@@ -63,9 +63,10 @@ class DailyWordManager(private val context: Context) {
             return cachedTodayWord!!
         }
         
-        // Try to get from preferences first (fastest approach)
+        // Try to get from preferences first (fastest approach) only if updated today
+        val lastUpdated = prefs.getString("last_updated", null)
         val wordJson = prefs.getString("current_word", null)
-        if (wordJson != null) {
+        if (wordJson != null && lastUpdated == todayStr) {
             try {
                 val word = gson.fromJson(wordJson, DailyWord::class.java)
                 
@@ -168,15 +169,14 @@ class DailyWordManager(private val context: Context) {
             val daysSinceReference = (diff / (24 * 60 * 60 * 1000)).toInt()
             
             // Calculate which cycle we're in and position within cycle
-            val cycleNumber = daysSinceReference / allWords.size
-            val positionInCycle = daysSinceReference % allWords.size
+            val cycleNumber = Math.floorDiv(daysSinceReference, allWords.size)
+            val positionInCycle = Math.floorMod(daysSinceReference, allWords.size)
             
             // Create a deterministically shuffled sequence for this cycle
             val shuffledIndices = createDeterministicShuffle(cycleNumber)
             
             // Get the word at the shuffled position
-            val adjustedPosition = if (positionInCycle < 0) positionInCycle + allWords.size else positionInCycle
-            return allWords[shuffledIndices[adjustedPosition]]
+            return allWords[shuffledIndices[positionInCycle]]
         } catch (e: Exception) {
             // If anything fails, return the default word
             return getDefaultWord()
@@ -402,8 +402,8 @@ class DailyWordManager(private val context: Context) {
                 }
                 
                 // Calculate which cycle we're in and position within cycle
-                val cycleNumber = daysSinceReference / allWords.size
-                val positionInCycle = daysSinceReference % allWords.size
+                val cycleNumber = Math.floorDiv(daysSinceReference, allWords.size)
+                val positionInCycle = Math.floorMod(daysSinceReference, allWords.size)
                 
                 // Create a deterministically shuffled sequence for this cycle
                 val shuffledIndices = createDeterministicShuffle(cycleNumber)
@@ -508,7 +508,7 @@ class DailyWordManager(private val context: Context) {
         
         fun getInstance(context: Context): DailyWordManager {
             return INSTANCE ?: synchronized(this) {
-                val instance = DailyWordManager(context)
+                val instance = DailyWordManager(context.applicationContext)
                 INSTANCE = instance
                 instance
             }
