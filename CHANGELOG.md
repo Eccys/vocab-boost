@@ -30,4 +30,7 @@
 - Basic quiz functionality
 - User account system
 - Word bookmarking
-- Offline mode support 
+- Offline mode support
+
+## [0.2.0] - 2026-10-21
+- Audited repository configuration and default branch (`stable`) integrity for `vocab-boost`.
